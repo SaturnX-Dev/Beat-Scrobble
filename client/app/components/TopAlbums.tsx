@@ -50,14 +50,13 @@ export default function TopAlbums(props: Props) {
     <div>
       <h2 className="hover:underline">
         <Link
-          to={`/chart/top-albums?period=${props.period}${
-            props.artistId ? `&artist_id=${props.artistId}` : ""
-          }`}
+          to={`/chart/top-albums?period=${props.period}${props.artistId ? `&artist_id=${props.artistId}` : ""
+            }`}
         >
           Top Albums
         </Link>
       </h2>
-      <div className="max-w-[300px]">
+      <div className="w-full">
         <TopItemList type="album" data={data} />
         {data.items.length < 1 ? "Nothing to show" : ""}
       </div>

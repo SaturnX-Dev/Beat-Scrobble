@@ -4,10 +4,10 @@ import { Search } from "lucide-react";
 import SearchModal from "../modals/SearchModal";
 
 interface Props {
-    size: number
+    size?: number
 }
 
-export default function SidebarSearch({ size } : Props) {
+export default function SidebarSearch({ size }: Props) {
     const [open, setModalOpen] = useState(false)
 
     useEffect(() => {
@@ -18,24 +18,24 @@ export default function SidebarSearch({ size } : Props) {
                 active.tagName === 'TEXTAREA' ||
                 (active as HTMLElement).isContentEditable
             );
-    
+
             if (!isTyping && e.key === '/') {
                 e.preventDefault();
                 setModalOpen(!open);
             }
         };
-    
+
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
     }, [open]);
 
     return (
-        <SidebarItem 
+        <SidebarItem
             space={26}
-            onClick={() => setModalOpen(true)} 
+            onClick={() => setModalOpen(true)}
             name="Search"
             keyHint="/"
-            children={<Search size={size}/>} modal={<SearchModal open={open} setOpen={setModalOpen} />} 
+            children={<Search size={size} />} modal={<SearchModal open={open} setOpen={setModalOpen} />}
         />
     )
 }

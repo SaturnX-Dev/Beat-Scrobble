@@ -64,22 +64,36 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return themes[initialTheme] || themes[defaultTheme];
   });
 
+  const saveThemeToServer = async (theme: Theme) => {
+    try {
+      await fetch("/apis/web/v1/user/theme", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(theme),
+      });
+    } catch (err) {
+      console.error("Failed to save theme to server:", err);
+    }
+  };
+
   const setTheme = (newThemeName: string) => {
     setThemeName(newThemeName);
     if (newThemeName === "custom") {
       const customTheme = getStoredCustomTheme();
       if (customTheme) {
         setCurrentTheme(customTheme);
+        saveThemeToServer(customTheme);
       } else {
-        // Fallback to default theme if no custom theme found
         setThemeName(defaultTheme);
         setCurrentTheme(themes[defaultTheme]);
+        saveThemeToServer(themes[defaultTheme]);
       }
     } else {
       const foundTheme = themes[newThemeName];
       if (foundTheme) {
         localStorage.setItem("theme", newThemeName);
         setCurrentTheme(foundTheme);
+        saveThemeToServer(foundTheme);
       } else {
         setTheme(defaultTheme);
       }
@@ -90,6 +104,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setThemeName(defaultTheme);
     localStorage.removeItem("theme");
     setCurrentTheme(themes[defaultTheme]);
+    saveThemeToServer(themes[defaultTheme]);
   };
 
   const setCustomTheme = useCallback((customTheme: Theme) => {
@@ -98,11 +113,35 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setThemeName("custom");
     localStorage.setItem("theme", "custom");
     setCurrentTheme(customTheme);
+    saveThemeToServer(customTheme);
   }, []);
 
   const getCustomTheme = (): Theme | undefined => {
     return getStoredCustomTheme();
   };
+
+  useEffect(() => {
+    // Fetch theme from server on mount
+    const fetchServerTheme = async () => {
+      try {
+        const res = await fetch("/apis/web/v1/user/theme");
+        if (res.ok && res.status !== 204) {
+          const serverTheme: Theme = await res.json();
+          if (serverTheme && serverTheme.bg) {
+            setCurrentTheme(serverTheme);
+            setThemeName("custom");
+            localStorage.setItem("theme", "custom");
+            localStorage.setItem("custom-theme", JSON.stringify(serverTheme));
+            applyCustomThemeVars(serverTheme);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch theme from server:", err);
+      }
+    };
+
+    fetchServerTheme();
+  }, []);
 
   useEffect(() => {
     const root = document.documentElement;

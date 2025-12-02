@@ -84,30 +84,32 @@ export default function LastPlays(props: Props) {
   params += props.trackId ? `&track_id=${props.trackId}` : "";
 
   return (
-    <div className="text-sm sm:text-[16px]">
+    <div className="text-xs sm:text-sm">
       <h2 className="hover:underline">
-        <Link to={`/listens?period=all_time${params}`}>Last Played</Link>
+        <Link to={`/timeline?period=all_time${params}`}>Last Played</Link>
       </h2>
       <table className="-ml-4">
         <tbody>
           {props.showNowPlaying && npData && npData.currently_playing && (
             <tr className="group hover:bg-[--color-bg-secondary]">
               <td className="w-[18px] pr-2 align-middle"></td>
-              <td className="color-fg-tertiary pr-2 sm:pr-4 text-sm whitespace-nowrap w-0">
+              <td className="color-fg-tertiary pr-2 sm:pr-4 text-xs sm:text-sm whitespace-nowrap w-0">
                 Now Playing
               </td>
-              <td className="text-ellipsis overflow-hidden max-w-[400px] sm:max-w-[600px]">
-                {props.hideArtists ? null : (
-                  <>
-                    <ArtistLinks artists={npData.track.artists} /> –{" "}
-                  </>
-                )}
-                <Link
-                  className="hover:text-[--color-fg-secondary]"
-                  to={`/track/${npData.track.id}`}
-                >
-                  {npData.track.title}
-                </Link>
+              <td className="max-w-[200px] sm:max-w-[600px]">
+                <div className="line-clamp-2 leading-tight">
+                  {props.hideArtists ? null : (
+                    <>
+                      <ArtistLinks artists={npData.track.artists} /> –{" "}
+                    </>
+                  )}
+                  <Link
+                    className="hover:text-[--color-fg-secondary]"
+                    to={`/track/${npData.track.id}`}
+                  >
+                    {npData.track.title}
+                  </Link>
+                </div>
               </td>
             </tr>
           )}
@@ -127,23 +129,25 @@ export default function LastPlays(props: Props) {
                 </button>
               </td>
               <td
-                className="color-fg-tertiary pr-2 sm:pr-4 text-sm whitespace-nowrap w-0"
+                className="color-fg-tertiary pr-2 sm:pr-4 text-xs sm:text-sm whitespace-nowrap w-0"
                 title={new Date(item.time).toString()}
               >
                 {timeSince(new Date(item.time))}
               </td>
-              <td className="text-ellipsis overflow-hidden max-w-[400px] sm:max-w-[600px]">
-                {props.hideArtists ? null : (
-                  <>
-                    <ArtistLinks artists={item.track.artists} /> –{" "}
-                  </>
-                )}
-                <Link
-                  className="hover:text-[--color-fg-secondary]"
-                  to={`/track/${item.track.id}`}
-                >
-                  {item.track.title}
-                </Link>
+              <td className="max-w-[200px] sm:max-w-[600px]">
+                <div className="line-clamp-2 leading-tight">
+                  {props.hideArtists ? null : (
+                    <>
+                      <ArtistLinks artists={item.track.artists} /> –{" "}
+                    </>
+                  )}
+                  <Link
+                    className="hover:text-[--color-fg-secondary]"
+                    to={`/track/${item.track.id}`}
+                  >
+                    {item.track.title}
+                  </Link>
+                </div>
               </td>
             </tr>
           ))}

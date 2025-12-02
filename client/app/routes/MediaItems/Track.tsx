@@ -65,15 +65,35 @@ export default function Track() {
               {new Date(track.first_listen * 1000).toLocaleDateString()}
             </p>
           }
+          <div className="flex gap-2 mt-2">
+            {track.artists && track.artists.length > 0 && (
+              <Link
+                to={`/artist/${track.artists[0].id}`}
+                className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-dim)] transition-smooth text-sm font-medium"
+              >
+                View Artist
+              </Link>
+            )}
+            <Link
+              to={`/album/${track.album_id}`}
+              className="px-4 py-2 bg-[var(--color-bg-tertiary)] text-[var(--color-fg)] rounded-lg hover:bg-[var(--color-bg-secondary)] transition-smooth text-sm font-medium"
+            >
+              View Album
+            </Link>
+          </div>
         </div>
       }
     >
       <div className="mt-10">
         <PeriodSelector setter={setPeriod} current={period} />
       </div>
-      <div className="flex flex-wrap gap-20 mt-10">
-        <LastPlays limit={20} trackId={track.id} />
-        <ActivityGrid trackId={track.id} configurable />
+      <div className="flex flex-col lg:flex-row gap-8 mt-10">
+        <div className="flex-1">
+          <ActivityGrid trackId={track.id} configurable />
+        </div>
+        <div className="lg:w-1/3">
+          <LastPlays limit={20} trackId={track.id} />
+        </div>
       </div>
     </MediaLayout>
   );

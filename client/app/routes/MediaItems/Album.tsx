@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLoaderData, type LoaderFunctionArgs } from "react-router";
+import { useLoaderData, Link, type LoaderFunctionArgs } from "react-router";
 import TopTracks from "~/components/TopTracks";
 import { mergeAlbums, type Album } from "api/api";
 import LastPlays from "~/components/LastPlays";
@@ -60,16 +60,28 @@ export default function Album() {
               {new Date(album.first_listen * 1000).toLocaleDateString()}
             </p>
           }
+          {album.artists && album.artists.length > 0 && (
+            <Link
+              to={`/artist/${album.artists[0].id}`}
+              className="mt-2 px-4 py-2 rounded-full bg-[var(--color-primary)] hover:bg-[var(--color-primary-dim)] text-white text-sm font-medium shadow-md transition-smooth"
+            >
+              View Artist
+            </Link>
+          )}
         </div>
       }
     >
       <div className="mt-10">
         <PeriodSelector setter={setPeriod} current={period} />
       </div>
-      <div className="flex flex-wrap gap-20 mt-10">
-        <LastPlays limit={30} albumId={album.id} />
-        <TopTracks limit={12} period={period} albumId={album.id} />
-        <ActivityGrid configurable albumId={album.id} />
+      <div className="flex flex-col lg:flex-row gap-8 mt-10">
+        <div className="flex-1 space-y-8">
+          <TopTracks limit={12} period={period} albumId={album.id} />
+          <ActivityGrid configurable albumId={album.id} />
+        </div>
+        <div className="lg:w-1/3">
+          <LastPlays limit={30} albumId={album.id} />
+        </div>
       </div>
     </MediaLayout>
   );

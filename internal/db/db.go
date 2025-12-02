@@ -83,6 +83,10 @@ type DB interface {
 	GetImageSource(ctx context.Context, image uuid.UUID) (string, error)
 	AlbumsWithoutImages(ctx context.Context, from int32) ([]*models.Album, error)
 	GetExportPage(ctx context.Context, opts GetExportPageOpts) ([]*ExportItem, error)
+	// Theme
+	SaveUserTheme(ctx context.Context, userId int32, themeData []byte) error
+	GetUserTheme(ctx context.Context, userId int32) ([]byte, error)
+	// Lifecycle
 	Ping(ctx context.Context) error
 	Close(ctx context.Context)
 }

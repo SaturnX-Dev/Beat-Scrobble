@@ -10,6 +10,7 @@ import {
 
 import type { Route } from "./+types/root";
 import './themes.css'
+import "~/styles/themes.css.ts";
 import "./app.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from './providers/ThemeProvider';
@@ -35,7 +36,7 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" style={{backgroundColor: 'black'}}>
+    <html lang="en" style={{ backgroundColor: 'black' }}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -60,71 +61,71 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <>
-        <AppProvider>
-            <ThemeProvider>
-            <QueryClientProvider client={queryClient}>
-                <div className="flex-col flex sm:flex-row">
-                  <Sidebar />
-                  <div className="flex flex-col items-center mx-auto w-full ml-0 sm:ml-[40px]">
-                      <Outlet />
-                      <Footer />
-                  </div>
-                </div>
-            </QueryClientProvider>
-            </ThemeProvider>
-        </AppProvider>
+      <AppProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            <div className="flex-col flex sm:flex-row min-h-screen">
+              <Sidebar />
+              <div className="flex flex-col items-center mx-auto w-full ml-0 pb-14 sm:pb-0 sm:ml-20 transition-all duration-300">
+                <Outlet />
+                <Footer />
+              </div>
+            </div>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </AppProvider>
     </>
   );
 }
 
 export function HydrateFallback() {
-    return null
+  return null
 }
 
 export function ErrorBoundary() {
-    const error = useRouteError();
-    let message = "Oops!";
-    let details = "An unexpected error occurred.";
-    let stack: string | undefined;
+  const error = useRouteError();
+  let message = "Oops!";
+  let details = "An unexpected error occurred.";
+  let stack: string | undefined;
 
-    if (isRouteErrorResponse(error)) {
-        message = error.status === 404 ? "404" : "Error";
-        details = error.status === 404
-        ? "The requested page could not be found."
-        : error.statusText || details;
-    } else if (import.meta.env.DEV && error instanceof Error) {
-        details = error.message;
-        stack = error.stack;
-    }
+  if (isRouteErrorResponse(error)) {
+    message = error.status === 404 ? "404" : "Error";
+    details = error.status === 404
+      ? "The requested page could not be found."
+      : error.statusText || details;
+  } else if (import.meta.env.DEV && error instanceof Error) {
+    details = error.message;
+    stack = error.stack;
+  }
 
 
-    const title = `${message} - Koito`
+  const title = `${message} - Koito`
 
-    return (
-        <AppProvider>
-            <ThemeProvider>
-            <title>{title}</title>
-                <div className="flex">
-                    <Sidebar />
-                    <div className="w-full flex flex-col">
-                        <main className="pt-16 p-4 container mx-auto flex-grow">
-                            <div className="flex gap-4 items-end">
-                                <img className="w-[200px] rounded" src="../yuu.jpg" />
-                                <div>
-                                    <h1>{message}</h1>
-                                    <p>{details}</p>
-                                </div>
-                            </div>
-                            {stack && (
-                                <pre className="w-full p-4 overflow-x-auto">
-                                <code>{stack}</code>
-                                </pre>
-                            )}
-                        </main>
-                        <Footer />
-                    </div>
+  return (
+    <AppProvider>
+      <ThemeProvider>
+        <title>{title}</title>
+        <div className="flex">
+          <Sidebar />
+          <div className="w-full flex flex-col">
+            <main className="pt-16 p-4 container mx-auto flex-grow">
+              <div className="flex gap-4 items-end">
+                <img className="w-[200px] rounded" src="../yuu.jpg" />
+                <div>
+                  <h1>{message}</h1>
+                  <p>{details}</p>
                 </div>
-            </ThemeProvider>
-        </AppProvider>
-    );
+              </div>
+              {stack && (
+                <pre className="w-full p-4 overflow-x-auto">
+                  <code>{stack}</code>
+                </pre>
+              )}
+            </main>
+            <Footer />
+          </div>
+        </div>
+      </ThemeProvider>
+    </AppProvider>
+  );
 }

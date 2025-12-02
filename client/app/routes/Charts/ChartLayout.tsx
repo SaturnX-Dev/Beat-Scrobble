@@ -53,68 +53,68 @@ export default function ChartLayout<T>({
 	}, [data])
 
 	const period = currentParams.get("period") ?? "day"
-	const year = currentParams.get("year") 
+	const year = currentParams.get("year")
 	const month = currentParams.get("month")
-	const week = currentParams.get("week") 
+	const week = currentParams.get("week")
 
 	const updateParams = (params: Record<string, string | null>) => {
-        const nextParams = new URLSearchParams(location.search)
-    
-        for (const key in params) {
-            const val = params[key]
-            if (val !== null) {
-                nextParams.set(key, val)
-            } else {
-                nextParams.delete(key)
-            }
-        }
-    
-        const url = `/${endpoint}?${nextParams.toString()}`
-        navigate(url, { replace: false })
-    }
-    
+		const nextParams = new URLSearchParams(location.search)
+
+		for (const key in params) {
+			const val = params[key]
+			if (val !== null) {
+				nextParams.set(key, val)
+			} else {
+				nextParams.delete(key)
+			}
+		}
+
+		const url = `/${endpoint}?${nextParams.toString()}`
+		navigate(url, { replace: false })
+	}
+
 	const handleSetPeriod = (p: string) => {
 		updateParams({
-            period: p,
-            page: "1",
-            year: null,
-            month: null,
-            week: null,
-        })        
+			period: p,
+			page: "1",
+			year: null,
+			month: null,
+			week: null,
+		})
 	}
 	const handleSetYear = (val: string) => {
-        if (val == "") {
-            updateParams({
-                period: period,
-                page: "1",
-                year: null,
-                month: null,
-                week: null
-            })
-            return
-        }
+		if (val == "") {
+			updateParams({
+				period: period,
+				page: "1",
+				year: null,
+				month: null,
+				week: null
+			})
+			return
+		}
 		updateParams({
-            period: null,
-            page: "1",
-            year: val,
-        })  
+			period: null,
+			page: "1",
+			year: val,
+		})
 	}
 	const handleSetMonth = (val: string) => {
 		updateParams({
-            period: null,
-            page: "1",
-            year: year ?? new Date().getFullYear().toString(),
-            month: val,
-        })  
+			period: null,
+			page: "1",
+			year: year ?? new Date().getFullYear().toString(),
+			month: val,
+		})
 	}
 	const handleSetWeek = (val: string) => {
 		updateParams({
-            period: null,
-            page: "1",
-            year: year ?? new Date().getFullYear().toString(),
-            month: null,
-            week: val,
-        })  
+			period: null,
+			page: "1",
+			year: year ?? new Date().getFullYear().toString(),
+			month: null,
+			week: val,
+		})
 	}
 
 	useEffect(() => {
@@ -136,70 +136,70 @@ export default function ChartLayout<T>({
 	const monthOptions = Array.from({ length: 12 }, (_, i) => `${i + 1}`)
 	const weekOptions = Array.from({ length: 53 }, (_, i) => `${i + 1}`)
 
-    const getDateRange = (): string => {
-        let from: Date
-        let to: Date
-    
-        const now = new Date()
-        const currentYear = now.getFullYear()
-        const currentMonth = now.getMonth() // 0-indexed
-        const currentDate = now.getDate()
-    
-        if (year && month) {
-            from = new Date(parseInt(year), parseInt(month) - 1, 1)
-            to = new Date(from)
-            to.setMonth(from.getMonth() + 1)
-            to.setDate(0)
-        } else if (year && week) {
-            const base = new Date(parseInt(year), 0, 1) // Jan 1 of the year
-            const weekNumber = parseInt(week)
-            from = new Date(base)
-            from.setDate(base.getDate() + (weekNumber - 1) * 7)
-            to = new Date(from)
-            to.setDate(from.getDate() + 6)
-        } else if (year) {
-            from = new Date(parseInt(year), 0, 1)
-            to = new Date(parseInt(year), 11, 31)
-        } else {
-            switch (period) {
-                case "day":
-                    from = new Date(now)
-                    to = new Date(now)
-                    break
-                case "week":
-                    to = new Date(now)
-                    from = new Date(now)
-                    from.setDate(to.getDate() - 6)
-                    break
-                case "month":
-                    to = new Date(now)
-                    from = new Date(now)
-                    if (currentMonth === 0) {
-                        from = new Date(currentYear - 1, 11, currentDate)
-                    } else {
-                        from = new Date(currentYear, currentMonth - 1, currentDate)
-                    }
-                    break
-                case "year":
-                    to = new Date(now)
-                    from = new Date(currentYear - 1, currentMonth, currentDate)
-                    break
-                case "all_time":
-                    return "All Time"
-                default:
-                    return ""
-            }
-        }
-    
-        const formatter = new Intl.DateTimeFormat(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        })
-    
-        return `${formatter.format(from)} - ${formatter.format(to)}`
-    }
-    
+	const getDateRange = (): string => {
+		let from: Date
+		let to: Date
+
+		const now = new Date()
+		const currentYear = now.getFullYear()
+		const currentMonth = now.getMonth() // 0-indexed
+		const currentDate = now.getDate()
+
+		if (year && month) {
+			from = new Date(parseInt(year), parseInt(month) - 1, 1)
+			to = new Date(from)
+			to.setMonth(from.getMonth() + 1)
+			to.setDate(0)
+		} else if (year && week) {
+			const base = new Date(parseInt(year), 0, 1) // Jan 1 of the year
+			const weekNumber = parseInt(week)
+			from = new Date(base)
+			from.setDate(base.getDate() + (weekNumber - 1) * 7)
+			to = new Date(from)
+			to.setDate(from.getDate() + 6)
+		} else if (year) {
+			from = new Date(parseInt(year), 0, 1)
+			to = new Date(parseInt(year), 11, 31)
+		} else {
+			switch (period) {
+				case "day":
+					from = new Date(now)
+					to = new Date(now)
+					break
+				case "week":
+					to = new Date(now)
+					from = new Date(now)
+					from.setDate(to.getDate() - 6)
+					break
+				case "month":
+					to = new Date(now)
+					from = new Date(now)
+					if (currentMonth === 0) {
+						from = new Date(currentYear - 1, 11, currentDate)
+					} else {
+						from = new Date(currentYear, currentMonth - 1, currentDate)
+					}
+					break
+				case "year":
+					to = new Date(now)
+					from = new Date(currentYear - 1, currentMonth, currentDate)
+					break
+				case "all_time":
+					return "All Time"
+				default:
+					return ""
+			}
+		}
+
+		const formatter = new Intl.DateTimeFormat(undefined, {
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+		})
+
+		return `${formatter.format(from)} - ${formatter.format(to)}`
+	}
+
 
 	return (
 		<div
@@ -250,7 +250,7 @@ export default function ChartLayout<T>({
 					</div>
 				</div>
 				<p className="mt-2 text-sm text-color-fg-secondary">{getDateRange()}</p>
-				<div className="mt-10 sm:mt-20 flex mx-auto justify-between">
+				<div className="mt-10 sm:mt-20 w-full">
 					{render({
 						data,
 						page: currentPage,

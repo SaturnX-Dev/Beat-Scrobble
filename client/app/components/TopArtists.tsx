@@ -44,7 +44,7 @@ export default function TopArtists(props: Props) {
           Top Artists
         </Link>
       </h2>
-      <div className="max-w-[300px]">
+      <div className="w-full">
         <TopItemList type="artist" data={data} />
         {data.items.length < 1 ? "Nothing to show" : ""}
       </div>

@@ -1,48 +1,45 @@
-import React, { useState } from "react";
+import React from "react";
 import Popup from "../Popup";
 import { Link } from "react-router";
+import { type LucideIcon } from "lucide-react";
 
 interface Props {
-    name: string;
-    to?: string;
-    onClick: Function;
-    children: React.ReactNode;
-    modal: React.ReactNode;
-    keyHint?: React.ReactNode;
-    space?: number
-    externalLink?: boolean
-    /* true if the keyhint is an icon and not text */
-    icon?: boolean
+    to: string;
+    icon: LucideIcon;
+    isActive: boolean;
+    keyHint: string;
+    onClick?: () => void;
 }
 
-export default function SidebarItem({ externalLink, space, keyHint, name, to, children, modal, onClick, icon }: Props) {
-    const classes = "hover:cursor-pointer hover:bg-(--color-bg-tertiary) transition duration-100 rounded-md p-2 inline-block";
+export default function SidebarItem({ to, icon: Icon, isActive, keyHint, onClick }: Props) {
+    const iconSize = 24;
 
-    const popupInner = keyHint ? (
-        <div className="flex items-center gap-2">
-            <span>{name}</span>
-            {icon ?
-            <div>
-                {keyHint}
-            </div>
-            :
-            <kbd className="px-1 text-sm rounded bg-(--color-bg-tertiary) text-(--color-fg) border border-[var(--color-fg)]">
-                {keyHint}
-            </kbd>
-            }
+    const content = (
+        <div
+            className={`p-3 rounded-xl transition-all duration-150 group relative ${isActive ? 'bg-[var(--color-primary)] text-white shadow-md' : 'text-[var(--color-fg-secondary)] hover:bg-[var(--color-bg)] hover:text-[var(--color-fg)]'}`}
+        >
+            <Icon size={iconSize} className="transition-transform duration-150 group-hover:scale-110" />
+            {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />}
         </div>
-    ) : name;
+    );
+
+    const popupInner = (
+        <div className="flex items-center gap-2">
+            <span>{keyHint}</span>
+        </div>
+    );
 
     return (
-        <>
-            <Popup position="right" space={space ?? 20} inner={popupInner}>
-                {to ? (
-                    <Link target={externalLink ? "_blank" : ""} className={classes} to={to}>{children}</Link>
-                ) : (
-                    <a className={classes} onClick={() => onClick()}>{children}</a>
-                )}
-            </Popup>
-            {modal}
-        </>
+        <Popup position="right" space={10} inner={popupInner}>
+            {onClick ? (
+                <button onClick={onClick} className="block w-full text-left">
+                    {content}
+                </button>
+            ) : (
+                <Link to={to} className="block">
+                    {content}
+                </Link>
+            )}
+        </Popup>
     );
 }

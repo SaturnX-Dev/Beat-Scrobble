@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { getTopAlbums, imageUrl, type getItemsArgs } from "api/api"
-import { Link } from "react-router"
+import { getTopAlbums, type getItemsArgs } from "api/api"
+import TopItemList from "./TopItemList"
 
 interface Props {
     artistId: number
@@ -8,44 +8,57 @@ interface Props {
     period: string
 }
 
-export default function ArtistAlbums({artistId, name, period}: Props) {
+export default function ArtistAlbums({ artistId, name, period }: Props) {
 
-    const { isPending, isError, data, error } = useQuery({ 
-        queryKey: ['top-albums', {limit: 99, period: "all_time", artist_id: artistId, page: 0}], 
+    const { isPending, isError, data, error } = useQuery({
+        queryKey: ['top-albums', { limit: 99, period: "all_time", artist_id: artistId, page: 0 }],
         queryFn: ({ queryKey }) => getTopAlbums(queryKey[1] as getItemsArgs),
     })
 
     if (isPending) {
         return (
             <div>
-                <h2>Albums From This Artist</h2>
-                <p>Loading...</p>
+                <h2 className="text-sm font-semibold text-[var(--color-fg)] mb-3">Popular Albums</h2>
+                <div className="md:hidden">
+                    <TopItemList type="album" isLoading={true} limit={3} carousel={true} />
+                </div>
+                <div className="hidden md:block">
+                    <TopItemList type="album" isLoading={true} limit={4} />
+                </div>
             </div>
         )
     }
     if (isError) {
         return (
             <div>
-                <h2>Albums From This Artist</h2>
-                <p className="error">Error:{error.message}</p>
+                <h2 className="text-sm font-semibold text-[var(--color-fg)] mb-2">Popular Albums</h2>
+                <p className="text-xs text-[var(--color-error)]">Error: {error.message}</p>
+            </div>
+        )
+    }
+
+    if (!data.items || data.items.length === 0) {
+        return (
+            <div>
+                <h2 className="text-sm font-semibold text-[var(--color-fg)] mb-2">Popular Albums</h2>
+                <p className="text-xs text-[var(--color-fg-secondary)]">No albums found</p>
             </div>
         )
     }
 
     return (
         <div>
-            <h2>Albums featuring {name}</h2>
-        <div className="flex flex-wrap gap-8">
-            {data.items.map((item) => (
-                <Link to={`/album/${item.id}`}className="flex gap-2 items-start">
-                    <img src={imageUrl(item.image, "medium")} alt={item.title} style={{width: 130}} />
-                    <div className="w-[180px] flex flex-col items-start gap-1">
-                        <p>{item.title}</p>
-                        <p className="text-sm color-fg-secondary">{item.listen_count} play{item.listen_count > 1 ? 's' : ''}</p>
-                    </div>
-                </Link>
-            ))}
-        </div>
+            <h2 className="text-xs sm:text-sm font-semibold text-[var(--color-fg)] mb-2 sm:mb-3">Popular Albums</h2>
+
+            {/* Mobile: Horizontal Scroll Carousel in Card */}
+            <div className="md:hidden bg-[var(--color-bg-secondary)]/50 backdrop-blur-sm rounded-xl p-3 border border-[var(--color-bg-tertiary)]/50">
+                <TopItemList type="album" data={data} carousel={true} />
+            </div>
+
+            {/* Desktop: Grid Layout */}
+            <div className="hidden md:block">
+                <TopItemList type="album" data={data} />
+            </div>
         </div>
     )
 }

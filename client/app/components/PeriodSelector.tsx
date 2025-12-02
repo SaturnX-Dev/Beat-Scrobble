@@ -17,25 +17,25 @@ export default function PeriodSelector({ setter, current, disableCache = false }
     const setPeriod = (val: string) => {
         setter(val)
         if (!disableCache) {
-            localStorage.setItem('period_selection_'+window.location.pathname.split('/')[1], val) 
-        }  
+            localStorage.setItem('period_selection_' + window.location.pathname.split('/')[1], val)
+        }
     }
 
     useEffect(() => {
         if (!disableCache) {
             const cached = localStorage.getItem('period_selection_' + window.location.pathname.split('/')[1]);
             if (cached) {
-              setter(cached);
+                setter(cached);
             }
         }
-      }, []);
+    }, []);
 
     return (
-        <div className="flex gap-2 grow-0 text-sm sm:text-[16px]">
+        <div className="flex items-center gap-2 grow-0 text-sm sm:text-[16px]">
             <p>Showing stats for:</p>
             {periods.map((p, i) => (
                 <div key={`period_setter_${p}`}>
-                    <button 
+                    <button
                         className={`period-selector ${p === current ? 'color-fg' : 'color-fg-secondary'} ${i !== periods.length - 1 ? 'pr-2' : ''}`}
                         onClick={() => setPeriod(p)}
                         disabled={p === current}

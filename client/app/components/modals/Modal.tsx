@@ -6,13 +6,15 @@ export function Modal({
   onClose,
   children,
   maxW,
-  h
+  h,
+  className
 }: {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
   maxW?: number;
   h?: number;
+  className?: string;
 }) {
   const modalRef = useRef<HTMLDivElement>(null);
   const [shouldRender, setShouldRender] = useState(isOpen);
@@ -59,15 +61,13 @@ export function Modal({
 
   return ReactDOM.createPortal(
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 transition-opacity duration-100 ${
-        isClosing ? 'animate-fade-out' : 'animate-fade-in'
-      }`}
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 transition-opacity duration-100 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'
+        }`}
     >
       <div
         ref={modalRef}
-        className={`bg-secondary rounded-lg shadow-md p-6 w-full relative max-h-3/4 overflow-y-auto transition-all duration-100 ${
-          isClosing ? 'animate-fade-out-scale' : 'animate-fade-in-scale'
-        }`}
+        className={`glass-card rounded-2xl shadow-2xl p-6 w-full relative max-h-3/4 overflow-y-auto transition-all duration-100 border border-[var(--color-bg-tertiary)]/50 ${isClosing ? 'animate-fade-out-scale' : 'animate-fade-in-scale'
+          } ${className || ''}`}
         style={{ maxWidth: maxW ?? 600, height: h ?? '' }}
       >
         <button

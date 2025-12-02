@@ -29,18 +29,18 @@ export default function TrackChart() {
       endpoint="chart/top-tracks"
       render={({ data, page, onNext, onPrev }) => (
         <div className="flex flex-col gap-5">
-        <div className="flex gap-15 mx-auto">
-          <button className="default" onClick={onPrev} disabled={page <= 1}>
-            Prev
-          </button>
-          <button className="default" onClick={onNext} disabled={!data.has_next_page}>
-            Next
-          </button>
-        </div>
+          <div className="flex gap-15 mx-auto">
+            <button className="default" onClick={onPrev} disabled={page <= 1}>
+              Prev
+            </button>
+            <button className="default" onClick={onNext} disabled={!data.has_next_page}>
+              Next
+            </button>
+          </div>
           <TopItemList
             separators
             data={data}
-            className="w-[400px] sm:w-[600px]"
+            className="w-full"
             type="track"
           />
           <div className="flex gap-15 mx-auto">

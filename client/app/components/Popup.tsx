@@ -1,4 +1,5 @@
-import React, { type PropsWithChildren, useEffect, useState } from 'react';
+import React, { type PropsWithChildren, useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 interface Props {
     inner: React.ReactNode
@@ -10,55 +11,68 @@ interface Props {
 
 export default function Popup({ inner, position, space, extraClasses, children }: PropsWithChildren<Props>) {
     const [isVisible, setIsVisible] = useState(false);
-    const [showPopup, setShowPopup] = useState(true);
+    const [coords, setCoords] = useState({ top: 0, left: 0 });
+    const triggerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        const mediaQuery = window.matchMedia('(min-width: 640px)');
+        if (isVisible && triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect();
+            let top = 0;
+            let left = 0;
 
-        const handleChange = (e: MediaQueryListEvent) => {
-            setShowPopup(e.matches);
-        };
+            if (position === 'top') {
+                top = rect.top - space;
+                left = rect.left + rect.width / 2;
+            } else if (position === 'right') {
+                top = rect.top + rect.height / 2;
+                left = rect.right + space;
+            } else if (position === 'bottom') {
+                top = rect.bottom + space;
+                left = rect.left + rect.width / 2;
+            } else if (position === 'left') {
+                top = rect.top + rect.height / 2;
+                left = rect.left - space;
+            }
 
-        setShowPopup(mediaQuery.matches);
+            setCoords({ top, left });
+        }
+    }, [isVisible, position, space]);
 
-        mediaQuery.addEventListener('change', handleChange);
-        return () => mediaQuery.removeEventListener('change', handleChange);
-    }, []);
-
-    let positionClasses = '';
-    let spaceCSS: React.CSSProperties = {};
-    if (position === 'top') {
-        positionClasses = `top-${space} -bottom-2 -translate-y-1/2 -translate-x-1/2`;
-    } else if (position === 'right') {
-        positionClasses = `bottom-1 -translate-x-1/2`;
-        spaceCSS = { left: 70 + space };
-    }
+    const tooltip = isVisible ? (
+        <div
+            className={`
+                fixed
+                ${extraClasses ?? ''}
+                bg-[var(--color-bg)] text-[var(--color-fg)] border border-[var(--color-bg-tertiary)]
+                px-3 py-2 rounded-lg
+                transition-opacity duration-100
+                opacity-100
+                z-[9999] text-center
+                flex
+                whitespace-nowrap
+                max-w-xs
+                shadow-lg
+                pointer-events-none
+            `}
+            style={{
+                top: coords.top,
+                left: coords.left,
+                transform: position === 'top' || position === 'bottom' ? 'translateX(-50%)' : 'translateY(-50%)',
+            }}
+        >
+            {inner}
+        </div>
+    ) : null;
 
     return (
         <div
-            className="relative"
+            ref={triggerRef}
+            className="relative inline-block"
             onMouseEnter={() => setIsVisible(true)}
             onMouseLeave={() => setIsVisible(false)}
         >
             {children}
-            {showPopup && (
-                <div
-                    className={`
-                    absolute 
-                    ${positionClasses}
-                    ${extraClasses ?? ''}
-                    bg-(--color-bg) color-fg border-1 border-(--color-bg-tertiary)
-                    px-3 py-2 rounded-lg
-                    transition-opacity duration-100
-                    ${isVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-                    z-50 text-center
-                    flex
-                `}
-                    style={spaceCSS}
-                >
-                    {inner}
-                </div>
-            )}
+            {typeof document !== 'undefined' && createPortal(tooltip, document.body)}
         </div>
     );
 }

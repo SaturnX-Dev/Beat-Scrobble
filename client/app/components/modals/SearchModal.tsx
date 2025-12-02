@@ -4,7 +4,7 @@ import { search, type SearchResponse } from "api/api";
 import SearchResults from "../SearchResults";
 
 interface Props {
-    open: boolean 
+    open: boolean
     setOpen: Function
 }
 
@@ -48,11 +48,11 @@ export default function SearchModal({ open, setOpen }: Props) {
                     type="text"
                     autoFocus
                     placeholder="Search for an artist, album, or track"
-                    className="w-full mx-auto fg bg rounded p-2"
+                    className="w-full mx-auto text-[var(--color-fg)] glass-bg bg-[var(--color-bg-secondary)]/50 rounded-xl p-4 border border-[var(--color-bg-tertiary)] focus:border-[var(--color-primary)] outline-none transition-all"
                     onChange={(e) => setQuery(e.target.value)}
                 />
                 <div className="h-3/4 w-full">
-                <SearchResults data={data} onSelect={closeSearchModal}/>
+                    <SearchResults data={data} onSelect={closeSearchModal} />
                 </div>
             </div>
         </Modal>

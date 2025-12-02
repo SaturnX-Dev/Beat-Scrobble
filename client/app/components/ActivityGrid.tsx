@@ -5,7 +5,7 @@ import {
   type ListenActivityItem,
 } from "api/api";
 import Popup from "./Popup";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "~/hooks/useTheme";
 import ActivityOptsSelector from "./ActivityOptsSelector";
 import type { Theme } from "~/styles/themes.css";
@@ -47,6 +47,14 @@ export default function ActivityGrid({
   const [stepState, setStep] = useState(step);
   const [rangeState, setRange] = useState(range);
 
+  useEffect(() => {
+    setRange(range);
+  }, [range]);
+
+  useEffect(() => {
+    setStep(step);
+  }, [step]);
+
   const { isPending, isError, data, error } = useQuery({
     queryKey: [
       "listen-activity",
@@ -68,16 +76,14 @@ export default function ActivityGrid({
 
   if (isPending) {
     return (
-      <div className="w-[500px]">
-        <h2>Activity</h2>
-        <p>Loading...</p>
+      <div className="w-full h-32 flex items-center justify-center">
+        <p className="text-[var(--color-fg-secondary)] animate-pulse">Loading activity...</p>
       </div>
     );
   } else if (isError) {
     return (
-      <div className="w-[500px]">
-        <h2>Activity</h2>
-        <p className="error">Error: {error.message}</p>
+      <div className="w-full p-4 bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-error)]/20">
+        <p className="text-[var(--color-error)] text-sm">Error: {error.message}</p>
       </div>
     );
   }
@@ -147,8 +153,7 @@ export default function ActivityGrid({
   }
 
   return (
-    <div className="flex flex-col items-start">
-      <h2>Activity</h2>
+    <div className="w-full">
       {configurable ? (
         <ActivityOptsSelector
           rangeSetter={setRange}
@@ -158,46 +163,46 @@ export default function ActivityGrid({
         />
       ) : null}
 
-      {chunks.map((chunk, index) => (
-        <div
-          key={index}
-          className="w-auto grid grid-flow-col grid-rows-7 gap-[3px] md:gap-[5px] mb-4"
-        >
-          {chunk.map((item) => (
-            <div
-              key={new Date(item.start_time).toString()}
-              className="w-[10px] sm:w-[12px] h-[10px] sm:h-[12px]"
-            >
-              <Popup
-                position="top"
-                space={12}
-                extraClasses="left-2"
-                inner={`${new Date(item.start_time).toLocaleDateString()} ${
-                  item.listens
-                } plays`}
+      <div className="w-full overflow-x-auto custom-scrollbar pb-2">
+        {chunks.map((chunk, index) => (
+          <div
+            key={index}
+            className="inline-grid grid-flow-col grid-rows-7 gap-[3px] md:gap-[5px] mb-4 min-w-min"
+          >
+            {chunk.map((item) => (
+              <div
+                key={new Date(item.start_time).toString()}
+                className="w-[10px] sm:w-[12px] h-[10px] sm:h-[12px]"
               >
-                <div
-                  style={{
-                    display: "inline-block",
-                    background:
-                      item.listens > 0
-                        ? LightenDarkenColor(
+                <Popup
+                  position="top"
+                  space={12}
+                  extraClasses="left-2"
+                  inner={`${new Date(item.start_time).toLocaleDateString()} ${item.listens
+                    } plays`}
+                >
+                  <div
+                    style={{
+                      display: "inline-block",
+                      background:
+                        item.listens > 0
+                          ? LightenDarkenColor(
                             color,
                             getDarkenAmount(item.listens, 100)
                           )
-                        : "var(--color-bg-secondary)",
-                  }}
-                  className={`w-[10px] sm:w-[12px] h-[10px] sm:h-[12px] rounded-[2px] md:rounded-[3px] ${
-                    item.listens > 0
+                          : "var(--color-bg-secondary)",
+                    }}
+                    className={`w-[10px] sm:w-[12px] h-[10px] sm:h-[12px] rounded-[2px] md:rounded-[3px] ${item.listens > 0
                       ? ""
                       : "border-[0.5px] border-(--color-bg-tertiary)"
-                  }`}
-                ></div>
-              </Popup>
-            </div>
-          ))}
-        </div>
-      ))}
+                      }`}
+                  ></div>
+                </Popup>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

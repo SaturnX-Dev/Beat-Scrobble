@@ -56,7 +56,7 @@ const TopTracks = (props: Props) => {
           Top Tracks
         </Link>
       </h2>
-      <div className="max-w-[300px]">
+      <div className="w-full">
         <TopItemList type="track" data={data} />
         {data.items.length < 1 ? "Nothing to show" : ""}
       </div>

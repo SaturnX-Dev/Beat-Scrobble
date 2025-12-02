@@ -9,5 +9,8 @@ export default [
     route("/chart/top-artists", "routes/Charts/ArtistChart.tsx"),
     route("/chart/top-tracks", "routes/Charts/TrackChart.tsx"),
     route("/listens", "routes/Charts/Listens.tsx"),
+    route("/timeline", "routes/Timeline.tsx"),
+    route("/history", "routes/History.tsx"),
+    route("/profile", "routes/Profile.tsx"),
     route("/theme-helper", "routes/ThemeHelper.tsx"),
 ] satisfies RouteConfig;

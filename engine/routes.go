@@ -99,6 +99,9 @@ func bindRoutes(
 			r.Delete("/user/apikeys", handlers.DeleteApiKeyHandler(db))
 			r.Get("/user/me", handlers.MeHandler(db))
 			r.Patch("/user", handlers.UpdateUserHandler(db))
+			// Theme persistence
+			r.Get("/user/theme", handlers.GetUserThemeHandler(db))
+			r.Post("/user/theme", handlers.SaveUserThemeHandler(db))
 		})
 	})
 

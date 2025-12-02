@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  koito-db:
+    image: postgres:16
+    container_name: koito-db
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=koitodb
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    networks:
+      - koito-net
+
+  koito-app:
+    image: koito:local
+    container_name: koito-app
+    restart: always
+    ports:
+      - "4110:4110"
+    environment:
+      - KOITO_DATABASE_URL=postgres://postgres:secret@koito-db:5432/koitodb?sslmode=disable
+      - KOITO_ALLOWED_HOSTS=*
+    depends_on:
+      - koito-db
+    networks:
+      - koito-net
+
+networks:
+  koito-net:
+    driver: bridge
