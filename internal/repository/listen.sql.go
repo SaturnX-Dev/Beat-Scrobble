@@ -262,9 +262,12 @@ SELECT
   l.track_id, l.listened_at, l.client, l.user_id,
   t.title AS track_title,
   t.release_id AS release_id,
+  r.image AS release_image,
+  r.title AS release_title,
   get_artists_for_track(t.id) AS artists
 FROM listens l
 JOIN tracks_with_title t ON l.track_id = t.id
+JOIN releases_with_title r ON t.release_id = r.id
 JOIN artist_tracks at ON t.id = at.track_id 
 WHERE at.artist_id = $5
   AND l.listened_at BETWEEN $1 AND $2
@@ -281,13 +284,15 @@ type GetLastListensFromArtistPaginatedParams struct {
 }
 
 type GetLastListensFromArtistPaginatedRow struct {
-	TrackID    int32
-	ListenedAt time.Time
-	Client     *string
-	UserID     int32
-	TrackTitle string
-	ReleaseID  int32
-	Artists    []byte
+	TrackID      int32
+	ListenedAt   time.Time
+	Client       *string
+	UserID       int32
+	TrackTitle   string
+	ReleaseID    int32
+	ReleaseImage *uuid.UUID
+	ReleaseTitle string
+	Artists      []byte
 }
 
 func (q *Queries) GetLastListensFromArtistPaginated(ctx context.Context, arg GetLastListensFromArtistPaginatedParams) ([]GetLastListensFromArtistPaginatedRow, error) {
@@ -312,6 +317,8 @@ func (q *Queries) GetLastListensFromArtistPaginated(ctx context.Context, arg Get
 			&i.UserID,
 			&i.TrackTitle,
 			&i.ReleaseID,
+			&i.ReleaseImage,
+			&i.ReleaseTitle,
 			&i.Artists,
 		); err != nil {
 			return nil, err
@@ -329,9 +336,12 @@ SELECT
   l.track_id, l.listened_at, l.client, l.user_id,
   t.title AS track_title,
   t.release_id AS release_id,
+  r.image AS release_image,
+  r.title AS release_title,
   get_artists_for_track(t.id) AS artists
 FROM listens l
 JOIN tracks_with_title t ON l.track_id = t.id
+JOIN releases_with_title r ON t.release_id = r.id
 WHERE l.listened_at BETWEEN $1 AND $2
   AND t.release_id = $5
 ORDER BY l.listened_at DESC
@@ -347,13 +357,15 @@ type GetLastListensFromReleasePaginatedParams struct {
 }
 
 type GetLastListensFromReleasePaginatedRow struct {
-	TrackID    int32
-	ListenedAt time.Time
-	Client     *string
-	UserID     int32
-	TrackTitle string
-	ReleaseID  int32
-	Artists    []byte
+	TrackID      int32
+	ListenedAt   time.Time
+	Client       *string
+	UserID       int32
+	TrackTitle   string
+	ReleaseID    int32
+	ReleaseImage *uuid.UUID
+	ReleaseTitle string
+	Artists      []byte
 }
 
 func (q *Queries) GetLastListensFromReleasePaginated(ctx context.Context, arg GetLastListensFromReleasePaginatedParams) ([]GetLastListensFromReleasePaginatedRow, error) {
@@ -378,6 +390,8 @@ func (q *Queries) GetLastListensFromReleasePaginated(ctx context.Context, arg Ge
 			&i.UserID,
 			&i.TrackTitle,
 			&i.ReleaseID,
+			&i.ReleaseImage,
+			&i.ReleaseTitle,
 			&i.Artists,
 		); err != nil {
 			return nil, err
@@ -395,9 +409,12 @@ SELECT
   l.track_id, l.listened_at, l.client, l.user_id,
   t.title AS track_title,
   t.release_id AS release_id,
+  r.image AS release_image,
+  r.title AS release_title,
   get_artists_for_track(t.id) AS artists
 FROM listens l
 JOIN tracks_with_title t ON l.track_id = t.id
+JOIN releases_with_title r ON t.release_id = r.id
 WHERE l.listened_at BETWEEN $1 AND $2
   AND t.id = $5
 ORDER BY l.listened_at DESC
@@ -413,13 +430,15 @@ type GetLastListensFromTrackPaginatedParams struct {
 }
 
 type GetLastListensFromTrackPaginatedRow struct {
-	TrackID    int32
-	ListenedAt time.Time
-	Client     *string
-	UserID     int32
-	TrackTitle string
-	ReleaseID  int32
-	Artists    []byte
+	TrackID      int32
+	ListenedAt   time.Time
+	Client       *string
+	UserID       int32
+	TrackTitle   string
+	ReleaseID    int32
+	ReleaseImage *uuid.UUID
+	ReleaseTitle string
+	Artists      []byte
 }
 
 func (q *Queries) GetLastListensFromTrackPaginated(ctx context.Context, arg GetLastListensFromTrackPaginatedParams) ([]GetLastListensFromTrackPaginatedRow, error) {
@@ -444,6 +463,8 @@ func (q *Queries) GetLastListensFromTrackPaginated(ctx context.Context, arg GetL
 			&i.UserID,
 			&i.TrackTitle,
 			&i.ReleaseID,
+			&i.ReleaseImage,
+			&i.ReleaseTitle,
 			&i.Artists,
 		); err != nil {
 			return nil, err
@@ -461,9 +482,12 @@ SELECT
   l.track_id, l.listened_at, l.client, l.user_id,
   t.title AS track_title,
   t.release_id AS release_id,
+  r.image AS release_image,
+  r.title AS release_title,
   get_artists_for_track(t.id) AS artists
 FROM listens l
 JOIN tracks_with_title t ON l.track_id = t.id
+JOIN releases_with_title r ON t.release_id = r.id
 WHERE l.listened_at BETWEEN $1 AND $2
 ORDER BY l.listened_at DESC
 LIMIT $3 OFFSET $4
@@ -477,13 +501,15 @@ type GetLastListensPaginatedParams struct {
 }
 
 type GetLastListensPaginatedRow struct {
-	TrackID    int32
-	ListenedAt time.Time
-	Client     *string
-	UserID     int32
-	TrackTitle string
-	ReleaseID  int32
-	Artists    []byte
+	TrackID      int32
+	ListenedAt   time.Time
+	Client       *string
+	UserID       int32
+	TrackTitle   string
+	ReleaseID    int32
+	ReleaseImage *uuid.UUID
+	ReleaseTitle string
+	Artists      []byte
 }
 
 func (q *Queries) GetLastListensPaginated(ctx context.Context, arg GetLastListensPaginatedParams) ([]GetLastListensPaginatedRow, error) {
@@ -507,6 +533,8 @@ func (q *Queries) GetLastListensPaginated(ctx context.Context, arg GetLastListen
 			&i.UserID,
 			&i.TrackTitle,
 			&i.ReleaseID,
+			&i.ReleaseImage,
+			&i.ReleaseTitle,
 			&i.Artists,
 		); err != nil {
 			return nil, err

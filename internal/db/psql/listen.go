@@ -57,8 +57,11 @@ func (d *Psql) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*
 		for i, row := range rows {
 			t := &models.Listen{
 				Track: models.Track{
-					Title: row.TrackTitle,
-					ID:    row.TrackID,
+					Title:   row.TrackTitle,
+					ID:      row.TrackID,
+					Image:   row.ReleaseImage,
+					AlbumID: row.ReleaseID,
+					Album:   &row.ReleaseTitle,
 				},
 				Time: row.ListenedAt,
 			}
@@ -93,8 +96,11 @@ func (d *Psql) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*
 		for i, row := range rows {
 			t := &models.Listen{
 				Track: models.Track{
-					Title: row.TrackTitle,
-					ID:    row.TrackID,
+					Title:   row.TrackTitle,
+					ID:      row.TrackID,
+					Image:   row.ReleaseImage,
+					AlbumID: row.ReleaseID,
+					Album:   &row.ReleaseTitle,
 				},
 				Time: row.ListenedAt,
 			}
@@ -129,8 +135,11 @@ func (d *Psql) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*
 		for i, row := range rows {
 			t := &models.Listen{
 				Track: models.Track{
-					Title: row.TrackTitle,
-					ID:    row.TrackID,
+					Title:   row.TrackTitle,
+					ID:      row.TrackID,
+					Image:   row.ReleaseImage,
+					AlbumID: row.ReleaseID,
+					Album:   &row.ReleaseTitle,
 				},
 				Time: row.ListenedAt,
 			}
@@ -164,8 +173,11 @@ func (d *Psql) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*
 		for i, row := range rows {
 			t := &models.Listen{
 				Track: models.Track{
-					Title: row.TrackTitle,
-					ID:    row.TrackID,
+					Title:   row.TrackTitle,
+					ID:      row.TrackID,
+					Image:   row.ReleaseImage,
+					AlbumID: row.ReleaseID,
+					Album:   &row.ReleaseTitle,
 				},
 				Time: row.ListenedAt,
 			}

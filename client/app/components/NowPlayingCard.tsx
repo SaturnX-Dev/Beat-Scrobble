@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getNowPlaying } from "api/api";
+import { getNowPlaying, imageUrl } from "api/api";
 import { Link } from "react-router";
 import ArtistLinks from "./ArtistLinks";
 import { Pause, Play, SkipForward } from "lucide-react";
@@ -25,7 +25,7 @@ export default function NowPlayingCard() {
     }
 
     const track = npData.track;
-    const image = track.image || "/assets/default_img/default.png"; // Fallback image
+    const image = track.image ? imageUrl(track.image, "large") : "/assets/default_img/default.png"; // Fallback image
 
     return (
         <div className="w-full h-full min-h-[350px] md:min-h-[400px] bg-[var(--color-bg)]/70 glass-bg backdrop-blur-md rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col gap-4 md:gap-6 border border-[var(--color-bg-tertiary)]/50 relative overflow-hidden group shadow-premium">

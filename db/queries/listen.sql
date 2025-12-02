@@ -8,9 +8,12 @@ SELECT
   l.*,
   t.title AS track_title,
   t.release_id AS release_id,
+  r.image AS release_image,
+  r.title AS release_title,
   get_artists_for_track(t.id) AS artists
 FROM listens l
 JOIN tracks_with_title t ON l.track_id = t.id
+JOIN releases_with_title r ON t.release_id = r.id
 WHERE l.listened_at BETWEEN $1 AND $2
 ORDER BY l.listened_at DESC
 LIMIT $3 OFFSET $4;
@@ -20,9 +23,12 @@ SELECT
   l.*,
   t.title AS track_title,
   t.release_id AS release_id,
+  r.image AS release_image,
+  r.title AS release_title,
   get_artists_for_track(t.id) AS artists
 FROM listens l
 JOIN tracks_with_title t ON l.track_id = t.id
+JOIN releases_with_title r ON t.release_id = r.id
 JOIN artist_tracks at ON t.id = at.track_id 
 WHERE at.artist_id = $5
   AND l.listened_at BETWEEN $1 AND $2
@@ -44,9 +50,12 @@ SELECT
   l.*,
   t.title AS track_title,
   t.release_id AS release_id,
+  r.image AS release_image,
+  r.title AS release_title,
   get_artists_for_track(t.id) AS artists
 FROM listens l
 JOIN tracks_with_title t ON l.track_id = t.id
+JOIN releases_with_title r ON t.release_id = r.id
 WHERE l.listened_at BETWEEN $1 AND $2
   AND t.release_id = $5
 ORDER BY l.listened_at DESC
@@ -66,9 +75,12 @@ SELECT
   l.*,
   t.title AS track_title,
   t.release_id AS release_id,
+  r.image AS release_image,
+  r.title AS release_title,
   get_artists_for_track(t.id) AS artists
 FROM listens l
 JOIN tracks_with_title t ON l.track_id = t.id
+JOIN releases_with_title r ON t.release_id = r.id
 WHERE l.listened_at BETWEEN $1 AND $2
   AND t.id = $5
 ORDER BY l.listened_at DESC

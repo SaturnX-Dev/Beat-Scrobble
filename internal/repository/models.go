@@ -164,3 +164,10 @@ type User struct {
 	Role     Role
 	Password []byte
 }
+
+type UserTheme struct {
+	UserID    int32
+	ThemeData []byte
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}

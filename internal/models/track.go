@@ -11,6 +11,8 @@ type Track struct {
 	Duration     int32          `json:"duration"`
 	Image        *uuid.UUID     `json:"image"`
 	AlbumID      int32          `json:"album_id"`
+	Album        *string        `json:"album,omitempty"`
 	TimeListened int64          `json:"time_listened"`
 	FirstListen  int64          `json:"first_listen"`
 }
+
