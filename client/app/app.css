@@ -1,0 +1,200 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=League+Spartan:wght@100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Jost", "Inter", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --animate-fade-in-scale: fade-in-scale 0.1s ease forwards;
+    --animate-fade-out-scale: fade-out-scale 0.1s ease forwards;
+    
+    @keyframes fade-in-scale {
+      0% {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+    
+    @keyframes fade-out-scale {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+    }
+    
+    --animate-fade-in: fade-in 0.1s ease forwards;
+    --animate-fade-out: fade-out 0.1s ease forwards;
+    
+    @keyframes fade-in {
+      0% {
+        opacity: 0;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes fade-out {
+      0% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+    
+}
+
+
+
+:root {
+  --header-xl: 36px;
+  --header-lg: 28px;
+  --header-md: 22px;
+  --header-sm: 16px;
+  --header-xl-weight: 600;
+  --header-weight: 600;
+}
+
+@media (min-width: 60rem) {
+  :root {
+    --header-xl: 78px;
+    --header-lg: 28px;
+    --header-md: 22px;
+    --header-sm: 16px;
+    --header-xl-weight: 600;
+    --header-weight: 600;
+  }
+}
+
+
+html,
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  transition: background-color 0.3s ease;
+}
+select option {
+  margin: 40px;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+select {
+  background: var(--color-bg);
+}
+
+/* a {
+  color: var(--color-fg);
+}
+a:hover {
+  color: var(--color-link-hover);
+} */
+
+h1 {
+  font-family: "League Spartan";
+  font-weight: var(--header-weight);
+  font-size: var(--header-xl);
+}
+h2 {
+  font-family: "League Spartan";
+  font-weight: var(--header-weight);
+  font-size: var(--header-md);
+  margin-bottom: 0.5em;
+}
+h3 {
+  font-family: "League Spartan";
+  font-size: var(--header-sm);
+  font-weight: var(--header-weight);
+}
+h4 {
+  font-size: var(--header-md);
+}
+.header-font {
+  font-family: "League Spartan";
+}
+
+.icon-hover-fill:hover > svg > path {
+  fill: var(--color-fg-secondary);
+}
+.icon-hover-stroke:hover > svg > path {
+  stroke: var(--color-fg-secondary);
+}
+
+.link-underline:hover {
+  text-decoration: underline;
+}
+
+input[type="text"] {
+  border: 1px solid var(--color-bg);
+}
+input[type="text"]:focus {
+  outline: none;
+  border: 1px solid var(--color-fg-tertiary);
+}
+textarea {
+  border: 1px solid var(--color-bg);
+}
+textarea:focus {
+  outline: none;
+  border: 1px solid var(--color-fg-tertiary);
+}
+input[type="password"] {
+  border: 1px solid var(--color-bg);
+}
+input[type="password"]:focus {
+  outline: none;
+  border: 1px solid var(--color-fg-tertiary);
+}
+input[type="checkbox"]:focus {
+  outline: none;
+  border: 1px solid var(--color-fg-tertiary);
+}
+
+button:hover {
+  cursor: pointer;
+}
+button:disabled:hover,
+button[disabled]:hover {
+  cursor: default;
+}
+
+button.large-button {
+  background: var(--color-bg);
+}
+button.large-button:hover {
+  background: var(--color-bg-tertiary);
+}
+button.large-button:disabled:hover,
+button.large-button[disabled]:hover {
+  background: var(--color-bg);
+}
+
+button.period-selector {
+  color: var(--color-fg-secondary);
+}
+button.period-selector:disabled,
+button.period-selector[disabled]:hover {
+  color: var(--color-fg);
+}
+button.period-selector:hover {
+  color: var(--color-fg);
+}
+
+button.default {
+  color: var(--color-fg);
+}
+button.default:disabled,
+button.default[disabled]:hover {
+  color: var(--color-fg-secondary);
+}
+button.default:hover {
+  color: var(--color-fg-secondary);
+}
