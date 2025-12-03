@@ -51,99 +51,122 @@ export function ThemeSwitcher() {
         </div>
 
         <div className="space-y-6">
-          {/* Modern Palettes */}
-          <div>
-            <h3 className="text-sm font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Modern</h3>
-            <div className="grid grid-cols-2 items-center gap-2">
-              {["rose", "slate", "ocean", "forest", "sunset", "purple", "snow", "coral", "teal", "amber", "lavender"].map((themeName) => {
-                const themeData = themes[themeName];
-                if (!themeData) return null;
-                return (
-                  <ThemeOptionLegacy
-                    setTheme={(name: string) => {
-                      setTheme(name);
-                      const selectedTheme = themes[name];
-                      if (selectedTheme) {
-                        setCustom(JSON.stringify(selectedTheme, null, 2));
-                      }
-                    }}
-                    key={themeName}
-                    theme={themeData}
-                    themeName={themeName}
-                  />
-                );
-              })}
-            </div>
-          </div>
+          {/* Modern Themes - Collapsible */}
+          {(() => {
+            const [isExpanded, setIsExpanded] = useState(false);
 
-          {/* Apple Presets */}
-          <div>
-            <h3 className="text-sm font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Apple Style</h3>
-            <div className="grid grid-cols-2 items-center gap-2"
-            >
-              <ThemeOptionLegacy
-                setTheme={(name: string) => {
-                  const appleTheme = {
-                    bg: "#000000", bgSecondary: "#1c1c1e", bgTertiary: "#2c2c2e",
-                    fg: "#ffffff", fgSecondary: "#8e8e93", fgTertiary: "#48484a",
-                    primary: "#0a84ff", primaryDim: "#007aff", accent: "#5e5ce6", accentDim: "#5e5ce6",
-                    error: "#ff453a", warning: "#ff9f0a", success: "#32d74b", info: "#64d2ff"
-                  };
-                  setCustomTheme(appleTheme);
-                  setCustom(JSON.stringify(appleTheme, null, 2));
-                }}
-                theme={{
-                  bg: "#000000", bgSecondary: "#1c1c1e", bgTertiary: "#2c2c2e",
-                  fg: "#ffffff", fgSecondary: "#8e8e93", fgTertiary: "#48484a",
-                  primary: "#0a84ff", primaryDim: "#007aff", accent: "#5e5ce6", accentDim: "#5e5ce6",
-                  error: "#ff453a", warning: "#ff9f0a", success: "#32d74b", info: "#64d2ff"
-                }}
-                themeName="Apple Dark"
-              />
-              <ThemeOptionLegacy
-                setTheme={(name: string) => {
-                  const appleTheme = {
-                    bg: "#f2f2f7", bgSecondary: "#ffffff", bgTertiary: "#e5e5ea",
-                    fg: "#000000", fgSecondary: "#8e8e93", fgTertiary: "#c7c7cc",
-                    primary: "#007aff", primaryDim: "#007aff", accent: "#5856d6", accentDim: "#5856d6",
-                    error: "#ff3b30", warning: "#ff9500", success: "#34c759", info: "#5ac8fa"
-                  };
-                  setCustomTheme(appleTheme);
-                  setCustom(JSON.stringify(appleTheme, null, 2));
-                }}
-                theme={{
-                  bg: "#f2f2f7", bgSecondary: "#ffffff", bgTertiary: "#e5e5ea",
-                  fg: "#000000", fgSecondary: "#8e8e93", fgTertiary: "#c7c7cc",
-                  primary: "#007aff", primaryDim: "#007aff", accent: "#5856d6", accentDim: "#5856d6",
-                  error: "#ff3b30", warning: "#ff9500", success: "#34c759", info: "#5ac8fa"
-                }}
-                themeName="Apple Light"
-              />
-            </div>
-          </div>
+            return (
+              <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4 border border-[var(--color-bg-tertiary)]">
+                <button
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="w-full flex items-center justify-between mb-2 group"
+                >
+                  <div className="text-left">
+                    <h3 className="text-sm font-bold text-[var(--color-fg)]">Theme Palettes</h3>
+                    <p className="text-xs text-[var(--color-fg-secondary)]">Choose from curated color schemes</p>
+                  </div>
+                  <div className={`p-2 rounded-lg bg-[var(--color-bg)] text-[var(--color-fg-secondary)] group-hover:text-[var(--color-primary)] transition-colors ${isExpanded ? 'rotate-180' : ''}`}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                  </div>
+                </button>
 
-          {/* Classic Themes */}
-          <div>
-            <h3 className="text-sm font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Classic</h3>
-            <div className="grid grid-cols-2 items-center gap-2">
-              {Object.entries(themes)
-                .filter(([name]) => !["rose", "slate", "ocean", "forest", "sunset", "purple", "snow", "coral", "teal", "amber", "lavender"].includes(name))
-                .map(([name, themeData]) => (
-                  <ThemeOptionLegacy
-                    setTheme={(themeName: string) => {
-                      setTheme(themeName);
-                      const selectedTheme = themes[themeName];
-                      if (selectedTheme) {
-                        setCustom(JSON.stringify(selectedTheme, null, 2));
-                      }
-                    }}
-                    key={name}
-                    theme={themeData}
-                    themeName={name}
-                  />
-                ))}
-            </div>
-          </div>
+                {isExpanded && (
+                  <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+                    {/* Modern Themes */}
+                    <div>
+                      <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Modern</h4>
+                      <div className="grid grid-cols-2 items-center gap-2">
+                        {Object.entries(themes)
+                          .filter(([name]) => ["rose", "slate", "ocean", "forest", "sunset", "purple", "snow", "coral", "teal", "amber", "lavender"].includes(name))
+                          .map(([name, themeData]) => (
+                            <ThemeOptionLegacy
+                              setTheme={(themeName: string) => {
+                                setTheme(themeName);
+                                const selectedTheme = themes[themeName];
+                                if (selectedTheme) {
+                                  setCustom(JSON.stringify(selectedTheme, null, 2));
+                                }
+                              }}
+                              key={name}
+                              theme={themeData}
+                              themeName={name}
+                            />
+                          ))}
+                      </div>
+                    </div>
+
+                    {/* Apple Style */}
+                    <div>
+                      <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Apple Style</h4>
+                      <div className="grid grid-cols-2 items-center gap-2">
+                        <ThemeOptionLegacy
+                          setTheme={(name: string) => {
+                            const appleTheme = {
+                              bg: "#000000", bgSecondary: "#1c1c1e", bgTertiary: "#2c2c2e",
+                              fg: "#ffffff", fgSecondary: "#8e8e93", fgTertiary: "#48484a",
+                              primary: "#0a84ff", primaryDim: "#007aff", accent: "#5e5ce6", accentDim: "#5e5ce6",
+                              error: "#ff453a", warning: "#ff9f0a", success: "#32d74b", info: "#64d2ff"
+                            };
+                            setCustomTheme(appleTheme);
+                            setCustom(JSON.stringify(appleTheme, null, 2));
+                          }}
+                          theme={{
+                            bg: "#000000", bgSecondary: "#1c1c1e", bgTertiary: "#2c2c2e",
+                            fg: "#ffffff", fgSecondary: "#8e8e93", fgTertiary: "#48484a",
+                            primary: "#0a84ff", primaryDim: "#007aff", accent: "#5e5ce6", accentDim: "#5e5ce6",
+                            error: "#ff453a", warning: "#ff9f0a", success: "#32d74b", info: "#64d2ff"
+                          }}
+                          themeName="Apple Dark"
+                        />
+                        <ThemeOptionLegacy
+                          setTheme={(name: string) => {
+                            const appleTheme = {
+                              bg: "#f2f2f7", bgSecondary: "#ffffff", bgTertiary: "#e5e5ea",
+                              fg: "#000000", fgSecondary: "#8e8e93", fgTertiary: "#c7c7cc",
+                              primary: "#007aff", primaryDim: "#007aff", accent: "#5856d6", accentDim: "#5856d6",
+                              error: "#ff3b30", warning: "#ff9500", success: "#34c759", info: "#5ac8fa"
+                            };
+                            setCustomTheme(appleTheme);
+                            setCustom(JSON.stringify(appleTheme, null, 2));
+                          }}
+                          theme={{
+                            bg: "#f2f2f7", bgSecondary: "#ffffff", bgTertiary: "#e5e5ea",
+                            fg: "#000000", fgSecondary: "#8e8e93", fgTertiary: "#c7c7cc",
+                            primary: "#007aff", primaryDim: "#007aff", accent: "#5856d6", accentDim: "#5856d6",
+                            error: "#ff3b30", warning: "#ff9500", success: "#34c759", info: "#5ac8fa"
+                          }}
+                          themeName="Apple Light"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Classic Themes */}
+                    <div>
+                      <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Classic</h4>
+                      <div className="grid grid-cols-2 items-center gap-2">
+                        {Object.entries(themes)
+                          .filter(([name]) => !["rose", "slate", "ocean", "forest", "sunset", "purple", "snow", "coral", "teal", "amber", "lavender"].includes(name))
+                          .map(([name, themeData]) => (
+                            <ThemeOptionLegacy
+                              setTheme={(themeName: string) => {
+                                setTheme(themeName);
+                                const selectedTheme = themes[themeName];
+                                if (selectedTheme) {
+                                  setCustom(JSON.stringify(selectedTheme, null, 2));
+                                }
+                              }}
+                              key={name}
+                              theme={themeData}
+                              themeName={name}
+                            />
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Future Features - Advanced Section */}
           <div>
@@ -423,6 +446,68 @@ export function ThemeSwitcher() {
                         ))}
                       </div>
                     </div>
+
+                    {/* Per-Card Aura Style Selector */}
+                    {(() => {
+                      const perCardKey = 'card-aura-per-card-styles';
+                      const storedPerCard = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem(perCardKey) || '{}') : {};
+                      const [perCardStyles, setPerCardStyles] = useState<Record<string, string>>(storedPerCard);
+                      const [expandedCard, setExpandedCard] = useState<string | null>(null);
+
+                      useEffect(() => {
+                        localStorage.setItem(perCardKey, JSON.stringify(perCardStyles));
+                        // Dispatch event for CardAura components to update
+                        window.dispatchEvent(new Event('aura-settings-changed'));
+                      }, [perCardStyles]);
+
+                      return (
+                        <div className="bg-[var(--color-bg)] p-3 rounded-xl border border-[var(--color-bg-tertiary)]">
+                          <p className="text-xs font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Per-Card Styles:</p>
+                          <div className="space-y-2">
+                            {availableTargets.map(target => (
+                              <div key={target.id} className="border border-[var(--color-bg-tertiary)] rounded-lg overflow-hidden">
+                                <button
+                                  onClick={() => setExpandedCard(expandedCard === target.id ? null : target.id)}
+                                  className="w-full flex items-center justify-between p-2 hover:bg-[var(--color-bg-secondary)] transition-colors"
+                                >
+                                  <span className="text-xs text-[var(--color-fg)]">{target.name}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10px] text-[var(--color-fg-secondary)]">
+                                      {perCardStyles[target.id] || 'Default'}
+                                    </span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${expandedCard === target.id ? 'rotate-180' : ''}`}><path d="m6 9 6 6 6-6" /></svg>
+                                  </div>
+                                </button>
+                                {expandedCard === target.id && (
+                                  <div className="p-2 bg-[var(--color-bg-secondary)] grid grid-cols-3 gap-1 max-h-40 overflow-y-auto">
+                                    <button
+                                      onClick={() => {
+                                        const newStyles = { ...perCardStyles };
+                                        delete newStyles[target.id];
+                                        setPerCardStyles(newStyles);
+                                      }}
+                                      className={`p-1 text-[10px] rounded border text-center ${!perCardStyles[target.id] ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'border-[var(--color-bg-tertiary)] hover:border-[var(--color-primary)]'}`}
+                                    >
+                                      Default
+                                    </button>
+                                    {auraStyles.map(style => (
+                                      <button
+                                        key={style.id}
+                                        onClick={() => setPerCardStyles({ ...perCardStyles, [target.id]: style.id })}
+                                        className={`p-1 text-[10px] rounded border text-center truncate ${perCardStyles[target.id] === style.id ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'border-[var(--color-bg-tertiary)] hover:border-[var(--color-primary)]'}`}
+                                        title={style.name}
+                                      >
+                                        {style.name}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                     {/* Style Grid */}
                     <div className="grid grid-cols-2 gap-2">

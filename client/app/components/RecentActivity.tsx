@@ -38,7 +38,7 @@ export default function RecentActivity() {
 
     return (
         <div className="bg-[var(--color-bg-secondary)]/30 backdrop-blur-md rounded-xl sm:rounded-3xl p-4 sm:p-6 border border-[var(--color-bg-tertiary)]/50 shadow-lg relative overflow-hidden">
-            <CardAura size="large" id="recent-activity" className="opacity-20" />
+            <CardAura size="large" id="recent-activity" />
 
             <div className="flex items-center justify-between mb-4 relative z-10">
                 <h2 className="text-base sm:text-lg font-bold text-[var(--color-fg)]">Recent Activity</h2>

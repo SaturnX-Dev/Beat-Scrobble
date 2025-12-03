@@ -36,7 +36,7 @@ export default function NowPlayingCard() {
                 style={{ backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
             />
 
-            <CardAura size="large" id="now-playing" className="opacity-40" />
+            <CardAura size="large" id="now-playing" />
 
             <div className="relative z-10 flex flex-col h-full">
                 <div className="w-full aspect-square rounded-xl md:rounded-2xl overflow-hidden shadow-premium mb-4">

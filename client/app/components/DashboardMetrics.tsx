@@ -75,7 +75,7 @@ export default function DashboardMetrics() {
             {topArtist && topArtist.items.length > 0 && (
                 <Link to={`/artist/${topArtist.items[0].id}`} className="block group relative">
                     <div className="h-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md rounded-3xl p-4 md:p-5 border border-[var(--color-bg-tertiary)]/50 shadow-xl relative overflow-hidden transition-all hover:scale-[1.02] hover:shadow-2xl">
-                        <CardAura size="small" id="dashboard" className="opacity-30 group-hover:opacity-60 transition-opacity" />
+                        <CardAura size="small" id="dashboard" />
 
                         <div className="flex items-center gap-2 mb-3 relative z-10">
                             <div className="w-2 h-2 rounded-full bg-[var(--color-accent)] animate-pulse"></div>
@@ -107,7 +107,7 @@ export default function DashboardMetrics() {
             {topAlbum && topAlbum.items.length > 0 && (
                 <Link to={`/album/${topAlbum.items[0].id}`} className="block group relative">
                     <div className="h-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md rounded-3xl p-4 md:p-5 border border-[var(--color-bg-tertiary)]/50 shadow-xl relative overflow-hidden transition-all hover:scale-[1.02] hover:shadow-2xl">
-                        <CardAura size="small" id="dashboard" className="opacity-30 group-hover:opacity-60 transition-opacity" />
+                        <CardAura size="small" id="dashboard" />
 
                         <div className="flex items-center gap-2 mb-3 relative z-10">
                             <div className="w-2 h-2 rounded-full bg-[var(--color-info)] animate-pulse"></div>

@@ -8,7 +8,7 @@ interface CardAuraProps {
 }
 
 export default function CardAura({ size = 'small', id, className = '' }: CardAuraProps) {
-    const auraClass = useAuraStyle(size);
+    const auraClass = useAuraStyle(size, id);
     const [isEnabled, setIsEnabled] = useState(true);
     const [isTargetEnabled, setIsTargetEnabled] = useState(true);
 

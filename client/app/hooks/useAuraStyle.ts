@@ -1,9 +1,19 @@
 import { useState, useEffect } from 'react';
 
-export function useAuraStyle(size: 'small' | 'large' = 'small') {
+export function useAuraStyle(size: 'small' | 'large' = 'small', cardId?: string) {
     const [auraClass, setAuraClass] = useState(() => {
         if (typeof window === 'undefined') return 'card-aura-small';
 
+        // Check for per-card style first
+        if (cardId) {
+            const perCardStyles = JSON.parse(localStorage.getItem('card-aura-per-card-styles') || '{}');
+            if (perCardStyles[cardId]) {
+                const suffix = size === 'small' ? '-small' : '';
+                return `card-aura-${perCardStyles[cardId]}${suffix}`;
+            }
+        }
+
+        // Fall back to global style
         const stored = localStorage.getItem('card-aura-style');
         const style = stored || 'circle';
         const suffix = size === 'small' ? '-small' : '';
@@ -15,6 +25,17 @@ export function useAuraStyle(size: 'small' | 'large' = 'small') {
 
     useEffect(() => {
         const updateAuraClass = () => {
+            // Check for per-card style first
+            if (cardId) {
+                const perCardStyles = JSON.parse(localStorage.getItem('card-aura-per-card-styles') || '{}');
+                if (perCardStyles[cardId]) {
+                    const suffix = size === 'small' ? '-small' : '';
+                    setAuraClass(`card-aura-${perCardStyles[cardId]}${suffix}`);
+                    return;
+                }
+            }
+
+            // Fall back to global style
             const style = document.documentElement.getAttribute('data-aura-style') || 'circle';
             const suffix = size === 'small' ? '-small' : '';
 
@@ -46,8 +67,17 @@ export function useAuraStyle(size: 'small' | 'large' = 'small') {
             attributeFilter: ['data-aura-style'],
         });
 
-        return () => observer.disconnect();
-    }, [size]);
+        // Listen for per-card style changes
+        const handleStorageChange = () => {
+            updateAuraClass();
+        };
+        window.addEventListener('aura-settings-changed', handleStorageChange);
+
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('aura-settings-changed', handleStorageChange);
+        };
+    }, [size, cardId]);
 
     return auraClass;
 }

@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { imageUrl, type Album, type Artist, type Track, type PaginatedResponse } from "api/api";
 import { Skeleton } from "~/components/ui/skeleton";
+import CardAura from "./CardAura";
 
 type Item = Album | Track | Artist;
 
@@ -100,9 +101,10 @@ function ItemCard({ item, type, index }: { item: Item; type: "album" | "track" |
     return (
         <Link
             to={link}
-            className="group glass-card rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--color-bg-tertiary)] hover:border-[var(--color-primary)]/50 transition-all hover:shadow-lg hover:-translate-y-1 block h-full flex flex-col"
+            className="group glass-card rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--color-bg-tertiary)] hover:border-[var(--color-primary)]/50 transition-all hover:shadow-lg hover:-translate-y-1 block h-full flex flex-col relative"
         >
-            <div className="w-full aspect-square bg-[var(--color-bg-tertiary)] overflow-hidden relative">
+            <CardAura size="small" id="top-items" className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <div className="w-full aspect-square bg-[var(--color-bg-tertiary)] overflow-hidden relative z-10">
                 <img
                     loading="lazy"
                     src={imageUrl(image, "medium")}
