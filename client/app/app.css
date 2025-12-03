@@ -113,7 +113,15 @@
 .card-aura-blob-2,
 .card-aura-diamond,
 .card-aura-wave,
-.card-aura-square {
+.card-aura-square,
+.card-aura-circle-small,
+.card-aura-ellipse-h-small,
+.card-aura-ellipse-v-small,
+.card-aura-blob-1-small,
+.card-aura-blob-2-small,
+.card-aura-diamond-small,
+.card-aura-wave-small,
+.card-aura-square-small {
   position: absolute;
   background: radial-gradient(circle at 30% 20%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
   filter: blur(16px);
