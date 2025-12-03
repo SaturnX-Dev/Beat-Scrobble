@@ -77,7 +77,7 @@ export default function MobileBottomNav() {
                                     <div className="p-2.5 rounded-xl bg-[var(--color-bg-secondary)] flex-shrink-0">
                                         <Settings size={20} strokeWidth={2.5} />
                                     </div>
-                                    <div className="flex-1 min-w-0">
+                                    <div className="flex-1 text-left min-w-0">
                                         <span className="font-semibold text-base block leading-tight">Settings</span>
                                         <span className="text-xs text-[var(--color-fg-secondary)] truncate block">App preferences</span>
                                     </div>

@@ -260,6 +260,57 @@ export function ThemeSwitcher() {
           </div>
         </div>
 
+        {/* Card Aura Variation Selector */}
+        <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4 border border-[var(--color-bg-tertiary)]">
+          <h3 className="text-sm font-bold text-[var(--color-fg)] mb-3">Card Aura Style</h3>
+          <p className="text-xs text-[var(--color-fg-secondary)] mb-3">Choose the aura shape for cards with visual effects</p>
+
+          {(() => {
+            const storageKey = 'card-aura-style';
+            const storedValue = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
+            const [selectedAura, setSelectedAura] = useState(storedValue || 'circle');
+
+            const auraStyles = [
+              { id: 'circle', name: 'Circle', desc: 'Classic circular aura' },
+              { id: 'ellipse-h', name: 'Horizontal', desc: 'Wide ellipse' },
+              { id: 'ellipse-v', name: 'Vertical', desc: 'Tall ellipse' },
+              { id: 'blob-1', name: 'Blob 1', desc: 'Organic shape 1' },
+              { id: 'blob-2', name: 'Blob 2', desc: 'Organic shape 2' },
+              { id: 'diamond', name: 'Diamond', desc: 'Rotated diamond' },
+              { id: 'wave', name: 'Wave', desc: 'Horizontal wave' },
+              { id: 'square', name: 'Square', desc: 'Soft square' },
+            ];
+
+            useEffect(() => {
+              if (typeof window !== 'undefined') {
+                document.documentElement.setAttribute('data-aura-style', selectedAura);
+              }
+            }, [selectedAura]);
+
+            return (
+              <div className="grid grid-cols-2 gap-2">
+                {auraStyles.map((style) => (
+                  <button
+                    key={style.id}
+                    onClick={() => {
+                      setSelectedAura(style.id);
+                      localStorage.setItem(storageKey, style.id);
+                      document.documentElement.setAttribute('data-aura-style', style.id);
+                    }}
+                    className={`p-3 rounded-xl border text-left transition-all ${selectedAura === style.id
+                        ? 'bg-[var(--color-primary)]/10 border-[var(--color-primary)] shadow-sm'
+                        : 'bg-[var(--color-bg)] border-[var(--color-bg-tertiary)] hover:border-[var(--color-primary)]/50'
+                      }`}
+                  >
+                    <p className="text-sm font-bold text-[var(--color-fg)]">{style.name}</p>
+                    <p className="text-xs text-[var(--color-fg-secondary)] mt-0.5">{style.desc}</p>
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+
         <div className="bg-[var(--color-bg-secondary)] rounded-xl p-6 border border-[var(--color-bg-tertiary)]">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
