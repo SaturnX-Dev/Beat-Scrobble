@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import ArtistLinks from "./ArtistLinks";
 import { Pause, Play, SkipForward } from "lucide-react";
 import { AsyncButton } from "./AsyncButton";
+import CardAura from "./CardAura";
 
 export default function NowPlayingCard() {
     const { data: npData, isLoading } = useQuery({
@@ -34,6 +35,8 @@ export default function NowPlayingCard() {
                 className="absolute inset-0 z-0 opacity-20 blur-3xl scale-110 transition-transform duration-700 group-hover:scale-125"
                 style={{ backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
             />
+
+            <CardAura size="large" id="now-playing" className="opacity-40" />
 
             <div className="relative z-10 flex flex-col h-full">
                 <div className="w-full aspect-square rounded-xl md:rounded-2xl overflow-hidden shadow-premium mb-4">

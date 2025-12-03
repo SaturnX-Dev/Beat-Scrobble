@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { Clock, PlayCircle, Calendar } from "lucide-react";
 import { useState } from "react";
 import { useAuraStyle } from "~/hooks/useAuraStyle";
+import CardAura from "./CardAura";
 
 export default function DashboardMetrics() {
     const [period, setPeriod] = useState<"day" | "week" | "month" | "year" | "all_time">("week");
@@ -36,7 +37,7 @@ export default function DashboardMetrics() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-6 w-full h-full">
             {/* Stats Card - Large with Aura */}
             <div className="col-span-1 md:col-span-2 lg:col-span-1 bg-[var(--color-bg-secondary)]/50 backdrop-blur-md rounded-3xl p-5 md:p-6 border border-[var(--color-bg-tertiary)]/50 shadow-xl relative overflow-hidden group">
-                <div className={auraClass} style={{ top: '50%', left: '50%' }}></div>
+                <CardAura size="small" id="dashboard" />
 
                 <div className="flex items-center justify-between mb-4 relative z-10">
                     <p className="text-xs uppercase tracking-wider text-[var(--color-fg-secondary)] font-semibold flex items-center gap-2">
@@ -74,7 +75,7 @@ export default function DashboardMetrics() {
             {topArtist && topArtist.items.length > 0 && (
                 <Link to={`/artist/${topArtist.items[0].id}`} className="block group relative">
                     <div className="h-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md rounded-3xl p-4 md:p-5 border border-[var(--color-bg-tertiary)]/50 shadow-xl relative overflow-hidden transition-all hover:scale-[1.02] hover:shadow-2xl">
-                        <div className={`${auraClass} opacity-30 group-hover:opacity-60 transition-opacity`} style={{ top: '50%', left: '50%' }}></div>
+                        <CardAura size="small" id="dashboard" className="opacity-30 group-hover:opacity-60 transition-opacity" />
 
                         <div className="flex items-center gap-2 mb-3 relative z-10">
                             <div className="w-2 h-2 rounded-full bg-[var(--color-accent)] animate-pulse"></div>
@@ -106,7 +107,7 @@ export default function DashboardMetrics() {
             {topAlbum && topAlbum.items.length > 0 && (
                 <Link to={`/album/${topAlbum.items[0].id}`} className="block group relative">
                     <div className="h-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md rounded-3xl p-4 md:p-5 border border-[var(--color-bg-tertiary)]/50 shadow-xl relative overflow-hidden transition-all hover:scale-[1.02] hover:shadow-2xl">
-                        <div className={`${auraClass} opacity-30 group-hover:opacity-60 transition-opacity`} style={{ top: '50%', left: '50%' }}></div>
+                        <CardAura size="small" id="dashboard" className="opacity-30 group-hover:opacity-60 transition-opacity" />
 
                         <div className="flex items-center gap-2 mb-3 relative z-10">
                             <div className="w-2 h-2 rounded-full bg-[var(--color-info)] animate-pulse"></div>
