@@ -29,14 +29,16 @@ export default function Home() {
       <div className="w-full max-w-[1800px] px-4 md:px-6 mt-6 md:mt-8">
 
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
+        <div className="mb-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-[var(--color-fg)] tracking-tight">Control Room</h1>
             <p className="text-[var(--color-fg-secondary)] mt-1">Welcome back to your music dashboard</p>
           </div>
-          {/* Global Period Selector for Charts */}
-          <div className="flex items-center gap-2 bg-[var(--color-bg-secondary)]/50 p-1 rounded-xl border border-[var(--color-bg-tertiary)]">
-            <span className="text-xs font-bold text-[var(--color-fg-secondary)] px-3">Charts:</span>
+        </div>
+
+        {/* Global Period Selector for Charts - Desktop Only */}
+        <div className="hidden md:flex justify-center mb-8">
+          <div className="bg-[var(--color-bg-secondary)]/50 p-1 rounded-xl border border-[var(--color-bg-tertiary)]">
             <PeriodSelector setter={setPeriod} current={period} />
           </div>
         </div>
@@ -56,6 +58,13 @@ export default function Home() {
 
           {/* Center Column (6 cols) - Main Charts */}
           <div className="md:col-span-8 lg:col-span-6 space-y-8">
+
+            {/* Period Selector - Mobile Only */}
+            <div className="md:hidden flex justify-center">
+              <div className="bg-[var(--color-bg-secondary)]/50 p-1 rounded-xl border border-[var(--color-bg-tertiary)] w-full">
+                <PeriodSelector setter={setPeriod} current={period} />
+              </div>
+            </div>
 
             {/* Top Artists */}
             <section>

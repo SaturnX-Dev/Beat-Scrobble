@@ -31,21 +31,18 @@ export default function PeriodSelector({ setter, current, disableCache = false }
     }, []);
 
     return (
-        <div className="flex items-center gap-2 grow-0 text-sm sm:text-[16px]">
-            <p>Showing stats for:</p>
-            {periods.map((p, i) => (
-                <div key={`period_setter_${p}`}>
-                    <button
-                        className={`period-selector ${p === current ? 'color-fg' : 'color-fg-secondary'} ${i !== periods.length - 1 ? 'pr-2' : ''}`}
-                        onClick={() => setPeriod(p)}
-                        disabled={p === current}
-                    >
-                        {periodDisplay(p)}
-                    </button>
-                    <span className="color-fg-secondary">
-                        {i !== periods.length - 1 ? '|' : ''}
-                    </span>
-                </div>
+        <div className="flex gap-1 sm:gap-2 bg-[var(--color-bg-secondary)] p-1 rounded-full border border-[var(--color-bg-tertiary)]">
+            {periods.map((p) => (
+                <button
+                    key={`period_setter_${p}`}
+                    className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${p === current
+                            ? 'bg-[var(--color-primary)] text-white shadow-sm'
+                            : 'text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)]'
+                        }`}
+                    onClick={() => setPeriod(p)}
+                >
+                    {periodDisplay(p)}
+                </button>
             ))}
         </div>
     )

@@ -1,15 +1,16 @@
 import { useLoaderData, Link } from "react-router";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getLastListens, type Listen, type PaginatedResponse } from "api/api";
+import { useState, useRef, useCallback } from "react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { getLastListens, getStats, getTopArtists, imageUrl, type Listen, type PaginatedResponse } from "api/api";
 import { BarChart3, Calendar, TrendingUp, Clock } from "lucide-react";
 import ActivityGrid from "~/components/ActivityGrid";
 import TimelineView from "~/components/TimelineView";
+import PeriodSelector from "~/components/PeriodSelector";
 
 export async function clientLoader() {
     try {
         const initialListens = await getLastListens({
-            limit: 100,
+            limit: 50,
             page: 1,
             period: "week"
         });
@@ -22,7 +23,7 @@ export async function clientLoader() {
                 total_record_count: 0,
                 has_next_page: false,
                 current_page: 1,
-                items_per_page: 100
+                items_per_page: 50
             }
         };
     }
@@ -30,34 +31,70 @@ export async function clientLoader() {
 
 export default function History() {
     const { initialListens } = useLoaderData<{ initialListens: PaginatedResponse<Listen> }>();
-    const [period, setPeriod] = useState<"week" | "month" | "year" | "all">("week");
+    const [period, setPeriod] = useState<string>("week");
 
-    const { data: historyData } = useQuery({
+    // Infinite Query for Listens
+    const {
+        data: historyData,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = useInfiniteQuery({
         queryKey: ['history', period],
-        queryFn: () => getLastListens({
-            limit: 100,
-            period: period === 'all' ? 'all_time' : period,
-            page: 1
+        queryFn: ({ pageParam = 1 }) => getLastListens({
+            limit: 50,
+            period: period,
+            page: pageParam
         }),
-        initialData: period === 'week' ? { ...initialListens, items: initialListens.items } : undefined
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => lastPage.has_next_page ? lastPage.current_page + 1 : undefined,
+        initialData: period === 'week' ? { pages: [initialListens], pageParams: [1] } : undefined
     });
 
-    const listens = historyData?.items || initialListens.items;
+    const listens = historyData?.pages.flatMap(page => page.items) || initialListens.items;
 
-    // Calculate statistics
-    const totalScrobbles = listens.length;
-    const uniqueArtists = new Set(listens.map(l => l.track.artists?.[0]?.name).filter(Boolean));
-    const uniqueTracks = new Set(listens.map(l => l.track.id));
-    const totalMinutes = totalScrobbles * 3.5;
+    // Stats
+    const { data: statsData } = useQuery({
+        queryKey: ['stats', period],
+        queryFn: () => getStats(period)
+    });
+
+    // Top Artists
+    const { data: topArtistsData } = useQuery({
+        queryKey: ['top-artists', period],
+        queryFn: () => getTopArtists({ limit: 5, period, page: 1 })
+    });
+
+    // Stats calculations
+    const totalScrobbles = statsData?.listen_count || 0;
+    const uniqueArtists = statsData?.artist_count || 0;
+    const uniqueTracks = statsData?.track_count || 0;
+    const totalMinutes = statsData?.minutes_listened || 0;
     const totalHours = Math.floor(totalMinutes / 60);
 
-    const artistCounts = listens.reduce((acc, listen) => {
-        const artist = listen.track.artists?.[0]?.name || 'Unknown';
-        acc[artist] = (acc[artist] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>);
+    // Activity Grid Range
+    const getActivityRange = (p: string) => {
+        switch (p) {
+            case 'week': return 7;
+            case 'month': return 30;
+            case 'year': return 365;
+            case 'all_time': return 365;
+            default: return 182;
+        }
+    };
 
-    const topArtist = Object.entries(artistCounts).sort((a, b) => b[1] - a[1])[0];
+    // Intersection Observer for Infinite Scroll
+    const observer = useRef<IntersectionObserver | null>(null);
+    const lastElementRef = useCallback((node: HTMLDivElement) => {
+        if (isFetchingNextPage) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasNextPage) {
+                fetchNextPage();
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [isFetchingNextPage, hasNextPage, fetchNextPage]);
 
     return (
         <main className="min-h-screen w-full bg-gradient-to-b from-[var(--color-bg-secondary)] to-[var(--color-bg)] px-4 py-6 md:py-12 pb-20">
@@ -73,20 +110,7 @@ export default function History() {
 
                 {/* Period Selector */}
                 <div className="flex justify-center mb-6 md:mb-8">
-                    <div className="flex gap-1 sm:gap-2 bg-[var(--color-bg-secondary)] p-1 rounded-full border border-[var(--color-bg-tertiary)]">
-                        {['week', 'month', 'year', 'all'].map((p) => (
-                            <button
-                                key={p}
-                                onClick={() => setPeriod(p as any)}
-                                className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${period === p
-                                    ? 'bg-[var(--color-primary)] text-white shadow-sm'
-                                    : 'text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)]'
-                                    }`}
-                            >
-                                {p.charAt(0).toUpperCase() + p.slice(1)}
-                            </button>
-                        ))}
-                    </div>
+                    <PeriodSelector setter={setPeriod} current={period} />
                 </div>
 
                 {/* Stats Cards */}
@@ -108,7 +132,7 @@ export default function History() {
                             </div>
                             <p className="text-xs sm:text-sm text-[var(--color-fg-secondary)]">Artists</p>
                         </div>
-                        <p className="text-xl sm:text-3xl font-bold text-[var(--color-fg)]">{uniqueArtists.size}</p>
+                        <p className="text-xl sm:text-3xl font-bold text-[var(--color-fg)]">{uniqueArtists.toLocaleString()}</p>
                     </div>
 
                     <div className="glass-card p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-[var(--color-bg-tertiary)]">
@@ -118,7 +142,7 @@ export default function History() {
                             </div>
                             <p className="text-xs sm:text-sm text-[var(--color-fg-secondary)]">Tracks</p>
                         </div>
-                        <p className="text-xl sm:text-3xl font-bold text-[var(--color-fg)]">{uniqueTracks.size}</p>
+                        <p className="text-xl sm:text-3xl font-bold text-[var(--color-fg)]">{uniqueTracks.toLocaleString()}</p>
                     </div>
 
                     <div className="glass-card p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-[var(--color-bg-tertiary)]">
@@ -132,18 +156,28 @@ export default function History() {
                     </div>
                 </div>
 
-                {/* Top Artist Card */}
-                {topArtist && (
+                {/* Top Artists */}
+                {topArtistsData && topArtistsData.items.length > 0 && (
                     <div className="glass-card p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-[var(--color-bg-tertiary)] mb-6 md:mb-8">
-                        <h2 className="text-lg sm:text-xl font-bold text-[var(--color-fg)] mb-3 sm:mb-4">Top Artist This Period</h2>
-                        <div className="flex items-center gap-3 sm:gap-4">
-                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-[var(--color-primary)]/20 flex items-center justify-center">
-                                <span className="text-xl sm:text-2xl">🎵</span>
-                            </div>
-                            <div>
-                                <p className="text-lg sm:text-2xl font-bold text-[var(--color-fg)]">{topArtist[0]}</p>
-                                <p className="text-xs sm:text-sm text-[var(--color-fg-secondary)]">{topArtist[1]} plays</p>
-                            </div>
+                        <h2 className="text-lg sm:text-xl font-bold text-[var(--color-fg)] mb-3 sm:mb-4">Top Artists This Period</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                            {topArtistsData.items.map((artist, index) => (
+                                <Link to={`/artist/${artist.id}`} key={artist.id} className="flex items-center gap-3 sm:gap-4 p-2 rounded-xl hover:bg-[var(--color-bg-tertiary)]/50 transition-colors group">
+                                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden bg-[var(--color-primary)]/20 flex-shrink-0">
+                                        {artist.image ? (
+                                            <img src={imageUrl(artist.image, "small")} alt={artist.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-xl sm:text-2xl">🎵</div>
+                                        )}
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-sm sm:text-base font-bold text-[var(--color-fg)] truncate group-hover:text-[var(--color-primary)] transition-colors">
+                                            {index + 1}. {artist.name}
+                                        </p>
+                                        <p className="text-xs sm:text-sm text-[var(--color-fg-secondary)]">{artist.listen_count} plays</p>
+                                    </div>
+                                </Link>
+                            ))}
                         </div>
                     </div>
                 )}
@@ -151,7 +185,7 @@ export default function History() {
                 {/* Activity Heatmap */}
                 <div className="glass-card p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-[var(--color-bg-tertiary)] mb-6 md:mb-8">
                     <h2 className="text-lg sm:text-xl font-bold text-[var(--color-fg)] mb-3 sm:mb-4">Listening Activity</h2>
-                    <ActivityGrid />
+                    <ActivityGrid range={getActivityRange(period)} />
                 </div>
 
                 {/* Listening Timeline - Integrated */}
@@ -167,10 +201,14 @@ export default function History() {
                     </div>
                     <div className="max-h-[600px] overflow-y-auto custom-scrollbar pr-1 sm:pr-2">
                         <TimelineView
-                            listens={listens.slice(0, 20)}
+                            listens={listens}
                             compact={true}
                             showFilters={false}
                         />
+                        {/* Loader / Sentinel */}
+                        <div ref={lastElementRef} className="h-10 flex items-center justify-center">
+                            {isFetchingNextPage && <p className="text-sm text-[var(--color-fg-secondary)]">Loading more...</p>}
+                        </div>
                     </div>
                 </div>
             </div>
