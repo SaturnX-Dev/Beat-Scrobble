@@ -22,9 +22,14 @@ You can view my public instance with my listening data at https://koito.mnrva.de
 
 ## Screenshots
 
-![screenshot one](assets/screenshot1.png)
-![screenshot two](assets/screenshot2.png)
-![screenshot three](assets/screenshot3.png)
+![screenshot one](assets/Original1.png)
+![screenshot two](assets/Original2.png)
+![screenshot three](assets/Original3.png)
+![screenshot four ](assets/Mod1.png)
+![screenshot five](assets/Mod2.png)
+![screenshot six](assets/Mod3.png)
+![screenshot seven](assets/Themes.png)
+
 
 ## Installation
 
