@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "../../hooks/useTheme";
 import themes from "~/styles/themes.css";
 import ThemeOptionLegacy, { ThemeOption } from "./ThemeOption";
@@ -228,12 +228,12 @@ export function ThemeSwitcher() {
               const initialChecked = storedValue === 'true' || (storedValue === null && element === 'Buttons');
               const [checked, setChecked] = useState(initialChecked);
 
-              // Apply on mount
-              useState(() => {
-                if (typeof window !== 'undefined' && initialChecked) {
+              // Apply on mount using useEffect
+              useEffect(() => {
+                if (typeof window !== 'undefined' && checked) {
                   document.documentElement.style.setProperty(`--primary-dim-${element.toLowerCase()}`, 'var(--color-primary-dim)');
                 }
-              });
+              }, []);
 
               return (
                 <label key={element} className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)]/30 cursor-pointer">
