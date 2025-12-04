@@ -49,7 +49,7 @@ export default function NowPlayingCard() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 track_name: npData.track.title,
-                artist_name: npData.track.artists[0]?.name || "Unknown Artist",
+                artist_name: npData.track.artists?.[0]?.name || "Unknown Artist",
                 album_name: (npData.track.album as any)?.title || npData.track.album || "Unknown Album"
             })
         })
@@ -78,7 +78,7 @@ export default function NowPlayingCard() {
         );
     }
 
-    if (!npData || !npData.currently_playing) {
+    if (!npData || !npData.currently_playing || !npData.track) {
         return null;
     }
 
@@ -124,7 +124,7 @@ export default function NowPlayingCard() {
                         </Link>
                     </h2>
                     <div className="text-base md:text-lg text-[var(--color-fg-secondary)] line-clamp-1">
-                        <ArtistLinks artists={track.artists} />
+                        {track.artists && <ArtistLinks artists={track.artists} />}
                     </div>
                 </div>
 

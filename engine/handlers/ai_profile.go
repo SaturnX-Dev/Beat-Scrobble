@@ -81,6 +81,7 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 
 		apiKey, _ := prefs["openrouter_api_key"].(string)
 		enabled, _ := prefs["profile_critique_enabled"].(bool)
+		aiModel, _ := prefs["ai_model"].(string)
 
 		if !enabled {
 			utils.WriteError(w, "profile critique is disabled", http.StatusForbidden)
@@ -90,6 +91,10 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 		if apiKey == "" {
 			utils.WriteError(w, "openrouter api key not configured", http.StatusBadRequest)
 			return
+		}
+
+		if aiModel == "" {
+			aiModel = "google/gemini-2.0-flash-001"
 		}
 
 		// 3. Check Cache
@@ -139,7 +144,7 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 		userMessage := fmt.Sprintf("Stats for %s: %s. Top Artists: %s.", periodStr, statsSummary, topArtistsStr)
 
 		openRouterReq := OpenRouterRequest{
-			Model: "google/gemini-2.0-flash-001",
+			Model: aiModel,
 			Messages: []Message{
 				{Role: "system", Content: systemPrompt},
 				{Role: "user", Content: userMessage},

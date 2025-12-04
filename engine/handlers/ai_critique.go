@@ -76,6 +76,7 @@ func GetAICritiqueHandler(store db.DB) http.HandlerFunc {
 		apiKey, _ := prefs["openrouter_api_key"].(string)
 		customPrompt, _ := prefs["ai_critique_prompt"].(string)
 		enabled, _ := prefs["ai_critique_enabled"].(bool)
+		aiModel, _ := prefs["ai_model"].(string)
 
 		if !enabled {
 			utils.WriteError(w, "ai critique is disabled", http.StatusForbidden)
@@ -91,12 +92,16 @@ func GetAICritiqueHandler(store db.DB) http.HandlerFunc {
 			customPrompt = "Give a short, witty, and slightly pretentious music critique of this song. Keep it under 50 words."
 		}
 
+		if aiModel == "" {
+			aiModel = "google/gemini-2.0-flash-001"
+		}
+
 		// 3. Call OpenRouter API
 		systemPrompt := fmt.Sprintf("You are a music critic. %s", customPrompt)
 		userMessage := fmt.Sprintf("Critique the song '%s' by '%s' from the album '%s'.", req.TrackName, req.ArtistName, req.AlbumName)
 
 		openRouterReq := OpenRouterRequest{
-			Model: "google/gemini-2.0-flash-001", // Cost-effective default
+			Model: aiModel,
 			Messages: []Message{
 				{Role: "system", Content: systemPrompt},
 				{Role: "user", Content: userMessage},

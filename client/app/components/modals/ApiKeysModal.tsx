@@ -23,6 +23,7 @@ export default function ApiKeysModal() {
     // AI Critique Preferences
     const { getPreference, savePreference } = usePreferences();
     const [openRouterKey, setOpenRouterKey] = useState('');
+    const [aiModel, setAiModel] = useState('');
     const [aiPrompt, setAiPrompt] = useState('');
     const [aiEnabled, setAiEnabled] = useState(false);
     const [profileCritiqueEnabled, setProfileCritiqueEnabled] = useState(false);
@@ -30,6 +31,7 @@ export default function ApiKeysModal() {
 
     useEffect(() => {
         setOpenRouterKey(getPreference('openrouter_api_key', ''));
+        setAiModel(getPreference('ai_model', 'google/gemini-2.0-flash-001'));
         setAiPrompt(getPreference('ai_critique_prompt', 'Give a short, witty, and slightly pretentious music critique of this song. Keep it under 50 words.'));
         setAiEnabled(getPreference('ai_critique_enabled', false));
         setProfileCritiqueEnabled(getPreference('profile_critique_enabled', false));
@@ -37,6 +39,7 @@ export default function ApiKeysModal() {
 
     const handleSaveAIConfig = () => {
         savePreference('openrouter_api_key', openRouterKey);
+        savePreference('ai_model', aiModel);
         savePreference('ai_critique_prompt', aiPrompt);
         savePreference('ai_critique_enabled', aiEnabled);
         savePreference('profile_critique_enabled', profileCritiqueEnabled);
@@ -219,6 +222,21 @@ export default function ApiKeysModal() {
                             </div>
                             <p className="text-xs text-[var(--color-fg-secondary)]">
                                 Get a key at <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer" className="underline hover:text-[var(--color-primary)]">openrouter.ai</a>
+                            </p>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium">AI Model</label>
+                            <input
+                                type="text"
+                                placeholder="google/gemini-2.0-flash-001"
+                                className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-md p-2 text-sm"
+                                value={aiModel}
+                                onChange={(e) => setAiModel(e.target.value)}
+                                onBlur={handleSaveAIConfig}
+                            />
+                            <p className="text-xs text-[var(--color-fg-secondary)]">
+                                Specify the OpenRouter model ID to use (default: google/gemini-2.0-flash-001)
                             </p>
                         </div>
 
