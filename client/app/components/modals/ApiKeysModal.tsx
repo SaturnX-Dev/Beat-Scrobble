@@ -25,18 +25,21 @@ export default function ApiKeysModal() {
     const [openRouterKey, setOpenRouterKey] = useState('');
     const [aiPrompt, setAiPrompt] = useState('');
     const [aiEnabled, setAiEnabled] = useState(false);
+    const [profileCritiqueEnabled, setProfileCritiqueEnabled] = useState(false);
     const [showOpenRouterKey, setShowOpenRouterKey] = useState(false);
 
     useEffect(() => {
         setOpenRouterKey(getPreference('openrouter_api_key', ''));
         setAiPrompt(getPreference('ai_critique_prompt', 'Give a short, witty, and slightly pretentious music critique of this song. Keep it under 50 words.'));
         setAiEnabled(getPreference('ai_critique_enabled', false));
+        setProfileCritiqueEnabled(getPreference('profile_critique_enabled', false));
     }, [getPreference]);
 
     const handleSaveAIConfig = () => {
         savePreference('openrouter_api_key', openRouterKey);
         savePreference('ai_critique_prompt', aiPrompt);
         savePreference('ai_critique_enabled', aiEnabled);
+        savePreference('profile_critique_enabled', profileCritiqueEnabled);
     };
 
     const handleRevealAndSelect = (key: string) => {
@@ -194,65 +197,92 @@ export default function ApiKeysModal() {
                                 <h3 className="font-semibold">AI Music Critique</h3>
                                 <p className="text-sm text-[var(--color-fg-secondary)]">Powered by OpenRouter</p>
                             </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm font-medium text-[var(--color-fg-secondary)]">Enable</span>
+                        </div>
+
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-medium">OpenRouter API Key</label>
+                            <div className="flex gap-2">
+                                <input
+                                    type={showOpenRouterKey ? "text" : "password"}
+                                    placeholder="sk-or-..."
+                                    className="flex-grow bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-md p-2 text-sm"
+                                    value={openRouterKey}
+                                    onChange={(e) => setOpenRouterKey(e.target.value)}
+                                    onBlur={handleSaveAIConfig}
+                                />
                                 <button
-                                    onClick={() => {
-                                        const newValue = !aiEnabled;
-                                        setAiEnabled(newValue);
-                                        savePreference('ai_critique_enabled', newValue);
-                                    }}
-                                    className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${aiEnabled ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-bg-tertiary)]'
-                                        }`}
+                                    onClick={() => setShowOpenRouterKey(!showOpenRouterKey)}
+                                    className="p-2 rounded-md bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-secondary)]"
                                 >
-                                    <div
-                                        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${aiEnabled ? 'translate-x-5' : 'translate-x-0'
-                                            }`}
-                                    />
+                                    {showOpenRouterKey ? <EyeOff size={16} /> : <Eye size={16} />}
                                 </button>
                             </div>
+                            <p className="text-xs text-[var(--color-fg-secondary)]">
+                                Get a key at <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer" className="underline hover:text-[var(--color-primary)]">openrouter.ai</a>
+                            </p>
+                        </div>
+
+                        <hr className="border-[var(--color-bg-tertiary)] my-2" />
+
+                        {/* Now Playing Critique Toggle */}
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <span className="text-sm font-medium">Now Playing Critique</span>
+                                <p className="text-xs text-[var(--color-fg-secondary)]">Show critique on the Now Playing card</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    const newValue = !aiEnabled;
+                                    setAiEnabled(newValue);
+                                    savePreference('ai_critique_enabled', newValue);
+                                }}
+                                className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${aiEnabled ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-bg-tertiary)]'
+                                    }`}
+                            >
+                                <div
+                                    className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${aiEnabled ? 'translate-x-5' : 'translate-x-0'
+                                        }`}
+                                />
+                            </button>
                         </div>
 
                         {aiEnabled && (
-                            <>
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-medium">OpenRouter API Key</label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type={showOpenRouterKey ? "text" : "password"}
-                                            placeholder="sk-or-..."
-                                            className="flex-grow bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-md p-2 text-sm"
-                                            value={openRouterKey}
-                                            onChange={(e) => setOpenRouterKey(e.target.value)}
-                                            onBlur={handleSaveAIConfig}
-                                        />
-                                        <button
-                                            onClick={() => setShowOpenRouterKey(!showOpenRouterKey)}
-                                            className="p-2 rounded-md bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-secondary)]"
-                                        >
-                                            {showOpenRouterKey ? <EyeOff size={16} /> : <Eye size={16} />}
-                                        </button>
-                                    </div>
-                                    <p className="text-xs text-[var(--color-fg-secondary)]">
-                                        Get a key at <a href="https://openrouter.ai/keys" target="_blank" rel="noreferrer" className="underline hover:text-[var(--color-primary)]">openrouter.ai</a>
-                                    </p>
-                                </div>
-
-                                <div className="flex flex-col gap-2">
-                                    <label className="text-sm font-medium">Critique Prompt</label>
-                                    <textarea
-                                        className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-md p-2 text-sm min-h-[80px]"
-                                        value={aiPrompt}
-                                        onChange={(e) => setAiPrompt(e.target.value)}
-                                        onBlur={handleSaveAIConfig}
-                                        placeholder="Enter instructions for the AI critic..."
-                                    />
-                                    <p className="text-xs text-[var(--color-fg-secondary)]">
-                                        Customize how the AI critiques your music.
-                                    </p>
-                                </div>
-                            </>
+                            <div className="flex flex-col gap-2 mt-2">
+                                <label className="text-sm font-medium">Now Playing Prompt</label>
+                                <textarea
+                                    className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-md p-2 text-sm min-h-[60px]"
+                                    value={aiPrompt}
+                                    onChange={(e) => setAiPrompt(e.target.value)}
+                                    onBlur={handleSaveAIConfig}
+                                    placeholder="Enter instructions for the AI critic..."
+                                />
+                            </div>
                         )}
+
+                        <hr className="border-[var(--color-bg-tertiary)] my-2" />
+
+                        {/* Profile Critique Toggle */}
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <span className="text-sm font-medium">Profile Critique</span>
+                                <p className="text-xs text-[var(--color-fg-secondary)]">Show critique on your Profile page</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    const newValue = !profileCritiqueEnabled;
+                                    setProfileCritiqueEnabled(newValue);
+                                    savePreference('profile_critique_enabled', newValue);
+                                }}
+                                className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${profileCritiqueEnabled ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-bg-tertiary)]'
+                                    }`}
+                            >
+                                <div
+                                    className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${profileCritiqueEnabled ? 'translate-x-5' : 'translate-x-0'
+                                        }`}
+                                />
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>
