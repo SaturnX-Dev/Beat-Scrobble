@@ -40,7 +40,7 @@ export default defineConfig({
     }),
   ],
 
-  site: "https://saturnx-dev.github.io",
+  site: "https://saturnx-dev.gith             ub.io",
   base: "/Beat-Scrobble",
 
   vite: {
