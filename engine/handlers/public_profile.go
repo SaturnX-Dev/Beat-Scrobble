@@ -1,5 +1,9 @@
 package handlers
 
+// [BEAT SCROBBLE EXCLUSIVE]
+// This file is part of the Beat Scrobble project.
+// Copyright (c) 2025 SaturnX-Dev
+
 import (
 	"encoding/json"
 	"net/http"

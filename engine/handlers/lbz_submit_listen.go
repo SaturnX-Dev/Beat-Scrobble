@@ -1,5 +1,9 @@
 package handlers
 
+// [LEGACY CORE]
+// This file is part of the original Koito core.
+// Maintained by Beat Scrobble for backward compatibility.
+
 import (
 	"bytes"
 	"encoding/json"
