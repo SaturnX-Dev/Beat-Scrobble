@@ -108,9 +108,16 @@ func bindRoutes(
 			// AI Critique
 			r.Post("/ai/critique", handlers.GetAICritiqueHandler(db))
 			r.Post("/ai/profile-critique", handlers.GetAIProfileCritiqueHandler(db))
+			// AI Playlists
+			r.Post("/ai/generate-playlist", handlers.GenerateAIPlaylistHandler(db))
+			// Yearly Recap
+			r.Get("/yearly-recap", handlers.YearlyRecapHandler(db))
 			// Import/Backup
 			r.Post("/import", handlers.ImportHandler(db))
 		})
+
+		// Public routes (no auth required)
+		r.Get("/public/profile/{username}", handlers.PublicProfileHandler(db))
 	})
 
 	r.Route("/apis/listenbrainz/1", func(r chi.Router) {
