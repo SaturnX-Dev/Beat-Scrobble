@@ -42,17 +42,27 @@ export default function Profile() {
     const { getPreference, savePreference } = usePreferences();
     const { user } = useAppContext();
 
-    // Check if it's December 15 and show recap popup
+    // Check if recap should be visible (Dec 15-21 only)
+    const isRecapPeriod = () => {
+        const today = new Date();
+        const month = today.getMonth(); // 11 = December
+        const day = today.getDate();
+        return month === 11 && day >= 15 && day <= 21;
+    };
+
+    const showRecapButton = isRecapPeriod();
+
+    // Check if it's December 15-21 and show recap popup
     useEffect(() => {
         const today = new Date();
         const currentYear = today.getFullYear();
-        const isRecapDay = today.getMonth() === 11 && today.getDate() === 15; // Dec 15
         const hasViewedRecap = getPreference(`yearly_recap_viewed_${currentYear}`, false);
 
-        if (isRecapDay && !hasViewedRecap) {
+        if (isRecapPeriod() && !hasViewedRecap) {
             setRecapOpen(true);
         }
     }, [getPreference]);
+
 
     // Infinite Query for Listens (History timeline)
     const {
@@ -164,13 +174,15 @@ export default function Profile() {
                             <Share2 size={16} />
                             Share Profile
                         </button>
-                        <button
-                            onClick={() => setRecapOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl text-sm font-medium transition-all"
-                        >
-                            <Gift size={16} />
-                            {new Date().getFullYear()} Recap
-                        </button>
+                        {showRecapButton && (
+                            <button
+                                onClick={() => setRecapOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl text-sm font-medium transition-all"
+                            >
+                                <Gift size={16} />
+                                {new Date().getFullYear()} Recap
+                            </button>
+                        )}
                     </div>
 
                     {/* Share URL popup */}
