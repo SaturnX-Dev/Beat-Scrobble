@@ -1,93 +1,82 @@
-import { useQuery } from "@tanstack/react-query";
-import { getTopArtists, getTopAlbums, getStats, imageUrl } from "api/api";
+import { useState, useEffect } from "react";
 import { Link } from "react-router";
-import { Calendar, Edit, MapPin, User, BarChart3 } from "lucide-react";
-import { useAppContext } from "~/providers/AppProvider";
-import { useState } from "react";
+import { BarChart3, User } from "lucide-react";
+import ProfileCritique from "~/components/ProfileCritique";
+import PeriodSelector from "~/components/PeriodSelector";
+import { imageUrl } from "api/api";
+
+interface Stats {
+    listen_count: number;
+    artist_count: number;
+    album_count: number;
+    track_count: number;
+}
+
+interface Artist {
+    id: number;
+    name: string;
+    image: string;
+}
+
+interface Album {
+    id: number;
+    title: string;
+    image: string;
+    listen_count: number;
+    artists: { name: string }[];
+}
+
+interface TopArtistsResponse {
+    items: Artist[];
+}
+
+interface TopAlbumsResponse {
+    items: Album[];
+}
 
 export default function Profile() {
-    const { user } = useAppContext();
-    const [period, setPeriod] = useState<"week" | "month" | "year" | "all_time">("month");
+    const [period, setPeriod] = useState("week");
+    const [stats, setStats] = useState<Stats | null>(null);
+    const [topArtists, setTopArtists] = useState<TopArtistsResponse | null>(null);
+    const [topAlbum, setTopAlbum] = useState<TopAlbumsResponse | null>(null);
 
-    const { data: topArtists } = useQuery({
-        queryKey: ["profile-top-artists", { limit: 5, period }],
-        queryFn: () => getTopArtists({ limit: 5, period, page: 1 }),
-    });
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const statsRes = await fetch(`/apis/web/v1/stats?period=${period}`);
+                const statsData = await statsRes.json();
+                setStats(statsData);
 
-    const { data: topAlbum } = useQuery({
-        queryKey: ["profile-top-album", { limit: 1, period }],
-        queryFn: () => getTopAlbums({ limit: 1, period, page: 1 }),
-    });
+                const artistsRes = await fetch(`/apis/web/v1/top-artists?period=${period}&limit=5`);
+                const artistsData = await artistsRes.json();
+                setTopArtists(artistsData);
 
-    const { data: stats } = useQuery({
-        queryKey: ["profile-stats", period],
-        queryFn: () => getStats(period === "all_time" ? "all_time" : period),
-    });
+                const albumsRes = await fetch(`/apis/web/v1/top-albums?period=${period}&limit=1`);
+                const albumsData = await albumsRes.json();
+                setTopAlbum(albumsData);
+            } catch (error) {
+                console.error("Failed to fetch profile data", error);
+            }
+        };
+
+        fetchData();
+    }, [period]);
 
     return (
-        <main className="flex flex-col items-center w-full min-h-screen pb-20">
-            {/* Banner */}
-            <div className="w-full h-48 sm:h-64 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] relative">
-                <div className="absolute inset-0 bg-black/20"></div>
-            </div>
-
-            <div className="w-full max-w-5xl px-4 -mt-16 sm:-mt-20 relative z-10 flex flex-col gap-6 sm:gap-8">
-
-                {/* Profile Header */}
-                <div className="flex flex-col md:flex-row items-center md:items-end gap-4 sm:gap-6">
-                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-4 border-[var(--color-bg)] bg-[var(--color-bg-secondary)] overflow-hidden shadow-xl flex-shrink-0">
-                        <div className="w-full h-full flex items-center justify-center bg-[var(--color-bg-tertiary)] text-[var(--color-fg-tertiary)]">
-                            <User size={48} className="sm:w-16 sm:h-16" />
-                        </div>
+        <main className="flex flex-grow justify-center pb-8 w-full min-h-screen">
+            <div className="w-full max-w-[1200px] px-4 md:px-6 mt-6 md:mt-8">
+                {/* Header Section */}
+                <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h1 className="text-3xl md:text-4xl font-bold text-[var(--color-fg)] tracking-tight">Profile</h1>
+                        <p className="text-[var(--color-fg-secondary)] mt-1">Your listening habits and stats</p>
                     </div>
-                    <div className="flex-1 pb-2 sm:pb-4 text-center md:text-left">
-                        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--color-fg)]">{user?.username || "User"}</h1>
-                        <div className="flex items-center justify-center md:justify-start gap-3 sm:gap-4 mt-2 text-[var(--color-fg-secondary)] flex-wrap">
-                            <span className="flex items-center gap-1 text-xs sm:text-sm">
-                                <MapPin size={14} /> Earth
-                            </span>
-                            <span className="flex items-center gap-1 text-xs sm:text-sm">
-                                <Calendar size={14} /> Joined 2024
-                            </span>
-                        </div>
-                        <p className="mt-3 sm:mt-4 text-sm sm:text-base text-[var(--color-fg-secondary)] max-w-2xl">
-                            Music enthusiast. Exploring new sounds every day.
-                        </p>
-                    </div>
-                    <div className="pb-2 sm:pb-4">
-                        <button className="flex items-center gap-2 px-4 py-2 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-tertiary)] rounded-lg border border-[var(--color-bg-tertiary)] transition-colors text-sm">
-                            <Edit size={16} />
-                            <span>Edit Profile</span>
-                        </button>
+                    <div className="bg-[var(--color-bg-secondary)]/50 p-1 rounded-xl border border-[var(--color-bg-tertiary)]">
+                        <PeriodSelector setter={setPeriod} current={period} />
                     </div>
                 </div>
 
-                {/* Period Selector */}
-                <div className="flex justify-center sm:justify-start">
-                    <div className="flex gap-1 sm:gap-2 bg-[var(--color-bg-secondary)] p-1 rounded-full border border-[var(--color-bg-tertiary)]">
-                        {[
-                            { label: "Week", value: "week" },
-                            { label: "Month", value: "month" },
-                            { label: "Year", value: "year" },
-                            { label: "All Time", value: "all_time" }
-                        ].map((p) => (
-                            <button
-                                key={p.value}
-                                onClick={() => setPeriod(p.value as any)}
-                                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${period === p.value
-                                    ? 'bg-[var(--color-primary)] text-white shadow-sm'
-                                    : 'text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)]'
-                                    }`}
-                            >
-                                {p.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Content Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
                     {/* Left Column - Stats */}
                     <div className="flex flex-col gap-4 sm:gap-6">
                         <div className="glass-card rounded-xl p-4 sm:p-6 border border-[var(--color-bg-tertiary)]">
@@ -114,6 +103,9 @@ export default function Profile() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* AI Critique Block */}
+                        <ProfileCritique period={period as "week" | "month" | "year" | "all_time"} />
                     </div>
 
                     {/* Center/Right Column - Highlights */}

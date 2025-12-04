@@ -107,6 +107,7 @@ func bindRoutes(
 			r.Post("/user/preferences", handlers.SaveUserPreferencesHandler(db))
 			// AI Critique
 			r.Post("/ai/critique", handlers.GetAICritiqueHandler(db))
+			r.Post("/ai/profile-critique", handlers.GetAIProfileCritiqueHandler(db))
 		})
 	})
 

@@ -194,17 +194,22 @@ export default function ApiKeysModal() {
                                 <h3 className="font-semibold">AI Music Critique</h3>
                                 <p className="text-sm text-[var(--color-fg-secondary)]">Powered by OpenRouter</p>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <label className="text-sm font-medium">Enable</label>
-                                <input
-                                    type="checkbox"
-                                    checked={aiEnabled}
-                                    onChange={(e) => {
-                                        setAiEnabled(e.target.checked);
-                                        savePreference('ai_critique_enabled', e.target.checked);
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm font-medium text-[var(--color-fg-secondary)]">Enable</span>
+                                <button
+                                    onClick={() => {
+                                        const newValue = !aiEnabled;
+                                        setAiEnabled(newValue);
+                                        savePreference('ai_critique_enabled', newValue);
                                     }}
-                                    className="w-4 h-4 accent-[var(--color-primary)]"
-                                />
+                                    className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${aiEnabled ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-bg-tertiary)]'
+                                        }`}
+                                >
+                                    <div
+                                        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${aiEnabled ? 'translate-x-5' : 'translate-x-0'
+                                            }`}
+                                    />
+                                </button>
                             </div>
                         </div>
 
