@@ -406,3 +406,22 @@ func (d *Psql) GetArtistsForTrack(ctx context.Context, id int32) ([]*models.Arti
 
 	return artists, nil
 }
+
+func (d *Psql) UpdateArtistMetadata(ctx context.Context, opts db.UpdateArtistMetadataParams) error {
+	l := logger.FromContext(ctx)
+	if opts.ID == 0 {
+		return errors.New("UpdateArtistMetadata: artist id not specified")
+	}
+	l.Debug().Msgf("Updating metadata for artist %d", opts.ID)
+	err := d.q.UpdateArtistMetadata(ctx, repository.UpdateArtistMetadataParams{
+		ID:         opts.ID,
+		Genres:     opts.Genres,
+		Bio:        opts.Bio,
+		Popularity: opts.Popularity,
+		SpotifyID:  opts.SpotifyID,
+	})
+	if err != nil {
+		return fmt.Errorf("UpdateArtistMetadata: %w", err)
+	}
+	return nil
+}

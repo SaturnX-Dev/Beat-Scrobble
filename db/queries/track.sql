@@ -42,6 +42,8 @@ SELECT
     t.title,
     t.musicbrainz_id,
     t.release_id,
+    t.popularity,
+    t.spotify_id,
     r.image,
     COUNT(*) AS listen_count,
     get_artists_for_track(t.id) AS artists
@@ -49,7 +51,7 @@ FROM listens l
 JOIN tracks_with_title t ON l.track_id = t.id
 JOIN releases r ON t.release_id = r.id
 WHERE l.listened_at BETWEEN $1 AND $2
-GROUP BY t.id, t.title, t.musicbrainz_id, t.release_id, r.image
+GROUP BY t.id, t.title, t.musicbrainz_id, t.release_id, r.image, t.popularity, t.spotify_id
 ORDER BY listen_count DESC, t.id
 LIMIT $3 OFFSET $4;
 
@@ -59,6 +61,8 @@ SELECT
     t.title,
     t.musicbrainz_id,
     t.release_id,
+    t.popularity,
+    t.spotify_id,
     r.image,
     COUNT(*) AS listen_count,
     get_artists_for_track(t.id) AS artists
@@ -68,7 +72,7 @@ JOIN releases r ON t.release_id = r.id
 JOIN artist_tracks at ON at.track_id = t.id
 WHERE l.listened_at BETWEEN $1 AND $2
   AND at.artist_id = $5
-GROUP BY t.id, t.title, t.musicbrainz_id, t.release_id, r.image
+GROUP BY t.id, t.title, t.musicbrainz_id, t.release_id, r.image, t.popularity, t.spotify_id
 ORDER BY listen_count DESC, t.id
 LIMIT $3 OFFSET $4;
 
@@ -78,6 +82,8 @@ SELECT
     t.title,
     t.musicbrainz_id,
     t.release_id,
+    t.popularity,
+    t.spotify_id,
     r.image,
     COUNT(*) AS listen_count,
     get_artists_for_track(t.id) AS artists
@@ -86,7 +92,7 @@ JOIN tracks_with_title t ON l.track_id = t.id
 JOIN releases r ON t.release_id = r.id
 WHERE l.listened_at BETWEEN $1 AND $2
   AND t.release_id = $5
-GROUP BY t.id, t.title, t.musicbrainz_id, t.release_id, r.image
+GROUP BY t.id, t.title, t.musicbrainz_id, t.release_id, r.image, t.popularity, t.spotify_id
 ORDER BY listen_count DESC, t.id
 LIMIT $3 OFFSET $4;
 
@@ -124,6 +130,12 @@ WHERE release_id = $1;
 -- name: UpdateTrackPrimaryArtist :exec
 UPDATE artist_tracks SET is_primary = $3
 WHERE artist_id = $1 AND track_id = $2;
+
+-- name: UpdateTrackMetadata :exec
+UPDATE tracks SET 
+  popularity = $2,
+  spotify_id = $3
+WHERE id = $1;
 
 -- name: DeleteTrack :exec
 DELETE FROM tracks WHERE id = $1;

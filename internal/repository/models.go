@@ -68,6 +68,10 @@ type Artist struct {
 	MusicBrainzID *uuid.UUID
 	Image         *uuid.UUID
 	ImageSource   pgtype.Text
+	Genres        []string
+	Bio           pgtype.Text
+	Popularity    pgtype.Int4
+	SpotifyID     pgtype.Text
 }
 
 type ArtistAlias struct {
@@ -94,6 +98,10 @@ type ArtistsWithName struct {
 	MusicBrainzID *uuid.UUID
 	Image         *uuid.UUID
 	ImageSource   pgtype.Text
+	Genres        []string
+	Bio           pgtype.Text
+	Popularity    pgtype.Int4
+	SpotifyID     pgtype.Text
 	Name          string
 }
 
@@ -110,6 +118,10 @@ type Release struct {
 	Image          *uuid.UUID
 	VariousArtists bool
 	ImageSource    pgtype.Text
+	Genres         []string
+	ReleaseDate    pgtype.Text
+	Popularity     pgtype.Int4
+	SpotifyID      pgtype.Text
 }
 
 type ReleaseAlias struct {
@@ -125,6 +137,10 @@ type ReleasesWithTitle struct {
 	Image          *uuid.UUID
 	VariousArtists bool
 	ImageSource    pgtype.Text
+	Genres         []string
+	ReleaseDate    pgtype.Text
+	Popularity     pgtype.Int4
+	SpotifyID      pgtype.Text
 	Title          string
 }
 
@@ -141,6 +157,8 @@ type Track struct {
 	MusicBrainzID *uuid.UUID
 	Duration      int32
 	ReleaseID     int32
+	Popularity    pgtype.Int4
+	SpotifyID     pgtype.Text
 }
 
 type TrackAlias struct {
@@ -155,6 +173,8 @@ type TracksWithTitle struct {
 	MusicBrainzID *uuid.UUID
 	Duration      int32
 	ReleaseID     int32
+	Popularity    pgtype.Int4
+	SpotifyID     pgtype.Text
 	Title         string
 }
 
@@ -163,6 +183,13 @@ type User struct {
 	Username string
 	Role     Role
 	Password []byte
+}
+
+type UserPreference struct {
+	UserID          int32
+	PreferencesData []byte
+	CreatedAt       pgtype.Timestamp
+	UpdatedAt       pgtype.Timestamp
 }
 
 type UserTheme struct {

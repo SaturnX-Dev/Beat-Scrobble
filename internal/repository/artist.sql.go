@@ -79,7 +79,7 @@ func (q *Queries) DeleteConflictingArtistTracks(ctx context.Context, arg DeleteC
 
 const getArtist = `-- name: GetArtist :one
 SELECT 
-  a.id, a.musicbrainz_id, a.image, a.image_source, a.name,
+  a.id, a.musicbrainz_id, a.image, a.image_source, a.genres, a.bio, a.popularity, a.spotify_id, a.name,
   array_agg(aa.alias)::text[] AS aliases
 FROM artists_with_name a
 LEFT JOIN artist_aliases aa ON a.id = aa.artist_id
@@ -92,6 +92,10 @@ type GetArtistRow struct {
 	MusicBrainzID *uuid.UUID
 	Image         *uuid.UUID
 	ImageSource   pgtype.Text
+	Genres        []string
+	Bio           pgtype.Text
+	Popularity    pgtype.Int4
+	SpotifyID     pgtype.Text
 	Name          string
 	Aliases       []string
 }
@@ -104,6 +108,10 @@ func (q *Queries) GetArtist(ctx context.Context, id int32) (GetArtistRow, error)
 		&i.MusicBrainzID,
 		&i.Image,
 		&i.ImageSource,
+		&i.Genres,
+		&i.Bio,
+		&i.Popularity,
+		&i.SpotifyID,
 		&i.Name,
 		&i.Aliases,
 	)
@@ -111,7 +119,7 @@ func (q *Queries) GetArtist(ctx context.Context, id int32) (GetArtistRow, error)
 }
 
 const getArtistByImage = `-- name: GetArtistByImage :one
-SELECT id, musicbrainz_id, image, image_source FROM artists WHERE image = $1 LIMIT 1
+SELECT id, musicbrainz_id, image, image_source, genres, bio, popularity, spotify_id FROM artists WHERE image = $1 LIMIT 1
 `
 
 func (q *Queries) GetArtistByImage(ctx context.Context, image *uuid.UUID) (Artist, error) {
@@ -122,13 +130,17 @@ func (q *Queries) GetArtistByImage(ctx context.Context, image *uuid.UUID) (Artis
 		&i.MusicBrainzID,
 		&i.Image,
 		&i.ImageSource,
+		&i.Genres,
+		&i.Bio,
+		&i.Popularity,
+		&i.SpotifyID,
 	)
 	return i, err
 }
 
 const getArtistByMbzID = `-- name: GetArtistByMbzID :one
 SELECT 
-  a.id, a.musicbrainz_id, a.image, a.image_source, a.name,
+  a.id, a.musicbrainz_id, a.image, a.image_source, a.genres, a.bio, a.popularity, a.spotify_id, a.name,
   array_agg(aa.alias)::text[] AS aliases
 FROM artists_with_name a
 LEFT JOIN artist_aliases aa ON a.id = aa.artist_id
@@ -141,6 +153,10 @@ type GetArtistByMbzIDRow struct {
 	MusicBrainzID *uuid.UUID
 	Image         *uuid.UUID
 	ImageSource   pgtype.Text
+	Genres        []string
+	Bio           pgtype.Text
+	Popularity    pgtype.Int4
+	SpotifyID     pgtype.Text
 	Name          string
 	Aliases       []string
 }
@@ -153,6 +169,10 @@ func (q *Queries) GetArtistByMbzID(ctx context.Context, musicbrainzID *uuid.UUID
 		&i.MusicBrainzID,
 		&i.Image,
 		&i.ImageSource,
+		&i.Genres,
+		&i.Bio,
+		&i.Popularity,
+		&i.SpotifyID,
 		&i.Name,
 		&i.Aliases,
 	)
@@ -162,7 +182,7 @@ func (q *Queries) GetArtistByMbzID(ctx context.Context, musicbrainzID *uuid.UUID
 const getArtistByName = `-- name: GetArtistByName :one
 WITH artist_with_aliases AS (
   SELECT 
-    a.id, a.musicbrainz_id, a.image, a.image_source, a.name,
+    a.id, a.musicbrainz_id, a.image, a.image_source, a.genres, a.bio, a.popularity, a.spotify_id, a.name,
     COALESCE(array_agg(aa.alias), '{}')::text[] AS aliases
   FROM artists_with_name a
   LEFT JOIN artist_aliases aa ON a.id = aa.artist_id
@@ -171,7 +191,7 @@ WITH artist_with_aliases AS (
   )
   GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name
 )
-SELECT id, musicbrainz_id, image, image_source, name, aliases FROM artist_with_aliases
+SELECT id, musicbrainz_id, image, image_source, genres, bio, popularity, spotify_id, name, aliases FROM artist_with_aliases
 `
 
 type GetArtistByNameRow struct {
@@ -179,6 +199,10 @@ type GetArtistByNameRow struct {
 	MusicBrainzID *uuid.UUID
 	Image         *uuid.UUID
 	ImageSource   pgtype.Text
+	Genres        []string
+	Bio           pgtype.Text
+	Popularity    pgtype.Int4
+	SpotifyID     pgtype.Text
 	Name          string
 	Aliases       []string
 }
@@ -191,6 +215,10 @@ func (q *Queries) GetArtistByName(ctx context.Context, alias string) (GetArtistB
 		&i.MusicBrainzID,
 		&i.Image,
 		&i.ImageSource,
+		&i.Genres,
+		&i.Bio,
+		&i.Popularity,
+		&i.SpotifyID,
 		&i.Name,
 		&i.Aliases,
 	)
@@ -199,7 +227,7 @@ func (q *Queries) GetArtistByName(ctx context.Context, alias string) (GetArtistB
 
 const getReleaseArtists = `-- name: GetReleaseArtists :many
 SELECT 
-  a.id, a.musicbrainz_id, a.image, a.image_source, a.name,
+  a.id, a.musicbrainz_id, a.image, a.image_source, a.genres, a.bio, a.popularity, a.spotify_id, a.name,
   ar.is_primary as is_primary
 FROM artists_with_name a
 LEFT JOIN artist_releases ar ON a.id = ar.artist_id
@@ -212,6 +240,10 @@ type GetReleaseArtistsRow struct {
 	MusicBrainzID *uuid.UUID
 	Image         *uuid.UUID
 	ImageSource   pgtype.Text
+	Genres        []string
+	Bio           pgtype.Text
+	Popularity    pgtype.Int4
+	SpotifyID     pgtype.Text
 	Name          string
 	IsPrimary     pgtype.Bool
 }
@@ -230,6 +262,10 @@ func (q *Queries) GetReleaseArtists(ctx context.Context, releaseID int32) ([]Get
 			&i.MusicBrainzID,
 			&i.Image,
 			&i.ImageSource,
+			&i.Genres,
+			&i.Bio,
+			&i.Popularity,
+			&i.SpotifyID,
 			&i.Name,
 			&i.IsPrimary,
 		); err != nil {
@@ -249,13 +285,16 @@ SELECT
     a.name,
     a.musicbrainz_id,
     a.image,
+    a.genres,
+    a.popularity,
+    a.spotify_id,
     COUNT(*) AS listen_count
 FROM listens l
 JOIN tracks t ON l.track_id = t.id
 JOIN artist_tracks at ON at.track_id = t.id
 JOIN artists_with_name a ON a.id = at.artist_id
 WHERE l.listened_at BETWEEN $1 AND $2
-GROUP BY a.id, a.name, a.musicbrainz_id, a.image, a.image_source, a.name
+GROUP BY a.id, a.name, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.popularity, a.spotify_id
 ORDER BY listen_count DESC, a.id
 LIMIT $3 OFFSET $4
 `
@@ -272,6 +311,9 @@ type GetTopArtistsPaginatedRow struct {
 	Name          string
 	MusicBrainzID *uuid.UUID
 	Image         *uuid.UUID
+	Genres        []string
+	Popularity    pgtype.Int4
+	SpotifyID     pgtype.Text
 	ListenCount   int64
 }
 
@@ -294,6 +336,9 @@ func (q *Queries) GetTopArtistsPaginated(ctx context.Context, arg GetTopArtistsP
 			&i.Name,
 			&i.MusicBrainzID,
 			&i.Image,
+			&i.Genres,
+			&i.Popularity,
+			&i.SpotifyID,
 			&i.ListenCount,
 		); err != nil {
 			return nil, err
@@ -308,7 +353,7 @@ func (q *Queries) GetTopArtistsPaginated(ctx context.Context, arg GetTopArtistsP
 
 const getTrackArtists = `-- name: GetTrackArtists :many
 SELECT 
-  a.id, a.musicbrainz_id, a.image, a.image_source, a.name,
+  a.id, a.musicbrainz_id, a.image, a.image_source, a.genres, a.bio, a.popularity, a.spotify_id, a.name,
   at.is_primary as is_primary
 FROM artists_with_name a
 LEFT JOIN artist_tracks at ON a.id = at.artist_id
@@ -321,6 +366,10 @@ type GetTrackArtistsRow struct {
 	MusicBrainzID *uuid.UUID
 	Image         *uuid.UUID
 	ImageSource   pgtype.Text
+	Genres        []string
+	Bio           pgtype.Text
+	Popularity    pgtype.Int4
+	SpotifyID     pgtype.Text
 	Name          string
 	IsPrimary     pgtype.Bool
 }
@@ -339,6 +388,10 @@ func (q *Queries) GetTrackArtists(ctx context.Context, trackID int32) ([]GetTrac
 			&i.MusicBrainzID,
 			&i.Image,
 			&i.ImageSource,
+			&i.Genres,
+			&i.Bio,
+			&i.Popularity,
+			&i.SpotifyID,
 			&i.Name,
 			&i.IsPrimary,
 		); err != nil {
@@ -355,7 +408,7 @@ func (q *Queries) GetTrackArtists(ctx context.Context, trackID int32) ([]GetTrac
 const insertArtist = `-- name: InsertArtist :one
 INSERT INTO artists (musicbrainz_id, image, image_source)
 VALUES ($1, $2, $3)
-RETURNING id, musicbrainz_id, image, image_source
+RETURNING id, musicbrainz_id, image, image_source, genres, bio, popularity, spotify_id
 `
 
 type InsertArtistParams struct {
@@ -372,6 +425,10 @@ func (q *Queries) InsertArtist(ctx context.Context, arg InsertArtistParams) (Art
 		&i.MusicBrainzID,
 		&i.Image,
 		&i.ImageSource,
+		&i.Genres,
+		&i.Bio,
+		&i.Popularity,
+		&i.SpotifyID,
 	)
 	return i, err
 }
@@ -404,6 +461,34 @@ type UpdateArtistMbzIDParams struct {
 
 func (q *Queries) UpdateArtistMbzID(ctx context.Context, arg UpdateArtistMbzIDParams) error {
 	_, err := q.db.Exec(ctx, updateArtistMbzID, arg.ID, arg.MusicBrainzID)
+	return err
+}
+
+const updateArtistMetadata = `-- name: UpdateArtistMetadata :exec
+UPDATE artists SET 
+  genres = $2,
+  bio = $3,
+  popularity = $4,
+  spotify_id = $5
+WHERE id = $1
+`
+
+type UpdateArtistMetadataParams struct {
+	ID         int32
+	Genres     []string
+	Bio        pgtype.Text
+	Popularity pgtype.Int4
+	SpotifyID  pgtype.Text
+}
+
+func (q *Queries) UpdateArtistMetadata(ctx context.Context, arg UpdateArtistMetadataParams) error {
+	_, err := q.db.Exec(ctx, updateArtistMetadata,
+		arg.ID,
+		arg.Genres,
+		arg.Bio,
+		arg.Popularity,
+		arg.SpotifyID,
+	)
 	return err
 }
 

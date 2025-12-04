@@ -62,13 +62,16 @@ SELECT
     a.name,
     a.musicbrainz_id,
     a.image,
+    a.genres,
+    a.popularity,
+    a.spotify_id,
     COUNT(*) AS listen_count
 FROM listens l
 JOIN tracks t ON l.track_id = t.id
 JOIN artist_tracks at ON at.track_id = t.id
 JOIN artists_with_name a ON a.id = at.artist_id
 WHERE l.listened_at BETWEEN $1 AND $2
-GROUP BY a.id, a.name, a.musicbrainz_id, a.image, a.image_source, a.name
+GROUP BY a.id, a.name, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.popularity, a.spotify_id
 ORDER BY listen_count DESC, a.id
 LIMIT $3 OFFSET $4;
 
@@ -84,6 +87,14 @@ WHERE id = $1;
 
 -- name: UpdateArtistImage :exec
 UPDATE artists SET image = $2, image_source = $3
+WHERE id = $1;
+
+-- name: UpdateArtistMetadata :exec
+UPDATE artists SET 
+  genres = $2,
+  bio = $3,
+  popularity = $4,
+  spotify_id = $5
 WHERE id = $1;
 
 -- name: DeleteConflictingArtistTracks :exec

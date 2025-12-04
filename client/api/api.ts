@@ -303,6 +303,12 @@ function getSpotifyConfigured(): Promise<{ configured: boolean }> {
   );
 }
 
+function fetchSpotifyMetadata(id: number, type: "artist" | "album" | "track", spotifyId?: string): Promise<Response> {
+  let url = `/apis/web/v1/spotify/fetch-metadata?id=${id}&type=${type}`;
+  if (spotifyId) url += `&spotify_id=${spotifyId}`;
+  return request(url, { method: "POST" });
+}
+
 export {
   getLastListens,
   getTopTracks,
@@ -336,6 +342,7 @@ export {
   getNowPlaying,
   spotifySearch,
   getSpotifyConfigured,
+  fetchSpotifyMetadata,
 };
 type Track = {
   id: number;
@@ -348,6 +355,8 @@ type Track = {
   time_listened: number;
   first_listen: number;
   album?: string;
+  popularity?: number;
+  spotify_id?: string;
 };
 type Artist = {
   id: number;
@@ -359,6 +368,10 @@ type Artist = {
   time_listened: number;
   first_listen: number;
   is_primary: boolean;
+  genres?: string[];
+  bio?: string;
+  popularity?: number;
+  spotify_id?: string;
 };
 type Album = {
   id: number;
@@ -370,6 +383,10 @@ type Album = {
   musicbrainz_id: string;
   time_listened: number;
   first_listen: number;
+  genres?: string[];
+  release_date?: string;
+  popularity?: number;
+  spotify_id?: string;
 };
 type Alias = {
   id: number;

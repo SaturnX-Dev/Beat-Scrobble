@@ -425,3 +425,21 @@ func (d *Psql) SetPrimaryAlbumArtist(ctx context.Context, id int32, artistId int
 	}
 	return tx.Commit(ctx)
 }
+func (d *Psql) UpdateReleaseMetadata(ctx context.Context, opts db.UpdateReleaseMetadataParams) error {
+	l := logger.FromContext(ctx)
+	if opts.ID == 0 {
+		return errors.New("UpdateReleaseMetadata: release id not specified")
+	}
+	l.Debug().Msgf("Updating metadata for release %d", opts.ID)
+	err := d.q.UpdateReleaseMetadata(ctx, repository.UpdateReleaseMetadataParams{
+		ID:          opts.ID,
+		Genres:      opts.Genres,
+		ReleaseDate: opts.ReleaseDate,
+		Popularity:  opts.Popularity,
+		SpotifyID:   opts.SpotifyID,
+	})
+	if err != nil {
+		return fmt.Errorf("UpdateReleaseMetadata: %w", err)
+	}
+	return nil
+}

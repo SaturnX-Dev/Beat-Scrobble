@@ -5,6 +5,7 @@ import (
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type GetAlbumOpts struct {
@@ -155,4 +156,26 @@ type GetExportPageOpts struct {
 	ListenedAt time.Time
 	TrackID    int32
 	Limit      int32
+}
+
+type UpdateArtistMetadataParams struct {
+	ID         int32
+	Genres     []string
+	Bio        pgtype.Text
+	Popularity pgtype.Int4
+	SpotifyID  pgtype.Text
+}
+
+type UpdateReleaseMetadataParams struct {
+	ID          int32
+	Genres      []string
+	ReleaseDate pgtype.Text
+	Popularity  pgtype.Int4
+	SpotifyID   pgtype.Text
+}
+
+type UpdateTrackMetadataParams struct {
+	ID         int32
+	Popularity pgtype.Int4
+	SpotifyID  pgtype.Text
 }

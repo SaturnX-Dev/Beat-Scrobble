@@ -26,10 +26,12 @@
 - **OpenRouter Integration** - Use any LLM (GPT-4, Claude, Gemini, etc.)
 
 #### 📊 Enhanced Analytics
+- **Control Room** - Comprehensive dashboard with "Now Playing", metrics, and top charts
 - **Yearly Recap** - Spotify Wrapped-style annual summary (auto-popup Dec 15)
-- **Activity Grid** - GitHub-style listening heatmap
+- **Activity Grid** - GitHub-style listening heatmap with responsive design
 - **Timeline View** - Infinite scroll history with album art
-- **Period Filters** - Week, Month, Year, All Time stats
+- **Listening Sessions** - Smart grouping of your listening sessions
+- **Period Filters** - Day, Week, Month, Year, All Time stats
 
 #### 🎨 Premium UI & Customization
 - **Mobile-First Design** - Optimized bottom nav and responsive layouts
@@ -39,6 +41,11 @@
 - **Profile Images** - Upload and display your profile picture
 - **Glassmorphism** - Modern glass card aesthetics
 - **Dark Mode** - Full dark theme support
+
+#### 🎵 Spotify Integration
+- **Metadata Fetching** - Enriches your library with high-quality metadata
+- **Image Search** - Search and replace album/artist images directly from Spotify
+- **Token Management** - Securely handles Spotify tokens (Client Credentials)
 
 #### ☁️ Server-Side Storage
 All user preferences, themes, and customizations are stored server-side:
@@ -67,6 +74,8 @@ All user preferences, themes, and customizations are stored server-side:
 | Feature | Koito | Beat Scrobble |
 | :--- | :---: | :---: |
 | **Core Scrobbling** | ✅ | ✅ |
+| **Control Room Dashboard** | ❌ | ✅ |
+| **Spotify Integration** | ❌ | ✅ |
 | **ListenBrainz Sync** | ✅ | ✅ |
 | **AI Critiques** | ❌ | ✅ |
 | **AI Playlists** | ❌ | ✅ |
@@ -154,6 +163,17 @@ cd client && npm install && npm run build
 2. Go to **Settings → API Keys**
 3. Enter your OpenRouter key
 4. Enable features: AI Critique, Profile Critique, AI Playlists
+
+---
+
+## 🎵 Spotify Setup
+
+1. Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+2. Log in and click **Create App**
+3. Enter any name/description and create
+4. Click **Settings** to reveal your **Client ID** and **Client Secret**
+5. Go to **Settings → Spotify** in Beat Scrobble
+6. Enter your credentials to enable image search and metadata fetching
 
 ---
 

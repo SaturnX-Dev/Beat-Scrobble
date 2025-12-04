@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useLoaderData, Link, type LoaderFunctionArgs } from "react-router";
 import TopTracks from "~/components/TopTracks";
-import { mergeAlbums, type Album } from "api/api";
+import { mergeAlbums, type Album, fetchSpotifyMetadata } from "api/api";
 import LastPlays from "~/components/LastPlays";
 import PeriodSelector from "~/components/PeriodSelector";
 import MediaLayout from "./MediaLayout";
@@ -20,6 +20,20 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 export default function Album() {
   const album = useLoaderData() as Album;
   const [period, setPeriod] = useState("week");
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefreshMetadata = async () => {
+    setRefreshing(true);
+    try {
+      await fetchSpotifyMetadata(album.id, "album", album.spotify_id);
+      window.location.reload();
+    } catch (e) {
+      console.error(e);
+      alert("Failed to refresh metadata. Ensure Spotify is configured.");
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   console.log(album);
 
@@ -42,6 +56,8 @@ export default function Album() {
         }
         return r;
       }}
+      onRefreshMetadata={handleRefreshMetadata}
+      refreshing={refreshing}
       subContent={
         <div className="flex flex-col gap-2 items-start">
           {album.listen_count && (
@@ -67,6 +83,25 @@ export default function Album() {
             >
               View Artist
             </Link>
+          )}
+          {album.genres && album.genres.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {album.genres.map(g => (
+                <span key={g} className="px-2 py-1 text-[10px] uppercase tracking-wider bg-[var(--color-bg)]/50 rounded-full text-[var(--color-fg-secondary)] border border-[var(--color-bg-tertiary)]">
+                  {g}
+                </span>
+              ))}
+            </div>
+          )}
+          {album.release_date && (
+            <p className="text-xs text-[var(--color-fg-secondary)]">
+              Released: {album.release_date}
+            </p>
+          )}
+          {album.popularity !== undefined && (
+            <p className="text-xs text-[var(--color-fg-tertiary)]">
+              Popularity: {album.popularity}%
+            </p>
           )}
         </div>
       }

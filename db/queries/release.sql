@@ -35,6 +35,10 @@ LIMIT 1;
 -- name: GetTopReleasesFromArtist :many
 SELECT
   r.*,
+  r.genres,
+  r.release_date,
+  r.popularity,
+  r.spotify_id,
   COUNT(*) AS listen_count,
   get_artists_for_release(r.id) AS artists
 FROM listens l
@@ -43,20 +47,24 @@ JOIN releases_with_title r ON t.release_id = r.id
 JOIN artist_releases ar ON r.id = ar.release_id
 WHERE ar.artist_id = $5
   AND l.listened_at BETWEEN $1 AND $2
-GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source
+GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id
 ORDER BY listen_count DESC, r.id
 LIMIT $3 OFFSET $4;
 
 -- name: GetTopReleasesPaginated :many
 SELECT
   r.*,
+  r.genres,
+  r.release_date,
+  r.popularity,
+  r.spotify_id,
   COUNT(*) AS listen_count,
   get_artists_for_release(r.id) AS artists
 FROM listens l
 JOIN tracks t ON l.track_id = t.id
 JOIN releases_with_title r ON t.release_id = r.id
 WHERE l.listened_at BETWEEN $1 AND $2
-GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source
+GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id
 ORDER BY listen_count DESC, r.id
 LIMIT $3 OFFSET $4;
 
@@ -81,6 +89,10 @@ ON CONFLICT DO NOTHING;
 -- name: GetReleasesWithoutImages :many
 SELECT
   r.*,
+  r.genres,
+  r.release_date,
+  r.popularity,
+  r.spotify_id,
   get_artists_for_release(r.id) AS artists
 FROM releases_with_title r 
 WHERE r.image IS NULL 
@@ -102,6 +114,14 @@ WHERE artist_id = $1 AND release_id = $2;
 
 -- name: UpdateReleaseImage :exec
 UPDATE releases SET image = $2, image_source = $3
+WHERE id = $1;
+
+-- name: UpdateReleaseMetadata :exec
+UPDATE releases SET 
+  genres = $2,
+  release_date = $3,
+  popularity = $4,
+  spotify_id = $5
 WHERE id = $1;
 
 -- name: DeleteRelease :exec

@@ -224,7 +224,7 @@ func (q *Queries) GetArtistsWithOnlyOnePlayInYear(ctx context.Context) ([]GetArt
 const getFirstListenInYear = `-- name: GetFirstListenInYear :one
 SELECT 
     l.track_id, l.listened_at, l.client, l.user_id, 
-    t.id, t.musicbrainz_id, t.duration, t.release_id, t.title, 
+    t.id, t.musicbrainz_id, t.duration, t.release_id, t.popularity, t.spotify_id, t.title, 
     get_artists_for_track(t.id) as artists 
 FROM listens l 
 LEFT JOIN tracks_with_title t ON l.track_id = t.id 
@@ -242,6 +242,8 @@ type GetFirstListenInYearRow struct {
 	MusicBrainzID *uuid.UUID
 	Duration      pgtype.Int4
 	ReleaseID     pgtype.Int4
+	Popularity    pgtype.Int4
+	SpotifyID     pgtype.Text
 	Title         pgtype.Text
 	Artists       []byte
 }
@@ -258,6 +260,8 @@ func (q *Queries) GetFirstListenInYear(ctx context.Context) (GetFirstListenInYea
 		&i.MusicBrainzID,
 		&i.Duration,
 		&i.ReleaseID,
+		&i.Popularity,
+		&i.SpotifyID,
 		&i.Title,
 		&i.Artists,
 	)
@@ -349,7 +353,7 @@ ranked_streaks AS (
     FROM grouped_streaks
 )
 SELECT
-    t.id, t.musicbrainz_id, t.duration, t.release_id, t.title, 
+    t.id, t.musicbrainz_id, t.duration, t.release_id, t.popularity, t.spotify_id, t.title, 
     get_artists_for_track(t.id) as artists,
     streak_length
 FROM ranked_streaks rs JOIN tracks_with_title t ON rs.track_id = t.id
@@ -366,6 +370,8 @@ type GetMostReplayedTrackInYearRow struct {
 	MusicBrainzID *uuid.UUID
 	Duration      int32
 	ReleaseID     int32
+	Popularity    pgtype.Int4
+	SpotifyID     pgtype.Text
 	Title         string
 	Artists       []byte
 	StreakLength  int64
@@ -379,6 +385,8 @@ func (q *Queries) GetMostReplayedTrackInYear(ctx context.Context, arg GetMostRep
 		&i.MusicBrainzID,
 		&i.Duration,
 		&i.ReleaseID,
+		&i.Popularity,
+		&i.SpotifyID,
 		&i.Title,
 		&i.Artists,
 		&i.StreakLength,

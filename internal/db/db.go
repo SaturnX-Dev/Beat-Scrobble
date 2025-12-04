@@ -41,8 +41,11 @@ type DB interface {
 	SaveSession(ctx context.Context, userId int32, expiresAt time.Time, persistent bool) (*models.Session, error)
 	// Update
 	UpdateArtist(ctx context.Context, opts UpdateArtistOpts) error
+	UpdateArtistMetadata(ctx context.Context, opts UpdateArtistMetadataParams) error
 	UpdateTrack(ctx context.Context, opts UpdateTrackOpts) error
+	UpdateTrackMetadata(ctx context.Context, opts UpdateTrackMetadataParams) error
 	UpdateAlbum(ctx context.Context, opts UpdateAlbumOpts) error
+	UpdateReleaseMetadata(ctx context.Context, opts UpdateReleaseMetadataParams) error
 	AddArtistsToAlbum(ctx context.Context, opts AddArtistsToAlbumOpts) error
 	UpdateUser(ctx context.Context, opts UpdateUserOpts) error
 	UpdateApiKeyLabel(ctx context.Context, opts UpdateApiKeyLabelOpts) error

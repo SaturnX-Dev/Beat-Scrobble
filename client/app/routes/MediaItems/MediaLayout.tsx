@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { average } from "color.js";
 import { imageUrl, type SearchResponse } from "api/api";
 import ImageDropHandler from "~/components/ImageDropHandler";
-import { Edit, ImageIcon, Merge, Plus, Trash } from "lucide-react";
+import { Edit, ImageIcon, Merge, Plus, Trash, RefreshCw } from "lucide-react";
 import { useAppContext } from "~/providers/AppProvider";
 import MergeModal from "~/components/modals/MergeModal";
 import ImageReplaceModal from "~/components/modals/ImageReplaceModal";
@@ -25,6 +25,8 @@ interface Props {
     mergeCleanerFunc: MergeSearchCleanerFunc
     children: React.ReactNode
     subContent: React.ReactNode
+    onRefreshMetadata?: () => void
+    refreshing?: boolean
 }
 
 export default function MediaLayout(props: Props) {
@@ -97,6 +99,11 @@ export default function MediaLayout(props: Props) {
                             <button title="Replace Image" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-all" onClick={() => setImageModalOpen(true)}><ImageIcon size={18} /></button>
                             <button title="Merge Items" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-all" onClick={() => setMergeModalOpen(true)}><Merge size={18} /></button>
                             <button title="Delete Item" className="w-10 h-10 rounded-full bg-[var(--color-error)]/20 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-error)] hover:text-white transition-all text-[var(--color-error)]" onClick={() => setDeleteModalOpen(true)}><Trash size={18} /></button>
+                            {props.onRefreshMetadata && (
+                                <button title="Refresh Metadata" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-all" onClick={props.onRefreshMetadata} disabled={props.refreshing}>
+                                    <RefreshCw size={18} className={props.refreshing ? "animate-spin" : ""} />
+                                </button>
+                            )}
                             <EditModal open={renameModalOpen} setOpen={setRenameModalOpen} type={props.type.toLowerCase()} id={props.id} />
                             <ImageReplaceModal open={imageModalOpen} setOpen={setImageModalOpen} id={props.imgItemId} musicbrainzId={props.musicbrainzId} type={props.type === "Track" ? "Album" : props.type} />
                             <MergeModal currentTitle={props.title} mergeFunc={props.mergeFunc} mergeCleanerFunc={props.mergeCleanerFunc} type={props.type} currentId={props.id} open={mergeModalOpen} setOpen={setMergeModalOpen} />

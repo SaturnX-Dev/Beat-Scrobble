@@ -12,10 +12,13 @@ import (
 	"sync"
 	"time"
 
+	"strconv"
+
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // SpotifyTokenManager handles Spotify API token caching and refresh
@@ -311,5 +314,174 @@ func SpotifyConfiguredHandler(store db.DB) http.HandlerFunc {
 		utils.WriteJSON(w, http.StatusOK, map[string]bool{
 			"configured": clientID != "" && clientSecret != "",
 		})
+	}
+}
+
+// SpotifyFetchMetadataHandler fetches and updates metadata for an entity
+func SpotifyFetchMetadataHandler(store db.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		l := logger.FromContext(ctx)
+
+		user := middleware.GetUserFromContext(ctx)
+		if user == nil {
+			utils.WriteError(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		idStr := r.URL.Query().Get("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil || id == 0 {
+			utils.WriteError(w, "invalid id", http.StatusBadRequest)
+			return
+		}
+
+		entityType := r.URL.Query().Get("type") // artist, album, track
+		if entityType == "" {
+			utils.WriteError(w, "type is required", http.StatusBadRequest)
+			return
+		}
+
+		spotifyID := r.URL.Query().Get("spotify_id")
+
+		token, err := getSpotifyToken(ctx, store, user.ID)
+		if err != nil {
+			l.Debug().Err(err).Msg("SpotifyFetchMetadataHandler: Failed to get Spotify token")
+			utils.WriteError(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		client := &http.Client{Timeout: 10 * time.Second}
+
+		switch entityType {
+		case "artist":
+			// If we don't have spotifyID, we might need to search or error.
+			// For now, assume frontend passes spotifyID from search result.
+			if spotifyID == "" {
+				utils.WriteError(w, "spotify_id is required", http.StatusBadRequest)
+				return
+			}
+
+			req, _ := http.NewRequest("GET", "https://api.spotify.com/v1/artists/"+spotifyID, nil)
+			req.Header.Set("Authorization", "Bearer "+token)
+			resp, err := client.Do(req)
+			if err != nil {
+				utils.WriteError(w, "spotify api failed", http.StatusInternalServerError)
+				return
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				utils.WriteError(w, "spotify api error", http.StatusBadGateway)
+				return
+			}
+
+			var artistData struct {
+				Genres     []string `json:"genres"`
+				Popularity int      `json:"popularity"`
+			}
+			if err := json.NewDecoder(resp.Body).Decode(&artistData); err != nil {
+				utils.WriteError(w, "failed to decode spotify response", http.StatusInternalServerError)
+				return
+			}
+
+			// Update DB
+			err = store.UpdateArtistMetadata(ctx, db.UpdateArtistMetadataParams{
+				ID:         int32(id),
+				Genres:     artistData.Genres,
+				Popularity: pgtype.Int4{Int32: int32(artistData.Popularity), Valid: true},
+				SpotifyID:  pgtype.Text{String: spotifyID, Valid: true},
+				Bio:        pgtype.Text{Valid: false}, // Spotify API doesn't provide bio
+			})
+			if err != nil {
+				l.Error().Err(err).Msg("Failed to update artist metadata")
+				utils.WriteError(w, "database update failed", http.StatusInternalServerError)
+				return
+			}
+
+		case "album":
+			if spotifyID == "" {
+				utils.WriteError(w, "spotify_id is required", http.StatusBadRequest)
+				return
+			}
+
+			req, _ := http.NewRequest("GET", "https://api.spotify.com/v1/albums/"+spotifyID, nil)
+			req.Header.Set("Authorization", "Bearer "+token)
+			resp, err := client.Do(req)
+			if err != nil {
+				utils.WriteError(w, "spotify api failed", http.StatusInternalServerError)
+				return
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				utils.WriteError(w, "spotify api error", http.StatusBadGateway)
+				return
+			}
+
+			var albumData struct {
+				Genres      []string `json:"genres"`
+				Popularity  int      `json:"popularity"`
+				ReleaseDate string   `json:"release_date"`
+			}
+			if err := json.NewDecoder(resp.Body).Decode(&albumData); err != nil {
+				utils.WriteError(w, "failed to decode spotify response", http.StatusInternalServerError)
+				return
+			}
+
+			err = store.UpdateReleaseMetadata(ctx, db.UpdateReleaseMetadataParams{
+				ID:          int32(id),
+				Genres:      albumData.Genres,
+				Popularity:  pgtype.Int4{Int32: int32(albumData.Popularity), Valid: true},
+				ReleaseDate: pgtype.Text{String: albumData.ReleaseDate, Valid: true},
+				SpotifyID:   pgtype.Text{String: spotifyID, Valid: true},
+			})
+			if err != nil {
+				l.Error().Err(err).Msg("Failed to update release metadata")
+				utils.WriteError(w, "database update failed", http.StatusInternalServerError)
+				return
+			}
+
+		case "track":
+			if spotifyID == "" {
+				utils.WriteError(w, "spotify_id is required", http.StatusBadRequest)
+				return
+			}
+
+			req, _ := http.NewRequest("GET", "https://api.spotify.com/v1/tracks/"+spotifyID, nil)
+			req.Header.Set("Authorization", "Bearer "+token)
+			resp, err := client.Do(req)
+			if err != nil {
+				utils.WriteError(w, "spotify api failed", http.StatusInternalServerError)
+				return
+			}
+			defer resp.Body.Close()
+
+			if resp.StatusCode != http.StatusOK {
+				utils.WriteError(w, "spotify api error", http.StatusBadGateway)
+				return
+			}
+
+			var trackData struct {
+				Popularity int `json:"popularity"`
+			}
+			if err := json.NewDecoder(resp.Body).Decode(&trackData); err != nil {
+				utils.WriteError(w, "failed to decode spotify response", http.StatusInternalServerError)
+				return
+			}
+
+			err = store.UpdateTrackMetadata(ctx, db.UpdateTrackMetadataParams{
+				ID:         int32(id),
+				Popularity: pgtype.Int4{Int32: int32(trackData.Popularity), Valid: true},
+				SpotifyID:  pgtype.Text{String: spotifyID, Valid: true},
+			})
+			if err != nil {
+				l.Error().Err(err).Msg("Failed to update track metadata")
+				utils.WriteError(w, "database update failed", http.StatusInternalServerError)
+				return
+			}
+		}
+
+		utils.WriteJSON(w, http.StatusOK, map[string]bool{"success": true})
 	}
 }

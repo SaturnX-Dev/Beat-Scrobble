@@ -374,3 +374,19 @@ func (d *Psql) SetPrimaryTrackArtist(ctx context.Context, id int32, artistId int
 	}
 	return tx.Commit(ctx)
 }
+func (d *Psql) UpdateTrackMetadata(ctx context.Context, opts db.UpdateTrackMetadataParams) error {
+	l := logger.FromContext(ctx)
+	if opts.ID == 0 {
+		return errors.New("UpdateTrackMetadata: track id not specified")
+	}
+	l.Debug().Msgf("Updating metadata for track %d", opts.ID)
+	err := d.q.UpdateTrackMetadata(ctx, repository.UpdateTrackMetadataParams{
+		ID:         opts.ID,
+		Popularity: opts.Popularity,
+		SpotifyID:  opts.SpotifyID,
+	})
+	if err != nil {
+		return fmt.Errorf("UpdateTrackMetadata: %w", err)
+	}
+	return nil
+}
