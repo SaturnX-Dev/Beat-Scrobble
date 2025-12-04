@@ -50,6 +50,7 @@ func ImportHandler(store db.DB) http.HandlerFunc {
 		}
 
 		// Restore Preferences
+		prefsRestored := false
 		if importData.Preferences != nil && len(importData.Preferences) > 0 {
 			prefBytes, err := json.Marshal(importData.Preferences)
 			if err == nil {
@@ -57,25 +58,43 @@ func ImportHandler(store db.DB) http.HandlerFunc {
 					l.Error().Err(err).Msg("ImportHandler: Failed to save preferences")
 				} else {
 					l.Info().Msg("ImportHandler: Preferences restored")
+					prefsRestored = true
 				}
 			}
 		}
 
 		// Restore Theme
+		themeRestored := false
 		if len(importData.Theme) > 0 {
 			if err := store.SaveUserTheme(ctx, user.ID, []byte(importData.Theme)); err != nil {
 				l.Error().Err(err).Msg("ImportHandler: Failed to save theme")
 			} else {
 				l.Info().Msg("ImportHandler: Theme restored")
+				themeRestored = true
 			}
 		}
 
-		// Scrobbles import is complex (needs deduplication, artist/album/track resolution)
-		// For now, we only restore settings. Scrobble import can be added later.
+		// Build response based on what was restored
+		var message string
+		if importData.Version == "1" || (!prefsRestored && !themeRestored) {
+			// Legacy v1 file detected
+			message = "Legacy export (v1) detected. This file only contains listening history. To backup settings and themes, use 'Full Backup' (v2) next time."
+		} else if prefsRestored && themeRestored {
+			message = "Settings and theme restored successfully!"
+		} else if prefsRestored {
+			message = "Settings restored successfully!"
+		} else if themeRestored {
+			message = "Theme restored successfully!"
+		} else {
+			message = "Import completed, but no settings or theme were found to restore."
+		}
 
 		utils.WriteJSON(w, http.StatusOK, map[string]interface{}{
-			"success": true,
-			"message": "Settings restored successfully. Scrobble import is not yet supported.",
+			"success":       true,
+			"message":       message,
+			"version":       importData.Version,
+			"prefsRestored": prefsRestored,
+			"themeRestored": themeRestored,
 		})
 	}
 }
