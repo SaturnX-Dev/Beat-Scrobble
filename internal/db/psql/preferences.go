@@ -2,7 +2,9 @@ package psql
 
 import (
 	"context"
-	"database/sql"
+	"errors"
+
+	"github.com/jackc/pgx/v5"
 )
 
 // SaveUserPreferences saves or updates a user's preferences
@@ -25,7 +27,7 @@ func (s *Psql) GetUserPreferences(ctx context.Context, userId int32) ([]byte, er
 
 	var preferencesData []byte
 	err := s.conn.QueryRow(ctx, query, userId).Scan(&preferencesData)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {

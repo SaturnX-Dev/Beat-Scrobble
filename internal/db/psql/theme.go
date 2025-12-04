@@ -2,9 +2,10 @@ package psql
 
 import (
 	"context"
-	"database/sql"
-)
+	"errors"
 
+	"github.com/jackc/pgx/v5"
+)
 
 // SaveUserTheme saves or updates a user's theme
 func (s *Psql) SaveUserTheme(ctx context.Context, userId int32, themeData []byte) error {
@@ -21,15 +22,15 @@ func (s *Psql) SaveUserTheme(ctx context.Context, userId int32, themeData []byte
 // GetUserTheme retrieves a user's saved theme
 func (s *Psql) GetUserTheme(ctx context.Context, userId int32) ([]byte, error) {
 	query := `SELECT theme_data FROM user_themes WHERE user_id = $1`
-	
+
 	var themeData []byte
 	err := s.conn.QueryRow(ctx, query, userId).Scan(&themeData)
-	if err == sql.ErrNoRows {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	}
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return themeData, nil
 }
