@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/queue"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/queue"
 )
 
 type SubsonicClient struct {
@@ -45,7 +45,7 @@ type SubsonicArtistResponse struct {
 const (
 	subsonicAlbumSearchFmtStr  = "/rest/search3?%s&f=json&query=%s&v=1.13.0&c=koito&artistCount=0&songCount=0&albumCount=1"
 	subsonicArtistSearchFmtStr = "/rest/search3?%s&f=json&query=%s&v=1.13.0&c=koito&artistCount=1&songCount=0&albumCount=0"
-	subsonicCoverArtFmtStr     = "/rest/getCoverArt?%s&id=%s&v=1.13.0&c=koito"
+	subsonicCoverArtFmtStr     = "/rest/getCoverArt?%s&id=%s&v=1.13.0&c=beat_scrobble"
 )
 
 func NewSubsonicClient() *SubsonicClient {

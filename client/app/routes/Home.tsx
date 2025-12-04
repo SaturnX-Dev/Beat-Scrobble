@@ -14,8 +14,8 @@ import { Link } from "react-router";
 
 export function meta({ }: Route.MetaArgs) {
   return [
-    { title: "Koito" },
-    { name: "description", content: "Koito" },
+    { title: "Beat Scrobble" },
+    { name: "description", content: "Beat Scrobble" },
   ];
 }
 

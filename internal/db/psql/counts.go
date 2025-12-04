@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/repository"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/repository"
 )
 
 func (p *Psql) CountListens(ctx context.Context, period db.Period) (int64, error) {

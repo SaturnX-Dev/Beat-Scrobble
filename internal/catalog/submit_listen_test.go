@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/internal/catalog"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/mbz"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/catalog"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/mbz"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

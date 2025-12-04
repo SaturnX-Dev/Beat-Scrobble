@@ -3,17 +3,17 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gabehf/koito/engine/middleware"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/export"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/export"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 )
 
 func ExportHandler(store db.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Header().Set("Content-Disposition", `attachment; filename="koito_export.json"`)
+		w.Header().Set("Content-Disposition", `attachment; filename="beat_scrobble_export.json"`)
 		ctx := r.Context()
 		l := logger.FromContext(ctx)
 		l.Debug().Msg("ExportHandler: Recieved request for export file")

@@ -8,12 +8,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/engine"
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/mbz"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/mbz"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -264,9 +264,9 @@ func TestImportListenBrainz_MbzDisabled(t *testing.T) {
 
 func TestImportKoito(t *testing.T) {
 
-	src := path.Join("..", "test_assets", "koito_export_test.json")
+	src := path.Join("..", "test_assets", "beat_scrobble_export_test.json")
 	destDir := filepath.Join(cfg.ConfigDir(), "import")
-	dest := filepath.Join(destDir, "koito_export_test.json")
+	dest := filepath.Join(destDir, "beat_scrobble_export_test.json")
 
 	ctx := context.Background()
 

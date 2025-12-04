@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 )
 
 type ServerConfig struct {

@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gabehf/koito/engine/middleware"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 )
 
 type AIProfileCritiqueRequest struct {
@@ -168,8 +168,8 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 
 		apiReq.Header.Set("Authorization", "Bearer "+apiKey)
 		apiReq.Header.Set("Content-Type", "application/json")
-		apiReq.Header.Set("HTTP-Referer", "https://koito.app")
-		apiReq.Header.Set("X-Title", "Koito Music Analytics")
+		apiReq.Header.Set("HTTP-Referer", "https://beatscrobble.app")
+		apiReq.Header.Set("X-Title", "Beat Scrobble Music Analytics")
 
 		client := &http.Client{}
 		resp, err := client.Do(apiReq)

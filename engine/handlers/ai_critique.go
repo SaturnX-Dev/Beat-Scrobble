@@ -7,10 +7,10 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/gabehf/koito/engine/middleware"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 )
 
 type AICritiqueRequest struct {
@@ -122,8 +122,8 @@ func GetAICritiqueHandler(store db.DB) http.HandlerFunc {
 
 		apiReq.Header.Set("Authorization", "Bearer "+apiKey)
 		apiReq.Header.Set("Content-Type", "application/json")
-		apiReq.Header.Set("HTTP-Referer", "https://koito.app") // Required by OpenRouter
-		apiReq.Header.Set("X-Title", "Koito Music Analytics")
+		apiReq.Header.Set("HTTP-Referer", "https://beatscrobble.app") // Required by OpenRouter
+		apiReq.Header.Set("X-Title", "Beat Scrobble Music Analytics")
 
 		client := &http.Client{}
 		resp, err := client.Do(apiReq)

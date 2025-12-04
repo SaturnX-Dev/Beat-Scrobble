@@ -33,21 +33,21 @@ export default function LoginForm() {
             <p>Logging in gives you access to <strong>admin tools</strong>, such as updating images, merging items, deleting items, and more.</p>
                 <form action="#" className="flex flex-col items-center gap-4 w-3/4" onSubmit={(e) => e.preventDefault()}>
                 <input
-                    name="koito-username"
+                    name="beat-scrobble-username"
                     type="text"
                     placeholder="Username"
                     className="w-full mx-auto fg bg rounded p-2"
                     onChange={(e) => setUsername(e.target.value)}
                 />
                 <input
-                    name="koito-password"
+                    name="beat-scrobble-password"
                     type="password"
                     placeholder="Password"
                     className="w-full mx-auto fg bg rounded p-2"
                     onChange={(e) => setPassword(e.target.value)}
                 />
                 <div className="flex gap-2">
-                    <input type="checkbox" name="koito-remember" id="koito-remember" onChange={() => setRemember(!remember)} />
+                    <input type="checkbox" name="beat-scrobble-remember" id="beat-scrobble-remember" onChange={() => setRemember(!remember)} />
                     <label htmlFor="kotio-remember">Remember me</label>
                 </div>
                 <AsyncButton loading={loading} onClick={loginHandler}>Login</AsyncButton>

@@ -3,7 +3,7 @@ package utils_test
 import (
 	"testing"
 
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 	"github.com/stretchr/testify/assert"
 )
 

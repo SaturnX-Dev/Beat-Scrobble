@@ -6,13 +6,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/gabehf/koito/engine/middleware"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 )
 
-type KoitoImport struct {
+type BeatScrobbleImport struct {
 	Version     string                 `json:"version"`
 	ExportedAt  time.Time              `json:"exported_at"`
 	User        string                 `json:"user"`
@@ -42,7 +42,7 @@ func ImportHandler(store db.DB) http.HandlerFunc {
 			return
 		}
 
-		var importData KoitoImport
+		var importData BeatScrobbleImport
 		if err := json.Unmarshal(body, &importData); err != nil {
 			l.Error().Err(err).Msg("ImportHandler: Invalid JSON")
 			utils.WriteError(w, "invalid import file format", http.StatusBadRequest)

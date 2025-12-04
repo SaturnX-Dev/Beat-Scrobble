@@ -89,11 +89,11 @@ export default function SettingsModal({ open, setOpen }: Props) {
                                 value={hostname}
                                 onChange={(e) => setHostname(e.target.value)}
                                 onBlur={() => savePreference('share_hostname', hostname)}
-                                placeholder="https://koito.example.com"
+                                placeholder="https://beat-scrobble.example.com"
                                 className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-lg px-3 py-2 text-sm"
                             />
                             <p className="text-xs text-[var(--color-fg-tertiary)] mt-2">
-                                Enter the domain where your Koito instance is publicly accessible
+                                Enter the domain where your Beat Scrobble instance is publicly accessible
                             </p>
                         </div>
 
@@ -140,7 +140,7 @@ export default function SettingsModal({ open, setOpen }: Props) {
                 <TabsContent value="About" className={contentClasses}>
                     <div className="flex flex-col gap-6">
                         <div className="flex flex-col gap-2">
-                            <h2 className="text-2xl font-bold text-[var(--color-fg)]">About Koito</h2>
+                            <h2 className="text-2xl font-bold text-[var(--color-fg)]">About Beat Scrobble</h2>
                             <p className="text-[var(--color-fg-secondary)]">
                                 A modern, self-hosted music analytics platform for tracking your listening habits across services.
                             </p>
@@ -162,7 +162,7 @@ export default function SettingsModal({ open, setOpen }: Props) {
                                 Developed with ❤️ by the open source community.
                             </p>
                             <a
-                                href="https://github.com/saturnxdev/Koito"
+                                href="https://github.com/saturnxdev/Beat Scrobble"
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-sm text-[var(--color-primary)] hover:underline"

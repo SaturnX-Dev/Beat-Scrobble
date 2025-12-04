@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/gabehf/koito/internal/catalog"
-	"github.com/gabehf/koito/internal/cfg"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/catalog"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

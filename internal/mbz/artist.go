@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/gabehf/koito/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
 	"github.com/google/uuid"
 )
 

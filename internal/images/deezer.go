@@ -10,10 +10,10 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/utils"
-	"github.com/gabehf/koito/queue"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/queue"
 )
 
 type DeezerClient struct {

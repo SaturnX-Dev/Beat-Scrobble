@@ -17,10 +17,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/engine/handlers"
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/models"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/handlers"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -51,7 +51,7 @@ func makeAuthRequest(t *testing.T, session, method, endpoint string, body io.Rea
 	req, err := http.NewRequest(method, host()+endpoint, body)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "beat_scrobble_session",
 		Value: session,
 	})
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -486,7 +486,7 @@ func TestAuth(t *testing.T) {
 	req, err := http.NewRequest("PATCH", host()+"/apis/web/v1/user?username=new&password=supersecret", nil)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "beat_scrobble_session",
 		Value: s,
 	})
 	resp, err = http.DefaultClient.Do(req)
@@ -497,7 +497,7 @@ func TestAuth(t *testing.T) {
 	req, err = http.NewRequest("GET", host()+"/apis/web/v1/user/me", nil)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "beat_scrobble_session",
 		Value: s,
 	})
 	resp, err = http.DefaultClient.Do(req)
@@ -520,7 +520,7 @@ func TestAuth(t *testing.T) {
 	req, err = http.NewRequest("PATCH", host()+fmt.Sprintf("/apis/web/v1/user?username=%s&password=%s", cfg.DefaultUsername(), cfg.DefaultPassword()), nil)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "beat_scrobble_session",
 		Value: s,
 	})
 	resp, err = http.DefaultClient.Do(req)
@@ -531,7 +531,7 @@ func TestAuth(t *testing.T) {
 	req, err = http.NewRequest("POST", host()+"/apis/web/v1/user/apikeys?label=testing", nil)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "beat_scrobble_session",
 		Value: s,
 	})
 	resp, err = http.DefaultClient.Do(req)
@@ -576,7 +576,7 @@ func TestAuth(t *testing.T) {
 	req, err = http.NewRequest("POST", host()+"/apis/web/v1/logout", nil)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "beat_scrobble_session",
 		Value: s,
 	})
 	resp, err = http.DefaultClient.Do(req)
@@ -590,7 +590,7 @@ func TestAuth(t *testing.T) {
 	req, err = http.NewRequest("POST", host()+"/apis/web/v1/user/apikeys", strings.NewReader(encoded))
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "beat_scrobble_session",
 		Value: s,
 	})
 	resp, err = http.DefaultClient.Do(req)
@@ -678,7 +678,7 @@ func TestArtistReplaceImage(t *testing.T) {
 	req, err := http.NewRequest("POST", host()+"/apis/web/v1/replace-image", buf)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "beat_scrobble_session",
 		Value: session,
 	})
 	req.Header.Add("Content-Type", mpw.FormDataContentType())
@@ -716,7 +716,7 @@ func TestAlbumReplaceImage(t *testing.T) {
 	req, err := http.NewRequest("POST", host()+"/apis/web/v1/replace-image", buf)
 	require.NoError(t, err)
 	req.AddCookie(&http.Cookie{
-		Name:  "koito_session",
+		Name:  "beat_scrobble_session",
 		Value: session,
 	})
 	req.Header.Add("Content-Type", mpw.FormDataContentType())

@@ -5,15 +5,15 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gabehf/koito/engine/middleware"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 )
 
 func SubmitListenWithIDHandler(store db.DB) http.HandlerFunc {
 
-	var defaultClientStr = "Koito Web UI"
+	var defaultClientStr = "Beat Scrobble Web UI"
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()

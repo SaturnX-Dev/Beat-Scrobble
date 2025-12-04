@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gabehf/koito/engine/middleware"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -65,7 +65,7 @@ func LoginHandler(store db.DB) http.HandlerFunc {
 		}
 
 		http.SetCookie(w, &http.Cookie{
-			Name:     "koito_session",
+			Name:     "beat_scrobble_session",
 			Value:    session.ID.String(),
 			Expires:  expiresAt,
 			Path:     "/",
@@ -85,7 +85,7 @@ func LogoutHandler(store db.DB) http.HandlerFunc {
 
 		l.Debug().Msg("LogoutHandler: Received request")
 
-		cookie, err := r.Cookie("koito_session")
+		cookie, err := r.Cookie("beat_scrobble_session")
 		if err == nil {
 			sid, err := uuid.Parse(cookie.Value)
 			if err != nil {
@@ -96,7 +96,7 @@ func LogoutHandler(store db.DB) http.HandlerFunc {
 		}
 
 		http.SetCookie(w, &http.Cookie{
-			Name:     "koito_session",
+			Name:     "beat_scrobble_session",
 			Value:    "",
 			Path:     "/",
 			HttpOnly: true,

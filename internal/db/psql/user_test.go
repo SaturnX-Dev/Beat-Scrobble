@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gabehf/koito/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"

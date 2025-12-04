@@ -131,7 +131,7 @@ export default function ThemeHelper() {
         <div className="w-full h-full flex flex-col gap-6">
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-bold text-[var(--color-fg)]">Appearance</h1>
-                <p className="text-[var(--color-fg-secondary)]">Customize the look and feel of Koito.</p>
+                <p className="text-[var(--color-fg-secondary)]">Customize the look and feel of Beat Scrobble.</p>
             </div>
 
             <div className="flex gap-2 bg-[var(--color-bg-tertiary)]/30 p-1 rounded-xl w-fit">

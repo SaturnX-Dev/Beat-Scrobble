@@ -6,7 +6,7 @@ import (
 	"strings"
 	"log"
 
-	"github.com/gabehf/koito/engine"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine"
 )
 
 var Version = "dev"

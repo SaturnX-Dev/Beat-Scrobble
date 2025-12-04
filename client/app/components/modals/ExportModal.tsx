@@ -28,8 +28,8 @@ export default function ExportModal() {
                             const a = document.createElement("a");
                             a.href = url;
                             a.download = exportMode === 'full'
-                                ? "koito_backup.json"
-                                : "koito_export_legacy.json";
+                                ? "beat-scrobble_backup.json"
+                                : "beat-scrobble_export_legacy.json";
                             document.body.appendChild(a);
                             a.click();
                             a.remove();

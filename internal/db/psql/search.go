@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gabehf/koito/internal/models"
-	"github.com/gabehf/koito/internal/repository"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/repository"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 

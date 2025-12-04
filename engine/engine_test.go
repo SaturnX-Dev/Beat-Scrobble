@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gabehf/koito/engine"
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/db/psql"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db/psql"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 	"github.com/ory/dockertest/v3"
 )
 

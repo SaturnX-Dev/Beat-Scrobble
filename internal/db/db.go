@@ -5,7 +5,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/gabehf/koito/internal/models"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
 	"github.com/google/uuid"
 )
 

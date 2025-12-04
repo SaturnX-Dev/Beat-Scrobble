@@ -6,9 +6,9 @@ import (
 	"log"
 	"testing"
 
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/db/psql"
-	_ "github.com/gabehf/koito/testing_init"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db/psql"
+	_ "github.com/SaturnX-Dev/Beat-Scrobble/testing_init"
 	"github.com/ory/dockertest/v3"
 	"github.com/stretchr/testify/require"
 )

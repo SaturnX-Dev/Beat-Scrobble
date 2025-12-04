@@ -6,9 +6,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/models"
-	"github.com/gabehf/koito/internal/repository"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/repository"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )

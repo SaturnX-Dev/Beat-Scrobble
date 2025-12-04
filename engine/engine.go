@@ -13,17 +13,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gabehf/koito/engine/middleware"
-	"github.com/gabehf/koito/internal/catalog"
-	"github.com/gabehf/koito/internal/cfg"
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/db/psql"
-	"github.com/gabehf/koito/internal/images"
-	"github.com/gabehf/koito/internal/importer"
-	"github.com/gabehf/koito/internal/logger"
-	mbz "github.com/gabehf/koito/internal/mbz"
-	"github.com/gabehf/koito/internal/models"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/catalog"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db/psql"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/images"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/importer"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	mbz "github.com/SaturnX-Dev/Beat-Scrobble/internal/mbz"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog"
@@ -59,7 +59,7 @@ func Run(
 
 	ctx := logger.NewContext(l)
 
-	l.Info().Msgf("Koito %s", version)
+	l.Info().Msgf("Beat Scrobble %s", version)
 
 	l.Debug().Msgf("Engine: Checking config directory: %s", cfg.ConfigDir())
 	_, err = os.Stat(cfg.ConfigDir())
@@ -193,7 +193,7 @@ func Run(
 
 	// l.Info().Msg("Creating test export file")
 	// go func() {
-	// 	err := export.ExportData(ctx, "koito", store)
+	// 	err := export.ExportData(ctx, "beat_scrobble", store)
 	// 	if err != nil {
 	// 		l.Err(err).Msg("Failed to generate export file")
 	// 	}
@@ -264,8 +264,8 @@ func RunImporter(l *zerolog.Logger, store db.DB, mbzc mbz.MusicBrainzCaller) {
 			if err != nil {
 				l.Err(err).Msgf("Failed to import file: %s", file.Name())
 			}
-		} else if strings.Contains(file.Name(), "koito") {
-			l.Info().Msgf("Import file %s detecting as being Koito export", file.Name())
+		} else if strings.Contains(file.Name(), "beat_scrobble") {
+			l.Info().Msgf("Import file %s detecting as being Beat Scrobble export", file.Name())
 			err := importer.ImportKoitoFile(logger.NewContext(l), store, file.Name())
 			if err != nil {
 				l.Err(err).Msgf("Failed to import file: %s", file.Name())

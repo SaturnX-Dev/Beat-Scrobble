@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/gabehf/koito/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"

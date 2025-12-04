@@ -184,7 +184,7 @@ func loadConfig(getenv func(string) string, version string) (*config, error) {
 
 	cfg.configDir = getenv(CONFIG_DIR_ENV)
 	if cfg.configDir == "" {
-		cfg.configDir = "/etc/koito"
+		cfg.configDir = "/etc/beat_scrobble"
 	}
 
 	rawHosts := getenv(ALLOWED_HOSTS_ENV)

@@ -1,4 +1,4 @@
-module github.com/gabehf/koito
+module github.com/SaturnX-Dev/Beat-Scrobble
 
 go 1.24.2
 

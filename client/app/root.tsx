@@ -52,7 +52,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="shortcut icon" href="/favicon.ico" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-        <meta name="apple-mobile-web-app-title" content="Koito" />
+        <meta name="apple-mobile-web-app-title" content="Beat Scrobble" />
         <link rel="manifest" href="/site.webmanifest" />
         <Meta />
         <Links />
@@ -121,7 +121,7 @@ export function ErrorBoundary() {
   }
 
 
-  const title = `${message} - Koito`
+  const title = `${message} - Beat Scrobble`
 
   return (
     <AppProvider>

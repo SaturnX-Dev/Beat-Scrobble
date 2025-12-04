@@ -1,6 +1,6 @@
 {
-  "name": "Koito",
-  "short_name": "Koito",
+  "name": "Beat Scrobble",
+  "short_name": "Beat Scrobble",
   "description": "A modern, self-hosted music analytics platform for tracking your listening habits",
   "start_url": "/",
   "scope": "/",

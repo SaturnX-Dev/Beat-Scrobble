@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gabehf/koito/internal/db"
-	"github.com/gabehf/koito/internal/logger"
-	"github.com/gabehf/koito/internal/models"
-	"github.com/gabehf/koito/internal/utils"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 	"github.com/google/uuid"
 )
 
@@ -28,7 +28,7 @@ func ValidateSession(store db.DB) func(next http.Handler) http.Handler {
 
 			l.Debug().Msgf("ValidateSession: Checking user authentication via session cookie")
 
-			cookie, err := r.Cookie("koito_session")
+			cookie, err := r.Cookie("beat_scrobble_session")
 			var sid uuid.UUID
 			if err == nil {
 				sid, err = uuid.Parse(cookie.Value)

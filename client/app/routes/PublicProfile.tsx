@@ -81,7 +81,7 @@ export default function PublicProfile() {
                     </div>
                     <h1 className="text-3xl font-bold text-[var(--color-fg)] mb-1">{profile.username}</h1>
                     <p className="text-[var(--color-fg-secondary)] text-sm">
-                        Koito Profile
+                        Beat Scrobble Profile
                     </p>
                 </div>
 
@@ -173,7 +173,7 @@ export default function PublicProfile() {
                 {/* Footer */}
                 <div className="text-center mt-8 pt-6 border-t border-[var(--color-bg-tertiary)]">
                     <p className="text-xs text-[var(--color-fg-tertiary)]">
-                        Powered by <span className="font-medium">Koito</span> • Self-hosted music analytics
+                        Powered by <span className="font-medium">Beat Scrobble</span> • Self-hosted music analytics
                     </p>
                 </div>
             </div>

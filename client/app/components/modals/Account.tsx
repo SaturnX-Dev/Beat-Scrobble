@@ -63,7 +63,7 @@ export default function Account() {
             <form action="#" onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4">
                 <div className="flex flex gap-4">
                     <input
-                        name="koito-update-username"
+                        name="beat-scrobble-update-username"
                         type="text"
                         placeholder="Update username"
                         className="w-full mx-auto fg bg rounded p-2"
@@ -78,7 +78,7 @@ export default function Account() {
             <form action="#" onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4">
                 <div className="flex flex gap-4">
                     <input
-                        name="koito-update-password"
+                        name="beat-scrobble-update-password"
                         type="password"
                         placeholder="Update password"
                         className="w-full mx-auto fg bg rounded p-2"
@@ -86,7 +86,7 @@ export default function Account() {
                         onChange={(e) => setPassword(e.target.value)}
                     />
                     <input
-                        name="koito-confirm-password"
+                        name="beat-scrobble-confirm-password"
                         type="password"
                         placeholder="Confirm new password"
                         className="w-full mx-auto fg bg rounded p-2"

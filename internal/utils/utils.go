@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gabehf/koito/internal/mbz"
-	"github.com/gabehf/koito/internal/models"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/mbz"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
 	"github.com/google/uuid"
 )
 

@@ -1,5 +1,5 @@
-const CACHE_NAME = 'koito-v1';
-const API_CACHE = 'koito-api-v1';
+const CACHE_NAME = 'beat-scrobble-v1';
+const API_CACHE = 'beat-scrobble-api-v1';
 
 // Assets to cache on install
 const STATIC_ASSETS = [

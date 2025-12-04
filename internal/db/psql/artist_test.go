@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/gabehf/koito/internal/catalog"
-	"github.com/gabehf/koito/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/catalog"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

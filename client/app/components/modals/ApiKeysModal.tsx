@@ -156,7 +156,7 @@ export default function ApiKeysModal() {
         <div className="flex flex-col gap-8 pb-8">
             {/* Internal API Keys Section */}
             <div className="">
-                <h2 className="text-xl font-bold mb-4">Koito API Keys</h2>
+                <h2 className="text-xl font-bold mb-4">Beat Scrobble API Keys</h2>
                 <div className="flex flex-col gap-4 relative">
                     {displayData.map((v) => (
                         <div className="flex gap-2" key={v.key}>
