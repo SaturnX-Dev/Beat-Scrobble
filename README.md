@@ -43,8 +43,12 @@
 - **Dark Mode** - Full dark theme support
 
 #### 🎵 Spotify Integration
-- **Metadata Fetching** - Enriches your library with high-quality metadata
+- **Metadata Fetching** - Enriches your library with genres, popularity, and release              dates
+- **Artist Metadata** - Genres, popularity scores, Spotify IDs
+- **Album Metadata** - Release dates, genres, popularity
 - **Image Search** - Search and replace album/artist images directly from Spotify
+- **Refresh Button** - One-click metadata refresh on Artist/Album pages
+- **Settings Panel** - Easy credential management in Settings → Spotify
 - **Token Management** - Securely handles Spotify tokens (Client Credentials)
 
 #### ☁️ Server-Side Storage
@@ -239,6 +243,9 @@ To import, go to **Settings → Backup** or place files in the `/etc/beat_scrobb
 - `GET /apis/web/v1/user/theme` - Get user theme
 - `POST /apis/web/v1/user/theme` - Save user theme
 - `POST /apis/web/v1/user/profile-image` - Upload profile image
+- `GET /apis/web/v1/spotify/configured` - Check if Spotify is configured
+- `GET /apis/web/v1/spotify/search` - Search Spotify for images
+- `POST /apis/web/v1/spotify/fetch-metadata` - Fetch metadata from Spotify
 
 ### ListenBrainz Compatible
 - `POST /apis/listenbrainz/1/submit-listens` - Submit scrobbles
