@@ -27,21 +27,23 @@ func GetUserPreferencesHandler(store db.DB) http.HandlerFunc {
 
 		preferencesJSON, err := store.GetUserPreferences(ctx, user.ID)
 		if err != nil {
-			// If no preferences found, return empty object
-			if err.Error() == "sql: no rows in result set" {
-				l.Debug().Msgf("GetUserPreferencesHandler: No preferences found for user %d, returning empty", user.ID)
-				utils.WriteJSON(w, http.StatusOK, map[string]interface{}{})
-				return
-			}
 			l.Error().Err(err).Msg("GetUserPreferencesHandler: Database error")
 			utils.WriteError(w, "failed to retrieve preferences", http.StatusInternalServerError)
 			return
 		}
 
+		// Handle nil or empty preferences - return empty object
+		if preferencesJSON == nil || len(preferencesJSON) == 0 {
+			l.Debug().Msgf("GetUserPreferencesHandler: No preferences found for user %d, returning empty", user.ID)
+			utils.WriteJSON(w, http.StatusOK, map[string]interface{}{})
+			return
+		}
+
 		var preferences map[string]interface{}
 		if err := json.Unmarshal(preferencesJSON, &preferences); err != nil {
-			l.Error().Err(err).Msg("GetUserPreferencesHandler: Failed to unmarshal preferences")
-			utils.WriteError(w, "invalid preferences data", http.StatusInternalServerError)
+			l.Warn().Err(err).Msg("GetUserPreferencesHandler: Failed to unmarshal preferences, returning empty")
+			// Return empty object instead of error for corrupted data
+			utils.WriteJSON(w, http.StatusOK, map[string]interface{}{})
 			return
 		}
 
