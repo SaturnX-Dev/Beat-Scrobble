@@ -102,6 +102,9 @@ func bindRoutes(
 			// Theme persistence
 			r.Get("/user/theme", handlers.GetUserThemeHandler(db))
 			r.Post("/user/theme", handlers.SaveUserThemeHandler(db))
+			// User preferences (aura, etc.)
+			r.Get("/user/preferences", handlers.GetUserPreferencesHandler(db))
+			r.Post("/user/preferences", handlers.SaveUserPreferencesHandler(db))
 		})
 	})
 

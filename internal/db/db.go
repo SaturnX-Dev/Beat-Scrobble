@@ -86,6 +86,9 @@ type DB interface {
 	// Theme
 	SaveUserTheme(ctx context.Context, userId int32, themeData []byte) error
 	GetUserTheme(ctx context.Context, userId int32) ([]byte, error)
+	// Preferences
+	SaveUserPreferences(ctx context.Context, userId int32, preferencesData []byte) error
+	GetUserPreferences(ctx context.Context, userId int32) ([]byte, error)
 	// Lifecycle
 	Ping(ctx context.Context) error
 	Close(ctx context.Context)

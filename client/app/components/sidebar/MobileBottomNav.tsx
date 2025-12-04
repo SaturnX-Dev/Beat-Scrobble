@@ -1,6 +1,6 @@
 import { Home, List, Search, MoreHorizontal, Activity, User, Settings } from "lucide-react";
 import { Link, useLocation } from "react-router";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import SearchModal from "~/components/modals/SearchModal";
 import SettingsModal from "~/components/modals/SettingsModal";
 
@@ -9,6 +9,14 @@ export default function MobileBottomNav() {
     const [searchOpen, setSearchOpen] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+    const [navHeight, setNavHeight] = useState(0);
+    const navRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (navRef.current) {
+            setNavHeight(navRef.current.offsetHeight);
+        }
+    }, []);
 
     const isActive = (path: string) => location.pathname === path;
 
@@ -24,7 +32,10 @@ export default function MobileBottomNav() {
                         className="md:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
                         onClick={() => setMoreMenuOpen(false)}
                     />
-                    <div className="md:hidden fixed bottom-[92px] left-0 right-0 z-[60] flex justify-center px-4">
+                    <div
+                        style={{ bottom: `${navHeight + 12}px` }}
+                        className="md:hidden fixed left-0 right-0 z-[60] flex justify-center px-4"
+                    >
                         <div className="w-full max-w-md bg-[var(--color-bg)]/98 backdrop-blur-xl border border-[var(--color-bg-tertiary)] shadow-[0_-10px_40px_rgba(0,0,0,0.3)] rounded-3xl overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
                             <div className="p-2 space-y-1">
                                 <Link
@@ -41,7 +52,7 @@ export default function MobileBottomNav() {
                                         }`}>
                                         <Activity size={20} strokeWidth={2.5} />
                                     </div>
-                                    <div className="flex-1 min-w-0">
+                                    <div className="w-full flex-1 text-left min-w-0">
                                         <span className="font-semibold text-base block leading-tight">Stats</span>
                                         <span className="text-xs text-[var(--color-fg-secondary)] truncate block">View your listening stats</span>
                                     </div>
@@ -61,7 +72,7 @@ export default function MobileBottomNav() {
                                         }`}>
                                         <User size={20} strokeWidth={2.5} />
                                     </div>
-                                    <div className="flex-1 min-w-0">
+                                    <div className="w-full flex-1 text-left min-w-0">
                                         <span className="font-semibold text-base block leading-tight">Profile</span>
                                         <span className="text-xs text-[var(--color-fg-secondary)] truncate block">Your listening profile</span>
                                     </div>
@@ -77,7 +88,7 @@ export default function MobileBottomNav() {
                                     <div className="p-2.5 rounded-xl bg-[var(--color-bg-secondary)] flex-shrink-0">
                                         <Settings size={20} strokeWidth={2.5} />
                                     </div>
-                                    <div className="flex-1 text-left min-w-0">
+                                    <div className="w-full flex-1 text-left min-w-0">
                                         <span className="font-semibold text-base block leading-tight">Settings</span>
                                         <span className="text-xs text-[var(--color-fg-secondary)] truncate block">App preferences</span>
                                     </div>
@@ -89,7 +100,7 @@ export default function MobileBottomNav() {
             )}
 
             {/* Mobile Bottom Navigation */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-bg-secondary)]/95 backdrop-blur-xl border-t border-[var(--color-bg-tertiary)] safe-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+            <div ref={navRef} className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-bg-secondary)]/95 backdrop-blur-xl border-t border-[var(--color-bg-tertiary)] safe-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
                 <div className="flex items-center justify-around px-2 py-3">
                     <Link
                         to="/"

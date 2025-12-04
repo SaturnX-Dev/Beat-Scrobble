@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { usePreferences } from "~/hooks/usePreferences";
 
 const auraStyles = [
     { id: 'circle', name: 'Circle', desc: 'Classic circular aura' },
@@ -43,20 +44,22 @@ const availableTargets = [
 ];
 
 export function CardAuraSelector() {
+    const { getPreference, savePreference } = usePreferences();
+
     const [selectedAura, setSelectedAura] = useState(() =>
-        typeof window !== 'undefined' ? localStorage.getItem('card-aura-style') || 'circle' : 'circle'
+        getPreference('card-aura-style', 'circle')
     );
     const [isEnabled, setIsEnabled] = useState(() =>
-        typeof window !== 'undefined' ? localStorage.getItem('card-aura-enabled') !== 'false' : true
+        getPreference('card-aura-enabled', true)
     );
     const [opacity, setOpacity] = useState(() =>
-        typeof window !== 'undefined' ? parseFloat(localStorage.getItem('card-aura-opacity') || '0.3') : 0.3
+        getPreference('card-aura-opacity', 0.3)
     );
     const [targets, setTargets] = useState<string[]>(() =>
-        typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('card-aura-targets') || '["dashboard"]') : ['dashboard']
+        getPreference('card-aura-targets', ['dashboard'])
     );
     const [perCardStyles, setPerCardStyles] = useState<Record<string, string>>(() =>
-        typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('card-aura-per-card-styles') || '{}') : {}
+        getPreference('card-aura-per-card-styles', {})
     );
     const [isExpanded, setIsExpanded] = useState(false);
     const [expandedCard, setExpandedCard] = useState<string | null>(null);
@@ -69,14 +72,14 @@ export function CardAuraSelector() {
     }, [selectedAura, opacity]);
 
     useEffect(() => {
-        localStorage.setItem('card-aura-per-card-styles', JSON.stringify(perCardStyles));
+        savePreference('card-aura-per-card-styles', perCardStyles);
         window.dispatchEvent(new Event('aura-settings-changed'));
-    }, [perCardStyles]);
+    }, [perCardStyles, savePreference]);
 
     const updateSettings = (newEnabled: boolean, newOpacity: number, newTargets: string[]) => {
-        localStorage.setItem('card-aura-enabled', newEnabled.toString());
-        localStorage.setItem('card-aura-opacity', newOpacity.toString());
-        localStorage.setItem('card-aura-targets', JSON.stringify(newTargets));
+        savePreference('card-aura-enabled', newEnabled);
+        savePreference('card-aura-opacity', newOpacity);
+        savePreference('card-aura-targets', newTargets);
         window.dispatchEvent(new Event('aura-settings-changed'));
     };
 
@@ -218,7 +221,7 @@ export function CardAuraSelector() {
                                 key={style.id}
                                 onClick={() => {
                                     setSelectedAura(style.id);
-                                    localStorage.setItem('card-aura-style', style.id);
+                                    savePreference('card-aura-style', style.id);
                                     document.documentElement.setAttribute('data-aura-style', style.id);
                                 }}
                                 className={`p-3 rounded-xl border text-left transition-all ${selectedAura === style.id
