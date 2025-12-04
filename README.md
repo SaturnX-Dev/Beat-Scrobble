@@ -47,6 +47,20 @@
 - **Full Backup/Restore** - Settings, themes, and history
 - **Manual Scrobble** - Add listens manually
 
+### 🆚 Beat Scrobble vs Koito
+
+| Feature | Koito | Beat Scrobble |
+| :--- | :---: | :---: |
+| **Core Scrobbling** | ✅ | ✅ |
+| **ListenBrainz Sync** | ✅ | ✅ |
+| **AI Critiques** | ❌ | ✅ |
+| **AI Playlists** | ❌ | ✅ |
+| **Yearly Recap** | ❌ | ✅ |
+| **Mobile-First UI** | ❌ | ✅ |
+| **Themes & Glassmorphism** | ❌ | ✅ |
+| **Full Backup/Restore** | ❌ | ✅ |
+| **Profile Sharing** | ❌ | ✅ |
+
 ---
 
 ## 📸 Screenshots
@@ -124,13 +138,37 @@ cd client && npm install && npm run build
 
 ---
 
-## 📦 Importing Data
+## 🆚 Beat Scrobble vs Koito
 
-Beat Scrobble supports importing from:
-- **Last.fm** - Export via lastfm-to-csv
-- **ListenBrainz** - Direct JSON export
-- **Maloja** - Native backup format
-- **Spotify** - Extended streaming history
+| Feature | Koito (Legacy) | Beat Scrobble |
+|---------|----------------|---------------|
+| **UI/UX** | Basic, Desktop-focused | Mobile-First, Glassmorphism, Animations |
+| **Themes** | Single Theme | Multiple Themes + Aura Effects |
+| **AI Features** | ❌ | ✅ Critique, Playlists, Profile Analysis |
+| **Analytics** | Basic Stats | ✅ Yearly Recap, Heatmaps, Advanced Filters |
+| **Backup** | History Only (v1) | ✅ Full Backup (History + Settings + Themes) |
+| **Import** | Basic | ✅ Enhanced (Koito v1 + v2, Spotify, etc.) |
+| **Sharing** | ❌ | ✅ Public Profiles, Configurable Hostname |
+
+---
+
+## 📦 Backup & Import
+
+### Backup
+Beat Scrobble offers two backup modes:
+- **Full Backup (Recommended)**: Saves your entire listening history, user preferences, themes, and AI configurations.
+- **Legacy Export**: Saves only listening history in a format compatible with older Koito instances.
+
+### Import
+Supports importing from various sources:
+- **Beat Scrobble / Koito**: Full support for v1 (Legacy) and v2 (Full Backup) files.
+  - *Note: Listening history imports require an application restart to process.*
+- **Last.fm**: Export via lastfm-to-csv or similar tools.
+- **ListenBrainz**: Direct JSON export.
+- **Maloja**: Native backup format.
+- **Spotify**: Extended streaming history JSON.
+
+To import, go to **Settings → Backup** or place files in the `/etc/beat_scrobble/import` directory.
 
 ---
 

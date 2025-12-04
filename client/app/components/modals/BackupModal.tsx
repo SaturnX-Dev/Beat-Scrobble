@@ -4,7 +4,7 @@ import { ChevronDown, Download, Upload, Archive } from "lucide-react";
 
 type ExportMode = 'full' | 'legacy';
 
-export default function ExportModal() {
+export default function BackupModal() {
     const [loading, setLoading] = useState(false);
     const [importLoading, setImportLoading] = useState(false);
     const [error, setError] = useState('');
@@ -82,7 +82,7 @@ export default function ExportModal() {
         <div className="flex flex-col gap-6">
             <div className="flex items-center gap-3">
                 <Archive className="text-[var(--color-primary)]" size={24} />
-                <h2 className="text-xl font-bold">Backup</h2>
+                <h2 className="text-xl font-bold">Backup & Restore</h2>
             </div>
 
             <p className="text-sm text-[var(--color-fg-secondary)]">
@@ -158,7 +158,8 @@ export default function ExportModal() {
             {/* Notes */}
             <div className="text-xs text-[var(--color-fg-tertiary)] space-y-1">
                 <p>• Full Backup includes your settings, themes, and complete listening history.</p>
-                <p>• Restore will only apply settings and themes. Scrobble import is not yet supported.</p>
+                <p>• Settings and themes are restored immediately.</p>
+                <p>• <strong>Listening history will be imported upon next application restart.</strong></p>
                 <p>• Legacy export is provided for compatibility with older import tools.</p>
             </div>
 

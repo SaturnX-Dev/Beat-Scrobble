@@ -23,6 +23,8 @@ services:
     environment:
       - BEAT_SCROBBLE_DATABASE_URL=postgres://postgres:secret@beat-scrobble-db:5432/beatscrobbledb?sslmode=disable
       - BEAT_SCROBBLE_ALLOWED_HOSTS=*
+    volumes:
+      - ./config:/etc/beat_scrobble
     depends_on:
       - beat-scrobble-db
     networks:

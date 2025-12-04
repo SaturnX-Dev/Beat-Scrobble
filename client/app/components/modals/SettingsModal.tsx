@@ -5,7 +5,7 @@ import { ThemeSwitcher } from "../themeSwitcher/ThemeSwitcher";
 import { useAppContext } from "~/providers/AppProvider";
 import ApiKeysModal from "./ApiKeysModal";
 import { AsyncButton } from "../AsyncButton";
-import ExportModal from "./ExportModal";
+import BackupModal from "./BackupModal";
 import { usePreferences } from "~/hooks/usePreferences";
 import { useState, useEffect } from "react";
 import { Globe, Share2 } from "lucide-react";
@@ -45,7 +45,7 @@ export default function SettingsModal({ open, setOpen }: Props) {
                             <TabsTrigger className={triggerClasses} value="API Keys">
                                 API Keys
                             </TabsTrigger>
-                            <TabsTrigger className={triggerClasses} value="Export">Export</TabsTrigger>
+                            <TabsTrigger className={triggerClasses} value="Backup">Backup</TabsTrigger>
                             <TabsTrigger className={triggerClasses} value="Sharing">Sharing</TabsTrigger>
                         </>
                     )}
@@ -61,8 +61,8 @@ export default function SettingsModal({ open, setOpen }: Props) {
                 <TabsContent value="API Keys" className={contentClasses}>
                     <ApiKeysModal />
                 </TabsContent>
-                <TabsContent value="Export" className={contentClasses}>
-                    <ExportModal />
+                <TabsContent value="Backup" className={contentClasses}>
+                    <BackupModal />
                 </TabsContent>
                 <TabsContent value="Sharing" className={contentClasses}>
                     <div className="flex flex-col gap-6">

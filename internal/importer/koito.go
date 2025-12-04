@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -22,22 +23,33 @@ import (
 func ImportBeatScrobbleFile(ctx context.Context, store db.DB, filename string) error {
 	l := logger.FromContext(ctx)
 	l.Info().Msgf("Beginning Beat Scrobble import on file: %s", filename)
-	data := new(export.BeatScrobbleExport)
 	f, err := os.Open(path.Join(cfg.ConfigDir(), "import", filename))
 	if err != nil {
 		return fmt.Errorf("ImportBeatScrobbleFile: os.Open: %w", err)
 	}
 	defer f.Close()
-	err = json.NewDecoder(f).Decode(data)
+	return importBeatScrobbleData(ctx, store, f)
+}
+
+// ImportBeatScrobbleFromReader imports Beat Scrobble data from an io.Reader
+func ImportBeatScrobbleFromReader(ctx context.Context, store db.DB, r io.Reader) error {
+	return importBeatScrobbleData(ctx, store, r)
+}
+
+func importBeatScrobbleData(ctx context.Context, store db.DB, r io.Reader) error {
+	l := logger.FromContext(ctx)
+	data := new(export.BeatScrobbleExport)
+	err := json.NewDecoder(r).Decode(data)
 	if err != nil {
-		return fmt.Errorf("ImportBeatScrobbleFile: Decode: %w", err)
+		return fmt.Errorf("importBeatScrobbleData: Decode: %w", err)
 	}
 
-	if data.Version != "1" {
-		return fmt.Errorf("ImportBeatScrobbleFile: unupported version: %s", data.Version)
+	// Support both v1 (legacy Koito) and v2 (Beat Scrobble with prefs/theme)
+	if data.Version != "1" && data.Version != "2" {
+		return fmt.Errorf("importBeatScrobbleData: unsupported version: %s", data.Version)
 	}
 
-	l.Info().Msgf("Beginning data import for user: %s", data.User)
+	l.Info().Msgf("Beginning data import for user: %s (format v%s)", data.User, data.Version)
 
 	count := 0
 
@@ -163,7 +175,8 @@ func ImportBeatScrobbleFile(ctx context.Context, store db.DB, filename string) e
 		count++
 	}
 
-	return finishImport(ctx, filename, count)
+	l.Info().Msgf("importBeatScrobbleData: Finished importing %d listens", count)
+	return nil
 }
 func getPrimaryAliasFromAliasSlice(aliases []models.Alias) string {
 	for _, a := range aliases {
