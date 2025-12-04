@@ -317,6 +317,45 @@ export default function ApiKeysModal() {
                             </div>
                         )}
 
+                        <hr className="border-[var(--color-bg-tertiary)] my-2" />
+
+                        {/* AI Playlists Toggle */}
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <span className="text-sm font-medium">AI Playlists</span>
+                                <p className="text-xs text-[var(--color-fg-secondary)]">Generate personalized playlists based on your listening</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    const currentValue = getPreference('ai_playlists_enabled', false);
+                                    const newValue = !currentValue;
+                                    savePreference('ai_playlists_enabled', newValue);
+                                }}
+                                className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${getPreference('ai_playlists_enabled', false) ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-bg-tertiary)]'
+                                    }`}
+                            >
+                                <div
+                                    className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${getPreference('ai_playlists_enabled', false) ? 'translate-x-5' : 'translate-x-0'
+                                        }`}
+                                />
+                            </button>
+                        </div>
+
+                        {getPreference('ai_playlists_enabled', false) && (
+                            <div className="flex flex-col gap-2 mt-2">
+                                <label className="text-sm font-medium">Playlist Generation Prompt</label>
+                                <textarea
+                                    className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-md p-2 text-sm min-h-[80px]"
+                                    defaultValue={getPreference('ai_playlists_prompt', 'Based on the user listening history, create a personalized playlist. Select tracks that match the requested mood or genre. Return a JSON array of track suggestions with name, artist, and reasoning.')}
+                                    onBlur={(e) => savePreference('ai_playlists_prompt', e.target.value)}
+                                    placeholder="Instructions for AI playlist generation..."
+                                />
+                                <p className="text-xs text-[var(--color-fg-tertiary)]">
+                                    Playlists are regenerated every 7 days automatically
+                                </p>
+                            </div>
+                        )}
+
                     </div>
                 </div>
             </div>

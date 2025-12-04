@@ -111,7 +111,7 @@ export default function Home() {
               <div className="bg-[var(--color-bg-secondary)]/30 backdrop-blur-md rounded-3xl p-6 border border-[var(--color-bg-tertiary)]/50 flex flex-col max-h-[600px]">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-bold text-[var(--color-fg)]">History</h2>
-                  <Link to="/history" className="text-xs font-bold text-[var(--color-primary)] hover:underline">Full History</Link>
+                  <Link to="/timeline" className="text-xs font-bold text-[var(--color-primary)] hover:underline">Full History</Link>
                 </div>
                 <div className="overflow-y-auto pr-2 custom-scrollbar">
                   <LastPlays showNowPlaying={false} limit={20} hideArtists={false} />

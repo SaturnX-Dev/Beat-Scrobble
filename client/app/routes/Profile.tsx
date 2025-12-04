@@ -1,12 +1,15 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Link } from "react-router";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { getLastListens, getStats, getTopArtists, getTopAlbums, imageUrl, type Listen, type PaginatedResponse } from "api/api";
-import { BarChart3, User, TrendingUp, Clock, Disc, Music } from "lucide-react";
+import { BarChart3, User, TrendingUp, Clock, Disc, Music, Share2, Gift, Copy, Check } from "lucide-react";
 import ProfileCritique from "~/components/ProfileCritique";
 import PeriodSelector from "~/components/PeriodSelector";
 import ActivityGrid from "~/components/ActivityGrid";
 import TimelineView from "~/components/TimelineView";
+import YearlyRecapModal from "~/components/modals/YearlyRecapModal";
+import { usePreferences } from "~/hooks/usePreferences";
+import { useAppContext } from "~/providers/AppProvider";
 
 interface Artist {
     id: number;
@@ -33,6 +36,23 @@ interface StatsData {
 
 export default function Profile() {
     const [period, setPeriod] = useState<string>("week");
+    const [recapOpen, setRecapOpen] = useState(false);
+    const [shareUrl, setShareUrl] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
+    const { getPreference, savePreference } = usePreferences();
+    const { user } = useAppContext();
+
+    // Check if it's December 15 and show recap popup
+    useEffect(() => {
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const isRecapDay = today.getMonth() === 11 && today.getDate() === 15; // Dec 15
+        const hasViewedRecap = getPreference(`yearly_recap_viewed_${currentYear}`, false);
+
+        if (isRecapDay && !hasViewedRecap) {
+            setRecapOpen(true);
+        }
+    }, [getPreference]);
 
     // Infinite Query for Listens (History timeline)
     const {
@@ -105,17 +125,77 @@ export default function Profile() {
 
     const periodLabel = period === "all_time" ? "All Time" : period.charAt(0).toUpperCase() + period.slice(1);
 
+    // Share profile
+    const handleShare = () => {
+        const hostname = getPreference('share_hostname', window.location.origin);
+        const username = user?.username || 'user';
+        const url = `${hostname}/u/${username}`;
+        setShareUrl(url);
+    };
+
+    const copyShareUrl = () => {
+        if (shareUrl) {
+            navigator.clipboard.writeText(shareUrl);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
+
     return (
         <main className="min-h-screen w-full bg-gradient-to-b from-[var(--color-bg-secondary)] to-[var(--color-bg)] px-4 py-6 md:py-10 pb-24">
+            <YearlyRecapModal open={recapOpen} setOpen={setRecapOpen} />
+
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-6 md:mb-8">
                     <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[var(--color-fg)] tracking-tight mb-2">
                         Your Profile
                     </h1>
-                    <p className="text-[var(--color-fg-secondary)] text-sm md:text-base max-w-lg mx-auto">
+                    <p className="text-[var(--color-fg-secondary)] text-sm md:text-base max-w-lg mx-auto mb-4">
                         Complete statistics, trends, and insights about your listening habits
                     </p>
+
+                    {/* Action buttons */}
+                    <div className="flex items-center justify-center gap-3">
+                        <button
+                            onClick={handleShare}
+                            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dim)] text-white rounded-xl text-sm font-medium transition-all"
+                        >
+                            <Share2 size={16} />
+                            Share Profile
+                        </button>
+                        <button
+                            onClick={() => setRecapOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl text-sm font-medium transition-all"
+                        >
+                            <Gift size={16} />
+                            {new Date().getFullYear()} Recap
+                        </button>
+                    </div>
+
+                    {/* Share URL popup */}
+                    {shareUrl && (
+                        <div className="mt-4 p-4 bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-bg-tertiary)] max-w-md mx-auto">
+                            <p className="text-xs text-[var(--color-fg-secondary)] mb-2">Share this link:</p>
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={shareUrl}
+                                    readOnly
+                                    className="flex-1 bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-lg px-3 py-2 text-sm"
+                                />
+                                <button
+                                    onClick={copyShareUrl}
+                                    className="px-3 py-2 bg-[var(--color-primary)] text-white rounded-lg"
+                                >
+                                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                                </button>
+                            </div>
+                            <p className="text-[10px] text-[var(--color-fg-tertiary)] mt-2">
+                                Configure your hostname in Settings → Sharing
+                            </p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Centered Period Selector */}

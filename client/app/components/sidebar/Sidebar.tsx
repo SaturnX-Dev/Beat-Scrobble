@@ -1,4 +1,4 @@
-import { Home, List, User } from "lucide-react";
+import { Home, List, User, Music } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { useState, useEffect } from "react";
 import SidebarSettings from "./SidebarSettings";
@@ -51,6 +51,12 @@ export default function Sidebar() {
                         icon={List}
                         isActive={isActive('/timeline')}
                         keyHint="Timeline"
+                    />
+                    <SidebarItem
+                        to="/playlists"
+                        icon={Music}
+                        isActive={isActive('/playlists')}
+                        keyHint="Playlists"
                     />
                     <SidebarItem
                         to="/profile"

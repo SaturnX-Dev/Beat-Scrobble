@@ -66,7 +66,7 @@ export default function DashboardMetrics() {
                     {stats ? Math.round(stats.minutes_listened / 60) : "-"} hours listened
                 </p>
 
-                <Link to="/history" className="relative z-10 w-full block text-center bg-[var(--color-primary)] hover:bg-[var(--color-primary-dim)] text-white text-sm font-bold py-3 rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5 uppercase tracking-wide">
+                <Link to="/timeline" className="relative z-10 w-full block text-center bg-[var(--color-primary)] hover:bg-[var(--color-primary-dim)] text-white text-sm font-bold py-3 rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5 uppercase tracking-wide">
                     History
                 </Link>
             </div>

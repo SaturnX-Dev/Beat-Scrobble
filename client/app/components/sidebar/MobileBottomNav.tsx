@@ -1,4 +1,4 @@
-import { Home, List, Search, MoreHorizontal, User, Settings } from "lucide-react";
+import { Home, List, Search, MoreHorizontal, User, Settings, Music } from "lucide-react";
 import { Link, useLocation } from "react-router";
 import { useState, useEffect, useRef } from "react";
 import SearchModal from "~/components/modals/SearchModal";
@@ -38,6 +38,26 @@ export default function MobileBottomNav() {
                     >
                         <div className="w-full max-w-md bg-[var(--color-bg)]/98 backdrop-blur-xl border border-[var(--color-bg-tertiary)] shadow-[0_-10px_40px_rgba(0,0,0,0.3)] rounded-3xl overflow-hidden animate-in slide-in-from-bottom-4 duration-200">
                             <div className="p-2 space-y-1">
+                                <Link
+                                    to="/playlists"
+                                    onClick={() => setMoreMenuOpen(false)}
+                                    className={`flex items-center gap-4 px-5 py-3.5 rounded-2xl transition-all duration-150 ${isActive('/playlists')
+                                        ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/15 shadow-sm'
+                                        : 'text-[var(--color-fg)] hover:bg-[var(--color-bg-tertiary)]/50 active:bg-[var(--color-bg-tertiary)]'
+                                        }`}
+                                >
+                                    <div className={`p-2.5 rounded-xl flex-shrink-0 ${isActive('/playlists')
+                                        ? 'bg-[var(--color-primary)]/20'
+                                        : 'bg-[var(--color-bg-secondary)]'
+                                        }`}>
+                                        <Music size={20} strokeWidth={2.5} />
+                                    </div>
+                                    <div className="w-full flex-1 text-left min-w-0">
+                                        <span className="font-semibold text-base block leading-tight">Playlists</span>
+                                        <span className="text-xs text-[var(--color-fg-secondary)] truncate block">AI-generated playlists</span>
+                                    </div>
+                                </Link>
+
                                 <Link
                                     to="/profile"
                                     onClick={() => setMoreMenuOpen(false)}
