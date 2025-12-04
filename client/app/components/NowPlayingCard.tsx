@@ -15,7 +15,7 @@ export default function NowPlayingCard() {
         refetchInterval: 10000, // Refresh every 10s
     });
 
-    const { getPreference } = usePreferences();
+    const { getPreference, savePreference } = usePreferences();
     const [critique, setCritique] = useState<string | null>(null);
     const [isCritiqueLoading, setIsCritiqueLoading] = useState(false);
     const lastTrackIdRef = useRef<number | null>(null);
@@ -34,9 +34,9 @@ export default function NowPlayingCard() {
             return;
         }
 
-        // Check cache first
+        // Check server-side cache first
         const cacheKey = `comet_ai_track_${trackId}`;
-        const cached = localStorage.getItem(cacheKey);
+        const cached = getPreference(cacheKey, null);
         if (cached) {
             setCritique(cached);
             lastTrackIdRef.current = trackId;
@@ -68,7 +68,8 @@ export default function NowPlayingCard() {
             })
             .then(data => {
                 setCritique(data.critique);
-                localStorage.setItem(cacheKey, data.critique);
+                // Save to server-side preferences for caching
+                savePreference(cacheKey, data.critique);
             })
             .catch(err => {
                 console.error("AI Critique error:", err);
@@ -78,7 +79,7 @@ export default function NowPlayingCard() {
                 setIsCritiqueLoading(false);
             });
 
-    }, [npData?.track?.id, aiEnabled]);
+    }, [npData?.track?.id, aiEnabled, getPreference, savePreference]);
 
     if (isLoading) {
         return (

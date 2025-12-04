@@ -117,7 +117,7 @@ export default function Playlists() {
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center gap-2 mb-3 px-4 py-1.5 bg-[var(--color-primary)]/10 rounded-full">
                         <Zap size={16} className="text-[var(--color-primary)]" />
-                        <span className="text-sm font-medium text-[var(--color-primary)]">AI Powered</span>
+                        <span className="text-sm font-medium text-[var(--color-primary)]">Comet AI</span>
                     </div>
                     <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[var(--color-fg)] tracking-tight mb-2">
                         Your Playlists

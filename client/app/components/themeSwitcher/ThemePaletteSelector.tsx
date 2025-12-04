@@ -32,8 +32,48 @@ export function ThemePaletteSelector({ setTheme, setCustom, setCustomTheme }: Th
                     <div>
                         <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Modern</h4>
                         <div className="grid grid-cols-2 items-center gap-2">
+                            {/* Dark Theme (Apple Dark) */}
+                            <ThemeOptionLegacy
+                                setTheme={(name: string) => {
+                                    const darkTheme = {
+                                        bg: "#000000", bgSecondary: "#1c1c1e", bgTertiary: "#2c2c2e",
+                                        fg: "#ffffff", fgSecondary: "#8e8e93", fgTertiary: "#48484a",
+                                        primary: "#0a84ff", primaryDim: "#007aff", accent: "#5e5ce6", accentDim: "#5e5ce6",
+                                        error: "#ff453a", warning: "#ff9f0a", success: "#32d74b", info: "#64d2ff"
+                                    };
+                                    setCustomTheme(darkTheme);
+                                    setCustom(JSON.stringify(darkTheme, null, 2));
+                                }}
+                                theme={{
+                                    bg: "#000000", bgSecondary: "#1c1c1e", bgTertiary: "#2c2c2e",
+                                    fg: "#ffffff", fgSecondary: "#8e8e93", fgTertiary: "#48484a",
+                                    primary: "#0a84ff", primaryDim: "#007aff", accent: "#5e5ce6", accentDim: "#5e5ce6",
+                                    error: "#ff453a", warning: "#ff9f0a", success: "#32d74b", info: "#64d2ff"
+                                }}
+                                themeName="Dark"
+                            />
+                            {/* Light Theme (Apple Light) */}
+                            <ThemeOptionLegacy
+                                setTheme={(name: string) => {
+                                    const lightTheme = {
+                                        bg: "#f2f2f7", bgSecondary: "#ffffff", bgTertiary: "#e5e5ea",
+                                        fg: "#000000", fgSecondary: "#8e8e93", fgTertiary: "#c7c7cc",
+                                        primary: "#007aff", primaryDim: "#007aff", accent: "#5856d6", accentDim: "#5856d6",
+                                        error: "#ff3b30", warning: "#ff9500", success: "#34c759", info: "#5ac8fa"
+                                    };
+                                    setCustomTheme(lightTheme);
+                                    setCustom(JSON.stringify(lightTheme, null, 2));
+                                }}
+                                theme={{
+                                    bg: "#f2f2f7", bgSecondary: "#ffffff", bgTertiary: "#e5e5ea",
+                                    fg: "#000000", fgSecondary: "#8e8e93", fgTertiary: "#c7c7cc",
+                                    primary: "#007aff", primaryDim: "#007aff", accent: "#5856d6", accentDim: "#5856d6",
+                                    error: "#ff3b30", warning: "#ff9500", success: "#34c759", info: "#5ac8fa"
+                                }}
+                                themeName="Light"
+                            />
                             {Object.entries(themes)
-                                .filter(([name]) => ["rose", "slate", "ocean", "forest", "sunset", "purple", "snow", "coral", "teal", "amber", "lavender"].includes(name))
+                                .filter(([name]) => ["rose", "slate", "ocean", "forest", "sunset", "purple", "coral", "teal", "amber", "lavender"].includes(name))
                                 .map(([name, themeData]) => (
                                     <ThemeOptionLegacy
                                         setTheme={(themeName: string) => {
@@ -48,51 +88,6 @@ export function ThemePaletteSelector({ setTheme, setCustom, setCustomTheme }: Th
                                         themeName={name}
                                     />
                                 ))}
-                        </div>
-                    </div>
-
-                    {/* Apple Style */}
-                    <div>
-                        <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Apple Style</h4>
-                        <div className="grid grid-cols-2 items-center gap-2">
-                            <ThemeOptionLegacy
-                                setTheme={(name: string) => {
-                                    const appleTheme = {
-                                        bg: "#000000", bgSecondary: "#1c1c1e", bgTertiary: "#2c2c2e",
-                                        fg: "#ffffff", fgSecondary: "#8e8e93", fgTertiary: "#48484a",
-                                        primary: "#0a84ff", primaryDim: "#007aff", accent: "#5e5ce6", accentDim: "#5e5ce6",
-                                        error: "#ff453a", warning: "#ff9f0a", success: "#32d74b", info: "#64d2ff"
-                                    };
-                                    setCustomTheme(appleTheme);
-                                    setCustom(JSON.stringify(appleTheme, null, 2));
-                                }}
-                                theme={{
-                                    bg: "#000000", bgSecondary: "#1c1c1e", bgTertiary: "#2c2c2e",
-                                    fg: "#ffffff", fgSecondary: "#8e8e93", fgTertiary: "#48484a",
-                                    primary: "#0a84ff", primaryDim: "#007aff", accent: "#5e5ce6", accentDim: "#5e5ce6",
-                                    error: "#ff453a", warning: "#ff9f0a", success: "#32d74b", info: "#64d2ff"
-                                }}
-                                themeName="Apple Dark"
-                            />
-                            <ThemeOptionLegacy
-                                setTheme={(name: string) => {
-                                    const appleTheme = {
-                                        bg: "#f2f2f7", bgSecondary: "#ffffff", bgTertiary: "#e5e5ea",
-                                        fg: "#000000", fgSecondary: "#8e8e93", fgTertiary: "#c7c7cc",
-                                        primary: "#007aff", primaryDim: "#007aff", accent: "#5856d6", accentDim: "#5856d6",
-                                        error: "#ff3b30", warning: "#ff9500", success: "#34c759", info: "#5ac8fa"
-                                    };
-                                    setCustomTheme(appleTheme);
-                                    setCustom(JSON.stringify(appleTheme, null, 2));
-                                }}
-                                theme={{
-                                    bg: "#f2f2f7", bgSecondary: "#ffffff", bgTertiary: "#e5e5ea",
-                                    fg: "#000000", fgSecondary: "#8e8e93", fgTertiary: "#c7c7cc",
-                                    primary: "#007aff", primaryDim: "#007aff", accent: "#5856d6", accentDim: "#5856d6",
-                                    error: "#ff3b30", warning: "#ff9500", success: "#34c759", info: "#5ac8fa"
-                                }}
-                                themeName="Apple Light"
-                            />
                         </div>
                     </div>
 

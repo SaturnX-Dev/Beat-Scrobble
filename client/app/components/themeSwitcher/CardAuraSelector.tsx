@@ -79,13 +79,11 @@ export function CardAuraSelector() {
         if (typeof window !== 'undefined') {
             document.documentElement.setAttribute('data-aura-style', selectedAura);
             document.documentElement.style.setProperty('--aura-opacity', opacity.toString());
-            localStorage.setItem('card-aura-style', selectedAura);
         }
     }, [selectedAura, opacity]);
 
     useEffect(() => {
         savePreference('card-aura-per-card-styles', perCardStyles);
-        localStorage.setItem('card-aura-per-card-styles', JSON.stringify(perCardStyles));
         window.dispatchEvent(new Event('aura-settings-changed'));
     }, [perCardStyles, savePreference]);
 
@@ -93,11 +91,6 @@ export function CardAuraSelector() {
         savePreference('card-aura-enabled', newEnabled);
         savePreference('card-aura-opacity', newOpacity);
         savePreference('card-aura-targets', newTargets);
-
-        // Sync to localStorage for immediate consumption by components
-        localStorage.setItem('card-aura-enabled', String(newEnabled));
-        localStorage.setItem('card-aura-opacity', String(newOpacity));
-        localStorage.setItem('card-aura-targets', JSON.stringify(newTargets));
 
         window.dispatchEvent(new Event('aura-settings-changed'));
     };

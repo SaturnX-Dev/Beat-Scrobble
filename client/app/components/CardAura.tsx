@@ -1,5 +1,6 @@
 import { useAuraStyle } from "~/hooks/useAuraStyle";
 import { useEffect, useState } from "react";
+import { usePreferences } from "~/hooks/usePreferences";
 
 interface CardAuraProps {
     size?: 'small' | 'large';
@@ -11,47 +12,37 @@ export default function CardAura({ size = 'small', id, className = '' }: CardAur
     const auraClass = useAuraStyle(size, id);
     const [isEnabled, setIsEnabled] = useState(true);
     const [isTargetEnabled, setIsTargetEnabled] = useState(true);
+    const { getPreference, preferences } = usePreferences();
 
     useEffect(() => {
         const checkEnabled = () => {
-            // Check global enable
-            const globalEnabled = localStorage.getItem('card-aura-enabled') !== 'false';
+            // Check global enable from server preferences
+            const globalEnabled = getPreference('card-aura-enabled', true);
             setIsEnabled(globalEnabled);
 
             // Check specific target enable if ID is provided
             if (id) {
-                const targets = JSON.parse(localStorage.getItem('card-aura-targets') || '[]');
-                // If targets list is empty, default to enabled for backward compatibility or user preference?
-                // Let's say if list exists, we check. If not, maybe default to false for new items?
-                // Actually, let's default to true if not in list but list is empty? No, explicit selection is better.
-                // But for 'dashboard-cards' (which are the original ones), they should probably be enabled by default or separate.
-                // Let's treat 'dashboard-cards' as a special case or just another ID.
-
-                // If targets array includes the ID, it's enabled.
+                const targets = getPreference('card-aura-targets', ['dashboard']);
                 setIsTargetEnabled(targets.includes(id));
             } else {
-                // If no ID provided (e.g. legacy usage in DashboardMetrics), assume it's always enabled if global is enabled
-                // OR we can assign IDs to DashboardMetrics cards too.
+                // If no ID provided, assume it's always enabled if global is enabled
                 setIsTargetEnabled(true);
             }
         };
 
         checkEnabled();
 
-        // Listen for storage changes to update reactively
-        const handleStorageChange = () => {
+        // Listen for changes to update reactively
+        const handleSettingsChange = () => {
             checkEnabled();
         };
 
-        window.addEventListener('storage', handleStorageChange);
-        // Custom event for same-window updates
-        window.addEventListener('aura-settings-changed', handleStorageChange);
+        window.addEventListener('aura-settings-changed', handleSettingsChange);
 
         return () => {
-            window.removeEventListener('storage', handleStorageChange);
-            window.removeEventListener('aura-settings-changed', handleStorageChange);
+            window.removeEventListener('aura-settings-changed', handleSettingsChange);
         };
-    }, [id]);
+    }, [id, getPreference, preferences]);
 
     if (!isEnabled || !isTargetEnabled) return null;
 

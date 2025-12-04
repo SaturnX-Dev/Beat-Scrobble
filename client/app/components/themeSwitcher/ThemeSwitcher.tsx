@@ -5,6 +5,8 @@ import ThemeOptionLegacy, { ThemeOption } from "./ThemeOption";
 import { AsyncButton } from "../AsyncButton";
 import { CardAuraSelector } from "./CardAuraSelector";
 import { ThemePaletteSelector } from "./ThemePaletteSelector";
+import { CustomElementColors } from "./CustomElementColors";
+import { CustomBackground } from "./CustomBackground";
 
 export function ThemeSwitcher() {
   const { setTheme } = useTheme();
@@ -60,35 +62,6 @@ export function ThemeSwitcher() {
           <div>
             <h3 className="text-sm font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Advanced</h3>
             <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = '.json';
-                input.onchange = (e) => {
-                  const file = (e.target as HTMLInputElement).files?.[0];
-                  if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      try {
-                        const theme = JSON.parse(event.target?.result as string);
-                        setCustom(JSON.stringify(theme, null, 2));
-                        setCustomTheme(theme);
-                        alert('Theme imported!');
-                      } catch { alert('Invalid file'); }
-                    };
-                    reader.readAsText(file);
-                  }
-                };
-                input.click();
-              }} className="p-3 bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-bg-tertiary)] hover:border-[var(--color-primary)] transition-colors text-sm" title="Import JSON">
-                📥 Import
-              </button>
-              <button onClick={() => {
-                const url = `${window.location.origin}/?theme=${btoa(custom)}`;
-                navigator.clipboard.writeText(url);
-              }} className="p-3 bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-bg-tertiary)] hover:border-[var(--color-primary)] transition-colors text-sm" title="Share URL">
-                🔗 Share
-              </button>
               <button
                 onClick={() => {
                   const themeStore = window.open('https://github.com/topics/color-scheme', '_blank');
@@ -99,14 +72,26 @@ export function ThemeSwitcher() {
                 🏪 Themes
               </button>
               <button onClick={() => {
-                const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                const autoTheme = dark ? 'slate' : 'snow';
-                setTheme(autoTheme);
-                const selectedTheme = themes[autoTheme];
-                if (selectedTheme) {
-                  setCustom(JSON.stringify(selectedTheme, null, 2));
-                }
-              }} className="p-3 bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-bg-tertiary)] hover:border-[var(--color-primary)] transition-colors text-sm" title="Auto Mode">
+                const hour = new Date().getHours();
+                const isDaytime = hour >= 6 && hour < 18;
+                // Dark theme (Apple Dark)
+                const darkTheme = {
+                  bg: "#000000", bgSecondary: "#1c1c1e", bgTertiary: "#2c2c2e",
+                  fg: "#ffffff", fgSecondary: "#8e8e93", fgTertiary: "#48484a",
+                  primary: "#0a84ff", primaryDim: "#007aff", accent: "#5e5ce6", accentDim: "#5e5ce6",
+                  error: "#ff453a", warning: "#ff9f0a", success: "#32d74b", info: "#64d2ff"
+                };
+                // Light theme (Apple Light)
+                const lightTheme = {
+                  bg: "#f2f2f7", bgSecondary: "#ffffff", bgTertiary: "#e5e5ea",
+                  fg: "#000000", fgSecondary: "#8e8e93", fgTertiary: "#c7c7cc",
+                  primary: "#007aff", primaryDim: "#007aff", accent: "#5856d6", accentDim: "#5856d6",
+                  error: "#ff3b30", warning: "#ff9500", success: "#34c759", info: "#5ac8fa"
+                };
+                const autoTheme = isDaytime ? lightTheme : darkTheme;
+                setCustomTheme(autoTheme);
+                setCustom(JSON.stringify(autoTheme, null, 2));
+              }} className="p-3 bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-bg-tertiary)] hover:border-[var(--color-primary)] transition-colors text-sm" title="Auto Mode (Day/Night)">
                 🌓 Auto
               </button>
             </div>
@@ -128,48 +113,11 @@ export function ThemeSwitcher() {
           </AsyncButton>
         </div>
 
-        {/* Primary Dim Application Selector */}
-        <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4 border border-[var(--color-bg-tertiary)]">
-          <h3 className="text-sm font-bold text-[var(--color-fg)] mb-3">Primary Dim Usage</h3>
-          <p className="text-xs text-[var(--color-fg-secondary)] mb-3">Select which elements use Primary Dim color for hover/active states</p>
-          <div className="grid grid-cols-2 gap-2">
-            {['Cards', 'Buttons', 'Links', 'Backgrounds'].map((element) => {
-              const storageKey = `primaryDim-${element.toLowerCase()}`;
-              const storedValue = typeof window !== 'undefined' ? localStorage.getItem(storageKey) : null;
-              const initialChecked = storedValue === 'true' || (storedValue === null && element === 'Buttons');
-              const [checked, setChecked] = useState(initialChecked);
+        {/* Custom Element Colors - Collapsible */}
+        <CustomElementColors />
 
-              // Apply on mount using useEffect
-              useEffect(() => {
-                if (typeof window !== 'undefined' && checked) {
-                  document.documentElement.style.setProperty(`--primary-dim-${element.toLowerCase()}`, 'var(--color-primary-dim)');
-                }
-              }, []);
-
-              return (
-                <label key={element} className="flex items-center gap-2 p-2 rounded-lg hover:bg-[var(--color-bg-tertiary)]/30 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded border-[var(--color-bg-tertiary)] bg-[var(--color-bg)] checked:bg-[var(--color-primary)] cursor-pointer"
-                    checked={checked}
-                    onChange={(e) => {
-                      const newValue = e.target.checked;
-                      setChecked(newValue);
-                      localStorage.setItem(storageKey, String(newValue));
-
-                      if (newValue) {
-                        document.documentElement.style.setProperty(`--primary-dim-${element.toLowerCase()}`, 'var(--color-primary-dim)');
-                      } else {
-                        document.documentElement.style.removeProperty(`--primary-dim-${element.toLowerCase()}`);
-                      }
-                    }}
-                  />
-                  <span className="text-sm text-[var(--color-fg)]">{element}</span>
-                </label>
-              );
-            })}
-          </div>
-        </div>
+        {/* Custom Background - Collapsible */}
+        <CustomBackground />
 
         {/* Card Aura Variation Selector */}
         <CardAuraSelector />

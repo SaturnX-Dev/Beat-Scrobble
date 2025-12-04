@@ -988,235 +988,1031 @@ button.default:hover {
 .active\:scale-95:active {
   transform: scale(0.95);
 }
+
 /* NEW AURA ANIMATIONS & STYLES */
 
 /* Lava Lamp */
 @keyframes lava-morph {
-  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
-  25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; transform: translate(-50%, -50%) scale(1.1) rotate(90deg); }
-  50% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; transform: translate(-50%, -50%) scale(0.9) rotate(180deg); }
-  75% { border-radius: 40% 60% 60% 40% / 60% 40% 60% 40%; transform: translate(-50%, -50%) scale(1.05) rotate(270deg); }
+
+  0%,
+  100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+
+  25% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    transform: translate(-50%, -50%) scale(1.1) rotate(90deg);
+  }
+
+  50% {
+    border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%;
+    transform: translate(-50%, -50%) scale(0.9) rotate(180deg);
+  }
+
+  75% {
+    border-radius: 40% 60% 60% 40% / 60% 40% 60% 40%;
+    transform: translate(-50%, -50%) scale(1.05) rotate(270deg);
+  }
 }
-.card-aura-lava { width: 300px; height: 300px; animation: lava-morph 8s ease-in-out infinite; filter: blur(20px); opacity: 0.4; }
-.card-aura-lava-small { width: 200px; height: 200px; animation: lava-morph 8s ease-in-out infinite; filter: blur(16px); opacity: 0.4; }
+
+.card-aura-lava {
+  width: 300px;
+  height: 300px;
+  animation: lava-morph 8s ease-in-out infinite;
+  filter: blur(20px);
+  opacity: 0.4;
+}
+
+.card-aura-lava-small {
+  width: 200px;
+  height: 200px;
+  animation: lava-morph 8s ease-in-out infinite;
+  filter: blur(16px);
+  opacity: 0.4;
+}
 
 /* DNA Helix */
 @keyframes dna-twist {
-  0%, 100% { transform: translate(-50%, -50%) rotateZ(0deg) rotateY(0deg); }
-  50% { transform: translate(-50%, -50%) rotateZ(180deg) rotateY(180deg); }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) rotateZ(0deg) rotateY(0deg);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) rotateZ(180deg) rotateY(180deg);
+  }
 }
-.card-aura-dna { width: 150px; height: 350px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: linear-gradient(90deg, var(--color-primary), var(--color-accent), var(--color-primary)); animation: dna-twist 6s linear infinite; }
-.card-aura-dna-small { width: 100px; height: 200px; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: linear-gradient(90deg, var(--color-primary), var(--color-accent), var(--color-primary)); animation: dna-twist 6s linear infinite; }
+
+.card-aura-dna {
+  width: 150px;
+  height: 350px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent), var(--color-primary));
+  animation: dna-twist 6s linear infinite;
+}
+
+.card-aura-dna-small {
+  width: 100px;
+  height: 200px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent), var(--color-primary));
+  animation: dna-twist 6s linear infinite;
+}
 
 /* Splat */
-.card-aura-splat { width: 320px; height: 280px; border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%; background: radial-gradient(circle at 40% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 65%); animation: lava-morph 7s ease-in-out infinite; }
-.card-aura-splat-small { width: 200px; height: 180px; border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%; background: radial-gradient(circle at 40% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 65%); animation: lava-morph 7s ease-in-out infinite; }
+.card-aura-splat {
+  width: 320px;
+  height: 280px;
+  border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+  background: radial-gradient(circle at 40% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 65%);
+  animation: lava-morph 7s ease-in-out infinite;
+}
+
+.card-aura-splat-small {
+  width: 200px;
+  height: 180px;
+  border-radius: 63% 37% 54% 46% / 55% 48% 52% 45%;
+  background: radial-gradient(circle at 40% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 65%);
+  animation: lava-morph 7s ease-in-out infinite;
+}
 
 /* Star Burst */
 @keyframes star-pulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); border-radius: 20% 80% 20% 80% / 80% 20% 80% 20%; }
-  50% { transform: translate(-50%, -50%) scale(1.2) rotate(180deg); border-radius: 80% 20% 80% 20% / 20% 80% 20% 80%; }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    border-radius: 20% 80% 20% 80% / 80% 20% 80% 20%;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.2) rotate(180deg);
+    border-radius: 80% 20% 80% 20% / 20% 80% 20% 80%;
+  }
 }
-.card-aura-star { width: 280px; height: 280px; background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%); animation: star-pulse 5s ease-in-out infinite; }
-.card-aura-star-small { width: 180px; height: 180px; background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%); animation: star-pulse 5s ease-in-out infinite; }
+
+.card-aura-star {
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: star-pulse 5s ease-in-out infinite;
+}
+
+.card-aura-star-small {
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: star-pulse 5s ease-in-out infinite;
+}
 
 /* Amoeba */
 @keyframes amoeba-move {
-  0%, 100% { border-radius: 73% 27% 46% 54% / 38% 68% 32% 62%; transform: translate(-50%, -50%) translate(0, 0); }
-  33% { border-radius: 35% 65% 72% 28% / 64% 38% 62% 36%; transform: translate(-50%, -50%) translate(10px, -10px); }
-  66% { border-radius: 58% 42% 28% 72% / 48% 70% 30% 52%; transform: translate(-50%, -50%) translate(-10px, 10px); }
+
+  0%,
+  100% {
+    border-radius: 73% 27% 46% 54% / 38% 68% 32% 62%;
+    transform: translate(-50%, -50%) translate(0, 0);
+  }
+
+  33% {
+    border-radius: 35% 65% 72% 28% / 64% 38% 62% 36%;
+    transform: translate(-50%, -50%) translate(10px, -10px);
+  }
+
+  66% {
+    border-radius: 58% 42% 28% 72% / 48% 70% 30% 52%;
+    transform: translate(-50%, -50%) translate(-10px, 10px);
+  }
 }
-.card-aura-amoeba { width: 300px; height: 300px; background: radial-gradient(ellipse at 35% 25%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%); animation: amoeba-move 10s ease-in-out infinite; }
-.card-aura-amoeba-small { width: 200px; height: 200px; background: radial-gradient(ellipse at 35% 25%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%); animation: amoeba-move 10s ease-in-out infinite; }
+
+.card-aura-amoeba {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(ellipse at 35% 25%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
+  animation: amoeba-move 10s ease-in-out infinite;
+}
+
+.card-aura-amoeba-small {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(ellipse at 35% 25%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
+  animation: amoeba-move 10s ease-in-out infinite;
+}
 
 /* Cloud */
 @keyframes cloud-drift {
-  0%, 100% { transform: translate(-50%, -50%) translateX(0); }
-  50% { transform: translate(-50%, -50%) translateX(20px); }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) translateX(0);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) translateX(20px);
+  }
 }
-.card-aura-cloud { width: 450px; height: 180px; border-radius: 200px 200px 0 0 / 120px 120px 0 0; background: radial-gradient(ellipse at 50% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 75%); animation: cloud-drift 8s ease-in-out infinite; }
-.card-aura-cloud-small { width: 250px; height: 100px; border-radius: 200px 200px 0 0 / 120px 120px 0 0; background: radial-gradient(ellipse at 50% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 75%); animation: cloud-drift 8s ease-in-out infinite; }
+
+.card-aura-cloud {
+  width: 450px;
+  height: 180px;
+  border-radius: 200px 200px 0 0 / 120px 120px 0 0;
+  background: radial-gradient(ellipse at 50% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 75%);
+  animation: cloud-drift 8s ease-in-out infinite;
+}
+
+.card-aura-cloud-small {
+  width: 250px;
+  height: 100px;
+  border-radius: 200px 200px 0 0 / 120px 120px 0 0;
+  background: radial-gradient(ellipse at 50% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 75%);
+  animation: cloud-drift 8s ease-in-out infinite;
+}
 
 /* Liquid Drop */
 @keyframes drop-bounce {
-  0%, 100% { border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; transform: translate(-50%, -50%) scaleY(1); }
-  50% { border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%; transform: translate(-50%, -50%) scaleY(1.15); }
+
+  0%,
+  100% {
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    transform: translate(-50%, -50%) scaleY(1);
+  }
+
+  50% {
+    border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+    transform: translate(-50%, -50%) scaleY(1.15);
+  }
 }
-.card-aura-drop { width: 280px; height: 320px; background: radial-gradient(ellipse at 50% 40%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%); animation: drop-bounce 4s ease-in-out infinite; }
-.card-aura-drop-small { width: 180px; height: 200px; background: radial-gradient(ellipse at 50% 40%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%); animation: drop-bounce 4s ease-in-out infinite; }
+
+.card-aura-drop {
+  width: 280px;
+  height: 320px;
+  background: radial-gradient(ellipse at 50% 40%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
+  animation: drop-bounce 4s ease-in-out infinite;
+}
+
+.card-aura-drop-small {
+  width: 180px;
+  height: 200px;
+  background: radial-gradient(ellipse at 50% 40%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
+  animation: drop-bounce 4s ease-in-out infinite;
+}
 
 /* Infinity */
 @keyframes infinity-flow {
-  0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
-  50% { transform: translate(-50%, -50%) scale(0.9) rotate(180deg); }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(0.9) rotate(180deg);
+  }
 }
-.card-aura-infinity { width: 400px; height: 180px; border-radius: 50%; background: radial-gradient(ellipse at 25% 50%, var(--color-primary) 0%, transparent 30%), radial-gradient(ellipse at 75% 50%, var(--color-accent) 0%, transparent 30%); animation: infinity-flow 6s linear infinite; }
-.card-aura-infinity-small { width: 250px; height: 100px; border-radius: 50%; background: radial-gradient(ellipse at 25% 50%, var(--color-primary) 0%, transparent 30%), radial-gradient(ellipse at 75% 50%, var(--color-accent) 0%, transparent 30%); animation: infinity-flow 6s linear infinite; }
+
+.card-aura-infinity {
+  width: 400px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 25% 50%, var(--color-primary) 0%, transparent 30%), radial-gradient(ellipse at 75% 50%, var(--color-accent) 0%, transparent 30%);
+  animation: infinity-flow 6s linear infinite;
+}
+
+.card-aura-infinity-small {
+  width: 250px;
+  height: 100px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 25% 50%, var(--color-primary) 0%, transparent 30%), radial-gradient(ellipse at 75% 50%, var(--color-accent) 0%, transparent 30%);
+  animation: infinity-flow 6s linear infinite;
+}
 
 /* Plasma */
 @keyframes plasma-flicker {
-  0%, 100% { opacity: 0.3; filter: blur(16px) hue-rotate(0deg); }
-  25% { opacity: 0.4; filter: blur(20px) hue-rotate(30deg); }
-  50% { opacity: 0.25; filter: blur(18px) hue-rotate(60deg); }
-  75% { opacity: 0.35; filter: blur(22px) hue-rotate(30deg); }
+
+  0%,
+  100% {
+    opacity: 0.3;
+    filter: blur(16px) hue-rotate(0deg);
+  }
+
+  25% {
+    opacity: 0.4;
+    filter: blur(20px) hue-rotate(30deg);
+  }
+
+  50% {
+    opacity: 0.25;
+    filter: blur(18px) hue-rotate(60deg);
+  }
+
+  75% {
+    opacity: 0.35;
+    filter: blur(22px) hue-rotate(30deg);
+  }
 }
-.card-aura-plasma { width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 65%); animation: plasma-flicker 3s ease-in-out infinite; }
-.card-aura-plasma-small { width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 65%); animation: plasma-flicker 3s ease-in-out infinite; }
+
+.card-aura-plasma {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 65%);
+  animation: plasma-flicker 3s ease-in-out infinite;
+}
+
+.card-aura-plasma-small {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 65%);
+  animation: plasma-flicker 3s ease-in-out infinite;
+}
 
 /* Spiral */
 @keyframes spiral-spin {
-  0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
-  50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.1); border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%; }
-  100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%; }
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) rotate(180deg) scale(1.1);
+    border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg) scale(1);
+    border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+  }
 }
-.card-aura-spiral { width: 300px; height: 300px; background: conic-gradient(from 0deg at 50% 50%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent, var(--color-primary)); animation: spiral-spin 8s linear infinite; }
-.card-aura-spiral-small { width: 200px; height: 200px; background: conic-gradient(from 0deg at 50% 50%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent, var(--color-primary)); animation: spiral-spin 8s linear infinite; }
+
+.card-aura-spiral {
+  width: 300px;
+  height: 300px;
+  background: conic-gradient(from 0deg at 50% 50%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent, var(--color-primary));
+  animation: spiral-spin 8s linear infinite;
+}
+
+.card-aura-spiral-small {
+  width: 200px;
+  height: 200px;
+  background: conic-gradient(from 0deg at 50% 50%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent, var(--color-primary));
+  animation: spiral-spin 8s linear infinite;
+}
 
 /* Nebula */
 @keyframes nebula-swirl {
-  0%, 100% { transform: translate(-50%, -50%) rotate(0deg); border-radius: 45% 55% 60% 40% / 55% 45% 55% 45%; }
-  33% { transform: translate(-50%, -50%) rotate(120deg); border-radius: 60% 40% 45% 55% / 40% 60% 40% 60%; }
-  66% { transform: translate(-50%, -50%) rotate(240deg); border-radius: 55% 45% 55% 45% / 60% 40% 60% 40%; }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) rotate(0deg);
+    border-radius: 45% 55% 60% 40% / 55% 45% 55% 45%;
+  }
+
+  33% {
+    transform: translate(-50%, -50%) rotate(120deg);
+    border-radius: 60% 40% 45% 55% / 40% 60% 40% 60%;
+  }
+
+  66% {
+    transform: translate(-50%, -50%) rotate(240deg);
+    border-radius: 55% 45% 55% 45% / 60% 40% 60% 40%;
+  }
 }
-.card-aura-nebula { width: 350px; height: 350px; background: radial-gradient(ellipse at 30% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 60%); animation: nebula-swirl 12s ease-in-out infinite; }
-.card-aura-nebula-small { width: 220px; height: 220px; background: radial-gradient(ellipse at 30% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 60%); animation: nebula-swirl 12s ease-in-out infinite; }
+
+.card-aura-nebula {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(ellipse at 30% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 60%);
+  animation: nebula-swirl 12s ease-in-out infinite;
+}
+
+.card-aura-nebula-small {
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(ellipse at 30% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 60%);
+  animation: nebula-swirl 12s ease-in-out infinite;
+}
 
 /* Glitch */
 @keyframes glitch-shift {
-  0%, 100% { transform: translate(-50%, -50%); clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
-  10% { transform: translate(-48%, -50%); clip-path: polygon(0 0, 100% 0, 100% 45%, 0 50%); }
-  20% { transform: translate(-52%, -50%); clip-path: polygon(0 55%, 100% 50%, 100% 100%, 0 100%); }
-  30% { transform: translate(-50%, -48%); clip-path: polygon(0 0, 45% 0, 50% 100%, 0 100%); }
-  40% { transform: translate(-50%, -52%); clip-path: polygon(55% 0, 100% 0, 100% 100%, 50% 100%); }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+
+  10% {
+    transform: translate(-48%, -50%);
+    clip-path: polygon(0 0, 100% 0, 100% 45%, 0 50%);
+  }
+
+  20% {
+    transform: translate(-52%, -50%);
+    clip-path: polygon(0 55%, 100% 50%, 100% 100%, 0 100%);
+  }
+
+  30% {
+    transform: translate(-50%, -48%);
+    clip-path: polygon(0 0, 45% 0, 50% 100%, 0 100%);
+  }
+
+  40% {
+    transform: translate(-50%, -52%);
+    clip-path: polygon(55% 0, 100% 0, 100% 100%, 50% 100%);
+  }
 }
-.card-aura-glitch { width: 300px; height: 300px; border-radius: 20%; background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%); animation: glitch-shift 4s steps(5) infinite; }
-.card-aura-glitch-small { width: 200px; height: 200px; border-radius: 20%; background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%); animation: glitch-shift 4s steps(5) infinite; }
+
+.card-aura-glitch {
+  width: 300px;
+  height: 300px;
+  border-radius: 20%;
+  background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: glitch-shift 4s steps(5) infinite;
+}
+
+.card-aura-glitch-small {
+  width: 200px;
+  height: 200px;
+  border-radius: 20%;
+  background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: glitch-shift 4s steps(5) infinite;
+}
 
 /* Heartbeat */
 @keyframes heartbeat {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
-  10% { transform: translate(-50%, -50%) scale(1.15); border-radius: 48% 52% 48% 52% / 55% 55% 45% 45%; }
-  20% { transform: translate(-50%, -50%) scale(1); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
-  30% { transform: translate(-50%, -50%) scale(1.2); border-radius: 46% 54% 46% 54% / 50% 50% 50% 50%; }
-  40%, 100% { transform: translate(-50%, -50%) scale(1); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  }
+
+  10% {
+    transform: translate(-50%, -50%) scale(1.15);
+    border-radius: 48% 52% 48% 52% / 55% 55% 45% 45%;
+  }
+
+  20% {
+    transform: translate(-50%, -50%) scale(1);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  }
+
+  30% {
+    transform: translate(-50%, -50%) scale(1.2);
+    border-radius: 46% 54% 46% 54% / 50% 50% 50% 50%;
+  }
+
+  40%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  }
 }
-.card-aura-heartbeat { width: 300px; height: 300px; background: radial-gradient(circle at 50% 40%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%); animation: heartbeat 2s ease-in-out infinite; }
-.card-aura-heartbeat-small { width: 200px; height: 200px; background: radial-gradient(circle at 50% 40%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%); animation: heartbeat 2s ease-in-out infinite; }
+
+.card-aura-heartbeat {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle at 50% 40%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+.card-aura-heartbeat-small {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle at 50% 40%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
+  animation: heartbeat 2s ease-in-out infinite;
+}
 
 /* Jelly */
 @keyframes jelly-wobble {
-  0%, 100% { border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%; transform: translate(-50%, -50%) rotate(0deg); }
-  12% { border-radius: 58% 42% 30% 70% / 55% 45% 45% 55%; transform: translate(-50%, -50%) rotate(15deg); }
-  25% { border-radius: 45% 55% 65% 35% / 60% 40% 60% 40%; transform: translate(-50%, -50%) rotate(-12deg); }
-  37% { border-radius: 55% 45% 35% 65% / 40% 60% 40% 60%; transform: translate(-50%, -50%) rotate(10deg); }
-  50% { border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; transform: translate(-50%, -50%) rotate(-8deg); }
-  62% { border-radius: 48% 52% 58% 42% / 52% 48% 52% 48%; transform: translate(-50%, -50%) rotate(5deg); }
-  75% { border-radius: 52% 48% 42% 58% / 48% 52% 48% 52%; transform: translate(-50%, -50%) rotate(-3deg); }
-  87% { border-radius: 47% 53% 53% 47% / 53% 47% 53% 47%; transform: translate(-50%, -50%) rotate(2deg); }
+
+  0%,
+  100% {
+    border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  12% {
+    border-radius: 58% 42% 30% 70% / 55% 45% 45% 55%;
+    transform: translate(-50%, -50%) rotate(15deg);
+  }
+
+  25% {
+    border-radius: 45% 55% 65% 35% / 60% 40% 60% 40%;
+    transform: translate(-50%, -50%) rotate(-12deg);
+  }
+
+  37% {
+    border-radius: 55% 45% 35% 65% / 40% 60% 40% 60%;
+    transform: translate(-50%, -50%) rotate(10deg);
+  }
+
+  50% {
+    border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+    transform: translate(-50%, -50%) rotate(-8deg);
+  }
+
+  62% {
+    border-radius: 48% 52% 58% 42% / 52% 48% 52% 48%;
+    transform: translate(-50%, -50%) rotate(5deg);
+  }
+
+  75% {
+    border-radius: 52% 48% 42% 58% / 48% 52% 48% 52%;
+    transform: translate(-50%, -50%) rotate(-3deg);
+  }
+
+  87% {
+    border-radius: 47% 53% 53% 47% / 53% 47% 53% 47%;
+    transform: translate(-50%, -50%) rotate(2deg);
+  }
 }
-.card-aura-jelly { width: 300px; height: 300px; background: radial-gradient(ellipse at 35% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%); animation: jelly-wobble 3s ease-in-out infinite; }
-.card-aura-jelly-small { width: 200px; height: 200px; background: radial-gradient(ellipse at 35% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%); animation: jelly-wobble 3s ease-in-out infinite; }
+
+.card-aura-jelly {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(ellipse at 35% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
+  animation: jelly-wobble 3s ease-in-out infinite;
+}
+
+.card-aura-jelly-small {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(ellipse at 35% 30%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
+  animation: jelly-wobble 3s ease-in-out infinite;
+}
 
 /* Breathing */
 @keyframes breathing {
-  0%, 100% { transform: translate(-50%, -50%) scale(0.95); opacity: 0.3; }
-  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.4; }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0.3;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 0.4;
+  }
 }
-.card-aura-breathing { width: 300px; height: 300px; border-radius: 45% 55% 52% 48% / 48% 52% 55% 45%; background: radial-gradient(circle at 40% 35%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%); animation: breathing 4s ease-in-out infinite; }
-.card-aura-breathing-small { width: 200px; height: 200px; border-radius: 45% 55% 52% 48% / 48% 52% 55% 45%; background: radial-gradient(circle at 40% 35%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%); animation: breathing 4s ease-in-out infinite; }
+
+.card-aura-breathing {
+  width: 300px;
+  height: 300px;
+  border-radius: 45% 55% 52% 48% / 48% 52% 55% 45%;
+  background: radial-gradient(circle at 40% 35%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
+  animation: breathing 4s ease-in-out infinite;
+}
+
+.card-aura-breathing-small {
+  width: 200px;
+  height: 200px;
+  border-radius: 45% 55% 52% 48% / 48% 52% 55% 45%;
+  background: radial-gradient(circle at 40% 35%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
+  animation: breathing 4s ease-in-out infinite;
+}
 
 /* Portal */
 @keyframes portal-spin {
-  0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); filter: blur(16px) brightness(1); }
-  50% { transform: translate(-50%, -50%) rotate(180deg) scale(1.1); filter: blur(20px) brightness(1.2); }
-  100% { transform: translate(-50%, -50%) rotate(360deg) scale(1); filter: blur(16px) brightness(1); }
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    filter: blur(16px) brightness(1);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) rotate(180deg) scale(1.1);
+    filter: blur(20px) brightness(1.2);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg) scale(1);
+    filter: blur(16px) brightness(1);
+  }
 }
-.card-aura-portal { width: 280px; height: 280px; border-radius: 50%; background: conic-gradient(from 0deg, var(--color-primary), var(--color-accent), var(--color-primary-dim), var(--color-primary)); opacity: 0.35; animation: portal-spin 6s linear infinite; }
-.card-aura-portal-small { width: 180px; height: 180px; border-radius: 50%; background: conic-gradient(from 0deg, var(--color-primary), var(--color-accent), var(--color-primary-dim), var(--color-primary)); opacity: 0.35; animation: portal-spin 6s linear infinite; }
+
+.card-aura-portal {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--color-primary), var(--color-accent), var(--color-primary-dim), var(--color-primary));
+  opacity: 0.35;
+  animation: portal-spin 6s linear infinite;
+}
+
+.card-aura-portal-small {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--color-primary), var(--color-accent), var(--color-primary-dim), var(--color-primary));
+  opacity: 0.35;
+  animation: portal-spin 6s linear infinite;
+}
 
 /* Liquid Metal */
 @keyframes liquid-metal {
-  0%, 100% { border-radius: 30% 70% 70% 30% / 60% 40% 60% 40%; transform: translate(-50%, -50%) scaleX(1); }
-  25% { border-radius: 70% 30% 30% 70% / 40% 60% 40% 60%; transform: translate(-50%, -50%) scaleX(1.1); }
-  50% { border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; transform: translate(-50%, -50%) scaleX(0.9); }
-  75% { border-radius: 40% 60% 60% 40% / 70% 30% 70% 30%; transform: translate(-50%, -50%) scaleX(1.05); }
+
+  0%,
+  100% {
+    border-radius: 30% 70% 70% 30% / 60% 40% 60% 40%;
+    transform: translate(-50%, -50%) scaleX(1);
+  }
+
+  25% {
+    border-radius: 70% 30% 30% 70% / 40% 60% 40% 60%;
+    transform: translate(-50%, -50%) scaleX(1.1);
+  }
+
+  50% {
+    border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+    transform: translate(-50%, -50%) scaleX(0.9);
+  }
+
+  75% {
+    border-radius: 40% 60% 60% 40% / 70% 30% 70% 30%;
+    transform: translate(-50%, -50%) scaleX(1.05);
+  }
 }
-.card-aura-liquid-metal { width: 320px; height: 300px; background: radial-gradient(ellipse at 30% 25%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 65%); animation: liquid-metal 5s ease-in-out infinite; }
-.card-aura-liquid-metal-small { width: 200px; height: 180px; background: radial-gradient(ellipse at 30% 25%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 65%); animation: liquid-metal 5s ease-in-out infinite; }
+
+.card-aura-liquid-metal {
+  width: 320px;
+  height: 300px;
+  background: radial-gradient(ellipse at 30% 25%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 65%);
+  animation: liquid-metal 5s ease-in-out infinite;
+}
+
+.card-aura-liquid-metal-small {
+  width: 200px;
+  height: 180px;
+  background: radial-gradient(ellipse at 30% 25%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 65%);
+  animation: liquid-metal 5s ease-in-out infinite;
+}
 
 /* Electricity */
 @keyframes electricity-zap {
-  0%, 100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 0.3; clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
-  10% { transform: translate(-50%, -50%) scale(1.1) rotate(5deg); opacity: 0.4; }
-  20% { transform: translate(-50%, -50%) scale(0.95) rotate(-3deg); opacity: 0.35; }
-  30% { transform: translate(-50%, -50%) scale(1.05) rotate(2deg); opacity: 0.38; }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    opacity: 0.3;
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  }
+
+  10% {
+    transform: translate(-50%, -50%) scale(1.1) rotate(5deg);
+    opacity: 0.4;
+  }
+
+  20% {
+    transform: translate(-50%, -50%) scale(0.95) rotate(-3deg);
+    opacity: 0.35;
+  }
+
+  30% {
+    transform: translate(-50%, -50%) scale(1.05) rotate(2deg);
+    opacity: 0.38;
+  }
 }
-.card-aura-electricity { width: 280px; height: 280px; background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%); animation: electricity-zap 0.8s ease-in-out infinite; }
-.card-aura-electricity-small { width: 180px; height: 180px; background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%); animation: electricity-zap 0.8s ease-in-out infinite; }
+
+.card-aura-electricity {
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: electricity-zap 0.8s ease-in-out infinite;
+}
+
+.card-aura-electricity-small {
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: electricity-zap 0.8s ease-in-out infinite;
+}
 
 /* Tornado */
 @keyframes tornado-twist {
-  0% { transform: translate(-50%, -50%) rotate(0deg) scaleY(1); border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%; }
-  25% { transform: translate(-50%, -50%) rotate(90deg) scaleY(1.1); border-radius: 40% 60% 40% 60% / 35% 35% 65% 65%; }
-  50% { transform: translate(-50%, -50%) rotate(180deg) scaleY(0.9); border-radius: 60% 40% 60% 40% / 40% 40% 60% 60%; }
-  75% { transform: translate(-50%, -50%) rotate(270deg) scaleY(1.05); border-radius: 45% 55% 45% 55% / 35% 35% 65% 65%; }
-  100% { transform: translate(-50%, -50%) rotate(360deg) scaleY(1); border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%; }
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) scaleY(1);
+    border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
+  }
+
+  25% {
+    transform: translate(-50%, -50%) rotate(90deg) scaleY(1.1);
+    border-radius: 40% 60% 40% 60% / 35% 35% 65% 65%;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) rotate(180deg) scaleY(0.9);
+    border-radius: 60% 40% 60% 40% / 40% 40% 60% 60%;
+  }
+
+  75% {
+    transform: translate(-50%, -50%) rotate(270deg) scaleY(1.05);
+    border-radius: 45% 55% 45% 55% / 35% 35% 65% 65%;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg) scaleY(1);
+    border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
+  }
 }
-.card-aura-tornado { width: 200px; height: 380px; background: linear-gradient(180deg, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent); animation: tornado-twist 4s ease-in-out infinite; }
-.card-aura-tornado-small { width: 120px; height: 250px; background: linear-gradient(180deg, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent); animation: tornado-twist 4s ease-in-out infinite; }
+
+.card-aura-tornado {
+  width: 200px;
+  height: 380px;
+  background: linear-gradient(180deg, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent);
+  animation: tornado-twist 4s ease-in-out infinite;
+}
+
+.card-aura-tornado-small {
+  width: 120px;
+  height: 250px;
+  background: linear-gradient(180deg, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent);
+  animation: tornado-twist 4s ease-in-out infinite;
+}
 
 /* Bubble */
 @keyframes bubble-pop {
-  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.2; border-radius: 50%; }
-  40% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.4; border-radius: 48% 52% 50% 50% / 50% 48% 52% 50%; }
-  70% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.35; border-radius: 46% 54% 48% 52% / 52% 46% 54% 48%; }
-  100% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; border-radius: 30% 70% 60% 40% / 40% 60% 70% 30%; }
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.2;
+    border-radius: 50%;
+  }
+
+  40% {
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.4;
+    border-radius: 48% 52% 50% 50% / 50% 48% 52% 50%;
+  }
+
+  70% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 0.35;
+    border-radius: 46% 54% 48% 52% / 52% 46% 54% 48%;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 0;
+    border-radius: 30% 70% 60% 40% / 40% 60% 70% 30%;
+  }
 }
-.card-aura-bubble { width: 300px; height: 300px; background: radial-gradient(circle at 35% 35%, var(--color-primary), var(--color-accent), transparent 60%); animation: bubble-pop 3s ease-out infinite; }
-.card-aura-bubble-small { width: 200px; height: 200px; background: radial-gradient(circle at 35% 35%, var(--color-primary), var(--color-accent), transparent 60%); animation: bubble-pop 3s ease-out infinite; }
+
+.card-aura-bubble {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle at 35% 35%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: bubble-pop 3s ease-out infinite;
+}
+
+.card-aura-bubble-small {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle at 35% 35%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: bubble-pop 3s ease-out infinite;
+}
 
 /* Warp */
 @keyframes warp-speed {
-  0% { transform: translate(-50%, -50%) scaleX(1) scaleY(1); opacity: 0.35; }
-  50% { transform: translate(-50%, -50%) scaleX(2) scaleY(0.5); opacity: 0.2; }
-  100% { transform: translate(-50%, -50%) scaleX(1) scaleY(1); opacity: 0.35; }
+  0% {
+    transform: translate(-50%, -50%) scaleX(1) scaleY(1);
+    opacity: 0.35;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scaleX(2) scaleY(0.5);
+    opacity: 0.2;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scaleX(1) scaleY(1);
+    opacity: 0.35;
+  }
 }
-.card-aura-warp { width: 400px; height: 200px; border-radius: 50%; background: radial-gradient(ellipse at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%); animation: warp-speed 2s ease-in-out infinite; }
-.card-aura-warp-small { width: 250px; height: 120px; border-radius: 50%; background: radial-gradient(ellipse at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%); animation: warp-speed 2s ease-in-out infinite; }
+
+.card-aura-warp {
+  width: 400px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: warp-speed 2s ease-in-out infinite;
+}
+
+.card-aura-warp-small {
+  width: 250px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: warp-speed 2s ease-in-out infinite;
+}
 
 /* Earthquake */
 @keyframes earthquake-shake {
-  0%, 100% { transform: translate(-50%, -50%); }
-  10% { transform: translate(-48%, -52%); }
-  20% { transform: translate(-52%, -48%); }
-  30% { transform: translate(-49%, -51%); }
-  40% { transform: translate(-51%, -49%); }
-  50% { transform: translate(-50%, -50%); }
-  60% { transform: translate(-52%, -51%); }
-  70% { transform: translate(-48%, -49%); }
-  80% { transform: translate(-51%, -52%); }
-  90% { transform: translate(-49%, -48%); }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%);
+  }
+
+  10% {
+    transform: translate(-48%, -52%);
+  }
+
+  20% {
+    transform: translate(-52%, -48%);
+  }
+
+  30% {
+    transform: translate(-49%, -51%);
+  }
+
+  40% {
+    transform: translate(-51%, -49%);
+  }
+
+  50% {
+    transform: translate(-50%, -50%);
+  }
+
+  60% {
+    transform: translate(-52%, -51%);
+  }
+
+  70% {
+    transform: translate(-48%, -49%);
+  }
+
+  80% {
+    transform: translate(-51%, -52%);
+  }
+
+  90% {
+    transform: translate(-49%, -48%);
+  }
 }
-.card-aura-earthquake { width: 350px; height: 280px; border-radius: 45% 55% 50% 50% / 50% 55% 45% 50%; background: radial-gradient(ellipse at 40% 35%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%); animation: earthquake-shake 0.5s ease-in-out infinite; }
-.card-aura-earthquake-small { width: 220px; height: 180px; border-radius: 45% 55% 50% 50% / 50% 55% 45% 50%; background: radial-gradient(ellipse at 40% 35%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%); animation: earthquake-shake 0.5s ease-in-out infinite; }
+
+.card-aura-earthquake {
+  width: 350px;
+  height: 280px;
+  border-radius: 45% 55% 50% 50% / 50% 55% 45% 50%;
+  background: radial-gradient(ellipse at 40% 35%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
+  animation: earthquake-shake 0.5s ease-in-out infinite;
+}
+
+.card-aura-earthquake-small {
+  width: 220px;
+  height: 180px;
+  border-radius: 45% 55% 50% 50% / 50% 55% 45% 50%;
+  background: radial-gradient(ellipse at 40% 35%, var(--color-primary), var(--color-accent), var(--color-primary-dim), transparent 70%);
+  animation: earthquake-shake 0.5s ease-in-out infinite;
+}
 
 /* Quantum */
 @keyframes quantum-flicker {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.35; }
-  20% { transform: translate(-48%, -52%) scale(0.95); opacity: 0.2; }
-  40% { transform: translate(-52%, -48%) scale(1.1); opacity: 0.4; }
-  60% { transform: translate(-49%, -51%) scale(0.9); opacity: 0.25; }
-  80% { transform: translate(-51%, -49%) scale(1.05); opacity: 0.38; }
+
+  0%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.35;
+  }
+
+  20% {
+    transform: translate(-48%, -52%) scale(0.95);
+    opacity: 0.2;
+  }
+
+  40% {
+    transform: translate(-52%, -48%) scale(1.1);
+    opacity: 0.4;
+  }
+
+  60% {
+    transform: translate(-49%, -51%) scale(0.9);
+    opacity: 0.25;
+  }
+
+  80% {
+    transform: translate(-51%, -49%) scale(1.05);
+    opacity: 0.38;
+  }
 }
-.card-aura-quantum { width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%); animation: quantum-flicker 1.5s steps(5) infinite; }
-.card-aura-quantum-small { width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%); animation: quantum-flicker 1.5s steps(5) infinite; }
+
+.card-aura-quantum {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: quantum-flicker 1.5s steps(5) infinite;
+}
+
+.card-aura-quantum-small {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: quantum-flicker 1.5s steps(5) infinite;
+}
 
 /* Smoke */
 @keyframes smoke-rise {
-  0% { transform: translate(-50%, -30%) scale(0.8); opacity: 0.4; border-radius: 60% 40% 70% 30% / 40% 60% 30% 70%; }
-  50% { transform: translate(-50%, -60%) scale(1.2); opacity: 0.2; border-radius: 40% 60% 30% 70% / 60% 40% 70% 30%; }
-  100% { transform: translate(-50%, -90%) scale(1.5); opacity: 0; border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%; }
-}
-.card-aura-smoke { width: 280px; height: 280px; background: radial-gradient(ellipse at 50% 60%, var(--color-primary), var(--color-accent), transparent 60%); animation: smoke-rise 4s ease-out infinite; }
-.card-aura-smoke-small { width: 180px; height: 180px; background: radial-gradient(ellipse at 50% 60%, var(--color-primary), var(--color-accent), transparent 60%); animation: smoke-rise 4s ease-out infinite; }
+  0% {
+    transform: translate(-50%, -30%) scale(0.8);
+    opacity: 0.4;
+    border-radius: 60% 40% 70% 30% / 40% 60% 30% 70%;
+  }
 
+  50% {
+    transform: translate(-50%, -60%) scale(1.2);
+    opacity: 0.2;
+    border-radius: 40% 60% 30% 70% / 60% 40% 70% 30%;
+  }
+
+  100% {
+    transform: translate(-50%, -90%) scale(1.5);
+    opacity: 0;
+    border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+  }
+}
+
+.card-aura-smoke {
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(ellipse at 50% 60%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: smoke-rise 4s ease-out infinite;
+}
+
+.card-aura-smoke-small {
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(ellipse at 50% 60%, var(--color-primary), var(--color-accent), transparent 60%);
+  animation: smoke-rise 4s ease-out infinite;
+}
+
+/* ============================================
+   Custom Element Colors System
+   These CSS rules apply custom colors when set via CustomElementColors component
+   ============================================ */
+
+/* Cards - Applies to glass-card backgrounds and hovers */
+.glass-card {
+  background: var(--custom-cards, color-mix(in srgb, var(--color-bg-secondary) 30%, transparent));
+}
+
+.glass-card:hover {
+  background: var(--custom-cards, var(--primary-dim-cards, color-mix(in srgb, var(--color-bg-secondary) 30%, transparent)));
+}
+
+/* Buttons - For primary and large buttons */
+button.large-button {
+  background: var(--custom-buttons, var(--color-bg));
+}
+
+button.large-button:hover {
+  background: var(--custom-buttons, var(--primary-dim-buttons, var(--color-bg-tertiary)));
+}
+
+/* Links - Hyperlinks and interactive text */
+.link,
+a:not([class]) {
+  color: var(--custom-links, var(--color-fg));
+}
+
+.link:hover,
+a:not([class]):hover {
+  color: var(--custom-links, var(--primary-dim-links, var(--color-fg-secondary)));
+}
+
+/* Backgrounds - Page and section backgrounds */
+html,
+body {
+  background-color: var(--custom-backgrounds, var(--color-bg));
+}
+
+/* Icons - Icon colors (used with specific icon classes) */
+.icon-custom,
+[data-custom-icon] {
+  color: var(--custom-icons, var(--color-fg));
+}
+
+.icon-custom:hover,
+[data-custom-icon]:hover {
+  color: var(--custom-icons, var(--color-fg-secondary));
+}
+
+/* Navbars - Navigation bar elements */
+.nav-item,
+.sidebar-item {
+  background-color: var(--custom-navbars, transparent);
+}
+
+.nav-item:hover,
+.sidebar-item:hover {
+  background-color: var(--custom-navbars, var(--color-bg-tertiary));
+}
+
+/* Tooltips - Tooltip backgrounds */
+[data-tooltip]::after,
+.tooltip {
+  background-color: var(--custom-tooltips, var(--color-bg-secondary));
+  color: var(--color-fg);
+}
+
+/* Badges - Status badges and tags */
+.badge,
+.tag {
+  background-color: var(--custom-badges, var(--color-bg-tertiary));
+}
+
+/* Progress bars and indicators */
+.progress-bar,
+progress::-webkit-progress-value {
+  background-color: var(--custom-progress, var(--color-primary));
+}
+
+progress {
+  accent-color: var(--custom-progress, var(--color-primary));
+}
+
+/* Input fields and form elements */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+textarea,
+select {
+  border-color: var(--custom-inputs, var(--color-bg-tertiary));
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--custom-inputs, var(--color-primary));
+}
+
+/* ============================================
+   Custom Background System
+   Applies background image when set via CustomBackground component
+   ============================================ */
+
+html {
+  background-image: var(--custom-background-image, none);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Overlay for custom background readability - applied via JavaScript when background is set */
+body.has-custom-background::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.6));
+  z-index: -1;
+  pointer-events: none;
+}

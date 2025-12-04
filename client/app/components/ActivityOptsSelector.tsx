@@ -1,5 +1,6 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useState } from "react";
+import { usePreferences } from "~/hooks/usePreferences";
 
 interface Props {
     stepSetter: (value: string) => void;
@@ -19,39 +20,44 @@ export default function ActivityOptsSelector({
     const stepPeriods = ['day', 'week', 'month'];
     const rangePeriods = [105, 182, 364];
     const [collapsed, setCollapsed] = useState(true);
+    const { getPreference, savePreference } = usePreferences();
+
+    const getStorageKeyPrefix = () => {
+        if (typeof window === 'undefined') return 'activity_default';
+        return 'activity_' + window.location.pathname.split('/')[1];
+    };
 
     const setMenuOpen = (val: boolean) => {
         setCollapsed(val)
         if (!disableCache) {
-            localStorage.setItem('activity_configuring_' + window.location.pathname.split('/')[1], String(!val));
+            savePreference(getStorageKeyPrefix() + '_configuring', !val);
         }
     }
 
     const setStep = (val: string) => {
         stepSetter(val);
         if (!disableCache) {
-            localStorage.setItem('activity_step_' + window.location.pathname.split('/')[1], val);
+            savePreference(getStorageKeyPrefix() + '_step', val);
         }
     };
 
     const setRange = (val: number) => {
         rangeSetter(val);
         if (!disableCache) {
-            localStorage.setItem('activity_range_' + window.location.pathname.split('/')[1], String(val));
+            savePreference(getStorageKeyPrefix() + '_range', val);
         }
     };
 
     useEffect(() => {
         if (!disableCache) {
-            // TODO: the '182' here overwrites the default range as configured in the ActivityGrid. This is bad. Only one of these should determine the default.
-            const cachedRange = parseInt(localStorage.getItem('activity_range_' + window.location.pathname.split('/')[1]) ?? '182');
+            const cachedRange = getPreference(getStorageKeyPrefix() + '_range', 182);
             if (cachedRange) rangeSetter(cachedRange);
-            const cachedStep = localStorage.getItem('activity_step_' + window.location.pathname.split('/')[1]);
+            const cachedStep = getPreference(getStorageKeyPrefix() + '_step', null);
             if (cachedStep) stepSetter(cachedStep);
-            const cachedConfiguring = localStorage.getItem('activity_configuring_' + window.location.pathname.split('/')[1]);
-            if (cachedStep) setMenuOpen(cachedConfiguring !== "true");
+            const cachedConfiguring = getPreference(getStorageKeyPrefix() + '_configuring', false);
+            if (cachedStep) setMenuOpen(!cachedConfiguring);
         }
-    }, []);
+    }, [getPreference]);
 
     return (
         <div className="relative w-full">
@@ -64,9 +70,8 @@ export default function ActivityOptsSelector({
             </button>
 
             <div
-                className={`overflow-hidden transition-[max-height,opacity] duration-250 ease ${
-                    collapsed ? 'max-h-0 opacity-0' : 'max-h-[100px] opacity-100'
-                }`}
+                className={`overflow-hidden transition-[max-height,opacity] duration-250 ease ${collapsed ? 'max-h-0 opacity-0' : 'max-h-[100px] opacity-100'
+                    }`}
             >
                 <div className="flex flex-wrap gap-4 mt-1 text-sm">
                     <div className="flex items-center gap-1">
@@ -74,9 +79,8 @@ export default function ActivityOptsSelector({
                         {stepPeriods.map((p) => (
                             <button
                                 key={p}
-                                className={`px-1 rounded transition ${
-                                    p === currentStep ? 'color-fg font-medium' : 'color-fg-secondary hover:color-fg'
-                                }`}
+                                className={`px-1 rounded transition ${p === currentStep ? 'color-fg font-medium' : 'color-fg-secondary hover:color-fg'
+                                    }`}
                                 onClick={() => setStep(p)}
                                 disabled={p === currentStep}
                             >
@@ -90,9 +94,8 @@ export default function ActivityOptsSelector({
                         {rangePeriods.map((r) => (
                             <button
                                 key={r}
-                                className={`px-1 rounded transition ${
-                                    r === currentRange ? 'color-fg font-medium' : 'color-fg-secondary hover:color-fg'
-                                }`}
+                                className={`px-1 rounded transition ${r === currentRange ? 'color-fg font-medium' : 'color-fg-secondary hover:color-fg'
+                                    }`}
                                 onClick={() => setRange(r)}
                                 disabled={r === currentRange}
                             >

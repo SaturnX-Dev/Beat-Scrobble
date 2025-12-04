@@ -38,38 +38,20 @@ function clearCustomThemeVars() {
   }
 }
 
-function getStoredCustomTheme(): Theme | undefined {
-  const themeStr = localStorage.getItem("custom-theme");
-  if (!themeStr) return undefined;
-  try {
-    const parsed = JSON.parse(themeStr);
-    const { name, ...theme } = parsed;
-    return theme as Theme;
-  } catch {
-    return undefined;
-  }
-}
+// Cache for custom theme (in-memory only, server is source of truth)
+let cachedCustomTheme: Theme | undefined;
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   let defaultTheme = useAppContext().defaultTheme;
-  let initialTheme = localStorage.getItem("theme") ?? defaultTheme;
-  const [themeName, setThemeName] = useState(
-    themes[initialTheme] ? initialTheme : defaultTheme
-  );
-  const [currentTheme, setCurrentTheme] = useState<Theme>(() => {
-    if (initialTheme === "custom") {
-      const customTheme = getStoredCustomTheme();
-      return customTheme || themes[defaultTheme];
-    }
-    return themes[initialTheme] || themes[defaultTheme];
-  });
+  const [themeName, setThemeName] = useState(defaultTheme);
+  const [currentTheme, setCurrentTheme] = useState<Theme>(() => themes[defaultTheme]);
 
-  const saveThemeToServer = async (theme: Theme) => {
+  const saveThemeToServer = async (theme: Theme, name: string = "custom") => {
     try {
       await fetch("/apis/web/v1/user/theme", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(theme),
+        body: JSON.stringify({ ...theme, name }),
       });
     } catch (err) {
       console.error("Failed to save theme to server:", err);
@@ -79,21 +61,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const setTheme = (newThemeName: string) => {
     setThemeName(newThemeName);
     if (newThemeName === "custom") {
-      const customTheme = getStoredCustomTheme();
-      if (customTheme) {
-        setCurrentTheme(customTheme);
-        saveThemeToServer(customTheme);
+      if (cachedCustomTheme) {
+        setCurrentTheme(cachedCustomTheme);
+        saveThemeToServer(cachedCustomTheme, "custom");
       } else {
         setThemeName(defaultTheme);
         setCurrentTheme(themes[defaultTheme]);
-        saveThemeToServer(themes[defaultTheme]);
+        saveThemeToServer(themes[defaultTheme], defaultTheme);
       }
     } else {
       const foundTheme = themes[newThemeName];
       if (foundTheme) {
-        localStorage.setItem("theme", newThemeName);
         setCurrentTheme(foundTheme);
-        saveThemeToServer(foundTheme);
+        saveThemeToServer(foundTheme, newThemeName);
       } else {
         setTheme(defaultTheme);
       }
@@ -102,22 +82,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const resetTheme = () => {
     setThemeName(defaultTheme);
-    localStorage.removeItem("theme");
     setCurrentTheme(themes[defaultTheme]);
-    saveThemeToServer(themes[defaultTheme]);
+    cachedCustomTheme = undefined;
+    saveThemeToServer(themes[defaultTheme], defaultTheme);
   };
 
   const setCustomTheme = useCallback((customTheme: Theme) => {
-    localStorage.setItem("custom-theme", JSON.stringify(customTheme));
+    cachedCustomTheme = customTheme;
     applyCustomThemeVars(customTheme);
     setThemeName("custom");
-    localStorage.setItem("theme", "custom");
     setCurrentTheme(customTheme);
-    saveThemeToServer(customTheme);
+    saveThemeToServer(customTheme, "custom");
   }, []);
 
   const getCustomTheme = (): Theme | undefined => {
-    return getStoredCustomTheme();
+    return cachedCustomTheme;
   };
 
   useEffect(() => {
@@ -126,12 +105,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       try {
         const res = await fetch("/apis/web/v1/user/theme");
         if (res.ok && res.status !== 204) {
-          const serverTheme: Theme = await res.json();
+          const serverTheme: Theme & { name?: string } = await res.json();
           if (serverTheme && serverTheme.bg) {
+            cachedCustomTheme = serverTheme;
             setCurrentTheme(serverTheme);
             setThemeName("custom");
-            localStorage.setItem("theme", "custom");
-            localStorage.setItem("custom-theme", JSON.stringify(serverTheme));
             applyCustomThemeVars(serverTheme);
           }
         }

@@ -114,7 +114,12 @@ func bindRoutes(
 			r.Get("/yearly-recap", handlers.YearlyRecapHandler(db))
 			// Import/Backup
 			r.Post("/import", handlers.ImportHandler(db))
+			// Profile Image
+			r.Post("/user/profile-image", handlers.UploadProfileImageBase64Handler(db))
 		})
+
+		// Profile images (public, no auth required)
+		r.Get("/profile-images/{filename}", handlers.GetProfileImageHandler())
 
 		// Public routes (no auth required)
 		r.Get("/public/profile/{username}", handlers.PublicProfileHandler(db))

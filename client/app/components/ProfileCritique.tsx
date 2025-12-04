@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function ProfileCritique({ period }: Props) {
-    const { getPreference } = usePreferences();
+    const { getPreference, savePreference } = usePreferences();
     const [enabled, setEnabled] = useState(false);
     const [critique, setCritique] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -23,15 +23,11 @@ export default function ProfileCritique({ period }: Props) {
             return;
         }
 
-        // Check cache first
+        // Check server-side cache first
         const cacheKey = `comet_ai_profile_${period}`;
-        const cached = localStorage.getItem(cacheKey);
+        const cached = getPreference(cacheKey, null);
         if (cached) {
             setCritique(cached);
-            // Optional: Re-fetch in background if needed, but for now we trust cache to persist between sessions
-            // If we want to refresh on filter change, we should maybe clear cache or check timestamp?
-            // User said "guardadas entre sesiones", so permanent cache until explicit refresh (not implemented yet) or expiry is good.
-            // Let's just use the cache if it exists.
             return;
         }
 
@@ -49,7 +45,8 @@ export default function ProfileCritique({ period }: Props) {
             })
             .then(data => {
                 setCritique(data.critique);
-                localStorage.setItem(cacheKey, data.critique);
+                // Save to server-side preferences for caching
+                savePreference(cacheKey, data.critique);
             })
             .catch(err => {
                 console.error(err);
@@ -59,7 +56,7 @@ export default function ProfileCritique({ period }: Props) {
                 setLoading(false);
             });
 
-    }, [period, enabled]);
+    }, [period, enabled, getPreference, savePreference]);
 
     if (!enabled) return null;
 

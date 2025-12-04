@@ -31,14 +31,28 @@
 - **Timeline View** - Infinite scroll history with album art
 - **Period Filters** - Week, Month, Year, All Time stats
 
-#### 🎨 Premium UI
+#### 🎨 Premium UI & Customization
 - **Mobile-First Design** - Optimized bottom nav and responsive layouts
-- **Theme System** - Multiple themes with card aura effects
+- **Theme System** - Multiple themes with card aura effects (32+ aura styles)
+- **Custom Element Colors** - Personalize colors for 10 UI elements
+- **Custom Backgrounds** - Upload personalized images or looping videos
+- **Profile Images** - Upload and display your profile picture
 - **Glassmorphism** - Modern glass card aesthetics
 - **Dark Mode** - Full dark theme support
 
-#### 🔗 Sharing
+#### ☁️ Server-Side Storage
+All user preferences, themes, and customizations are stored server-side:
+- **Cross-Device Sync** - Settings persist across all your devices
+- **Cross-Session Persistence** - Login from anywhere, your settings follow
+- **Profile Images** - Stored on server, never lost
+- **Custom Backgrounds** - Saved server-side for consistent experience
+- **Theme Preferences** - Your chosen theme travels with your account
+
+#### 🔗 Sharing & Public Profiles
 - **Public Profiles** - Share your stats with friends (`/u/username`)
+- **Visitor Theme Matching** - Visitors see YOUR chosen theme and customizations
+- **Profile Image Display** - Your profile image shows on public profile
+- **Custom Colors on Public** - Custom element colors visible to visitors
 - **Configurable Hostname** - Set your public domain in settings
 - **Export to JSON** - Backup playlists and data
 
@@ -46,6 +60,7 @@
 - **Navidrome Integration** (Coming Soon) - Export playlists to your server
 - **Full Backup/Restore** - Settings, themes, and history
 - **Manual Scrobble** - Add listens manually
+- **Card Aura Effects** - Dynamic visual effects behind cards
 
 ### 🆚 Beat Scrobble vs Koito
 
@@ -58,6 +73,10 @@
 | **Yearly Recap** | ❌ | ✅ |
 | **Mobile-First UI** | ❌ | ✅ |
 | **Themes & Glassmorphism** | ❌ | ✅ |
+| **Custom Element Colors** | ❌ | ✅ |
+| **Custom Backgrounds** | ❌ | ✅ |
+| **Profile Images** | ❌ | ✅ |
+| **Server-Side Storage** | ❌ | ✅ |
 | **Full Backup/Restore** | ❌ | ✅ |
 | **Profile Sharing** | ❌ | ✅ |
 
@@ -138,17 +157,29 @@ cd client && npm install && npm run build
 
 ---
 
-## 🆚 Beat Scrobble vs Koito
+## � Customization Features
 
-| Feature | Koito (Legacy) | Beat Scrobble |
-|---------|----------------|---------------|
-| **UI/UX** | Basic, Desktop-focused | Mobile-First, Glassmorphism, Animations |
-| **Themes** | Single Theme | Multiple Themes + Aura Effects |
-| **AI Features** | ❌ | ✅ Critique, Playlists, Profile Analysis |
-| **Analytics** | Basic Stats | ✅ Yearly Recap, Heatmaps, Advanced Filters |
-| **Backup** | History Only (v1) | ✅ Full Backup (History + Settings + Themes) |
-| **Import** | Basic | ✅ Enhanced (Koito v1 + v2, Spotify, etc.) |
-| **Sharing** | ❌ | ✅ Public Profiles, Configurable Hostname |
+### Theme System
+- Multiple built-in themes (Midnight, Snow, Ocean, etc.)
+- Custom theme creation with color picker
+- 32+ card aura effect styles
+- Per-card aura customization
+
+### Custom Element Colors
+Customize colors for 10 UI elements:
+- Cards, Buttons, Links, Backgrounds
+- Icons, Navbars, Tooltips, Badges
+- Progress bars, Input fields
+
+### Custom Backgrounds
+- Upload custom background images (WebP, JPEG)
+- Upload looping background videos (MP4)
+- Automatic overlay for text readability
+
+### Profile Images
+- Upload profile picture (max 5MB)
+- Displayed on your profile and public page
+- Stored server-side, syncs across devices
 
 ---
 
@@ -175,13 +206,19 @@ To import, go to **Settings → Backup** or place files in the `/etc/beat_scrobb
 ## 🛠️ API Endpoints
 
 ### Public
-- `GET /apis/web/v1/public/profile/{username}` - Public profile data
+- `GET /apis/web/v1/public/profile/{username}` - Public profile with theme, preferences, and stats
+- `GET /apis/web/v1/profile-images/{filename}` - Profile images
 
 ### Authenticated
 - `POST /apis/web/v1/ai/critique` - Get track critique
 - `POST /apis/web/v1/ai/profile-critique` - Get profile analysis
 - `POST /apis/web/v1/ai/generate-playlist` - Generate AI playlist
 - `GET /apis/web/v1/yearly-recap?year=YYYY` - Yearly statistics
+- `GET /apis/web/v1/user/preferences` - Get user preferences
+- `POST /apis/web/v1/user/preferences` - Save user preferences
+- `GET /apis/web/v1/user/theme` - Get user theme
+- `POST /apis/web/v1/user/theme` - Save user theme
+- `POST /apis/web/v1/user/profile-image` - Upload profile image
 
 ### ListenBrainz Compatible
 - `POST /apis/listenbrainz/1/submit-listens` - Submit scrobbles

@@ -8,6 +8,7 @@ import PeriodSelector from "~/components/PeriodSelector";
 import ActivityGrid from "~/components/ActivityGrid";
 import TimelineView from "~/components/TimelineView";
 import YearlyRecapModal from "~/components/modals/YearlyRecapModal";
+import TopTracks from "~/components/TopTracks";
 import { usePreferences } from "~/hooks/usePreferences";
 import { useAppContext } from "~/providers/AppProvider";
 
@@ -217,8 +218,8 @@ export default function Profile() {
                     </div>
                 </div>
 
-                {/* Stats Cards - Enhanced */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-8">
+                {/* Stats Cards + Listening Activity Row */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3 sm:gap-4 mb-8">
                     <div className="glass-card p-4 sm:p-5 rounded-xl border border-[var(--color-bg-tertiary)] hover:border-[var(--color-primary)]/30 transition-all group">
                         <div className="flex items-center gap-2 mb-2">
                             <div className="p-2 rounded-lg bg-[var(--color-primary)]/10 group-hover:bg-[var(--color-primary)]/20 transition-colors">
@@ -280,21 +281,23 @@ export default function Profile() {
                         </p>
                         <p className="text-xs text-[var(--color-fg-secondary)] mt-1">Avg Plays/Track</p>
                     </div>
-                </div>
 
-                {/* Two Column Layout: Left = Charts, Right = AI Critique */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    {/* Left: Activity & Top Content */}
-                    <div className="lg:col-span-2 flex flex-col gap-6">
-                        {/* Activity Heatmap */}
-                        <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
-                            <h2 className="text-lg sm:text-xl font-bold text-[var(--color-fg)] mb-4 flex items-center gap-2">
-                                <BarChart3 size={20} className="text-[var(--color-primary)]" />
-                                Listening Activity
-                            </h2>
+                    {/* Listening Activity Heatmap - Integrated */}
+                    <div className="col-span-2 sm:col-span-3 lg:col-span-1 glass-card p-4 rounded-xl border border-[var(--color-bg-tertiary)] flex flex-col justify-center">
+                        <div className="flex items-center gap-2 mb-2">
+                            <BarChart3 size={14} className="text-[var(--color-primary)]" />
+                            <span className="text-xs font-bold text-[var(--color-fg-secondary)]">Activity</span>
+                        </div>
+                        <div className="overflow-hidden">
                             <ActivityGrid range={getActivityRange(period)} />
                         </div>
+                    </div>
+                </div>
 
+                {/* Three Column Layout: Left = Charts, Center = Top Tracks, Right = AI Critique */}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                    {/* Left: Top Artists & Albums */}
+                    <div className="lg:col-span-2 flex flex-col gap-6">
                         {/* Top Artists */}
                         {topArtistsData && topArtistsData.items && topArtistsData.items.length > 0 && (
                             <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
@@ -401,11 +404,29 @@ export default function Profile() {
                                 </div>
                             </div>
                         )}
+
+                        {/* Top Tracks */}
+                        <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg sm:text-xl font-bold text-[var(--color-fg)]">
+                                    Top Tracks - {periodLabel}
+                                </h2>
+                                <Link
+                                    to={`/chart/top-tracks?period=${period}`}
+                                    className="text-xs sm:text-sm text-[var(--color-primary)] hover:underline font-medium"
+                                >
+                                    View All →
+                                </Link>
+                            </div>
+                            <div className="bg-[var(--color-bg-secondary)]/30 rounded-xl p-4">
+                                <TopTracks period={period} limit={5} />
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Right: AI Critique */}
-                    <div className="lg:col-span-1">
-                        <div className="sticky top-6">
+                    {/* Right: AI Critique - Full Height */}
+                    <div className="lg:col-span-2">
+                        <div className="sticky top-6 h-full">
                             <ProfileCritique period={period as "week" | "month" | "year" | "all_time"} />
                         </div>
                     </div>

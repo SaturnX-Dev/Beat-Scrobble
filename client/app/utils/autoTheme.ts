@@ -1,9 +1,9 @@
-// TODO: Implement automatic dark/light mode switching
-// This module detects system theme preference and applies appropriate theme
+// Auto theme detection and switching utilities
+// Uses server-side preferences for persistence
 
 export function getSystemThemePreference(): 'dark' | 'light' {
     // Check system/OS theme preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         return 'dark';
     }
     return 'light';
@@ -14,9 +14,6 @@ export function setupAutoThemeSwitch(
     darkTheme: string = 'midnight',
     lightTheme: string = 'snow'
 ): () => void {
-    // TODO: Implement auto theme switching
-    // Listen to system theme changes and update app theme accordingly
-
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     const handleChange = (e: MediaQueryListEvent | MediaQueryList) => {
@@ -47,13 +44,8 @@ export interface AutoThemeConfig {
     darkModeEnd?: string;   // e.g., "06:00"
 }
 
-export function loadAutoThemeConfig(): AutoThemeConfig {
-    // TODO: Load from localStorage or server
-    const savedConfig = localStorage.getItem('autoThemeConfig');
-    if (savedConfig) {
-        return JSON.parse(savedConfig);
-    }
-
+// These functions now expect preferences to be loaded externally via usePreferences hook
+export function getDefaultAutoThemeConfig(): AutoThemeConfig {
     return {
         enabled: false,
         darkTheme: 'midnight',
@@ -61,17 +53,7 @@ export function loadAutoThemeConfig(): AutoThemeConfig {
     };
 }
 
-export function saveAutoThemeConfig(config: AutoThemeConfig): void {
-    // TODO: Save to localStorage and optionally to server
-    localStorage.setItem('autoThemeConfig', JSON.stringify(config));
-
-    // Optionally sync to server:
-    // POST /apis/web/v1/user/preferences
-    // { autoTheme: config }
-}
-
 export function isNightTime(startHour: number, endHour: number): boolean {
-    // TODO: Implement schedule-based theme switching
     const now = new Date();
     const currentHour = now.getHours();
 
@@ -81,4 +63,11 @@ export function isNightTime(startHour: number, endHour: number): boolean {
     }
 
     return currentHour >= startHour && currentHour < endHour;
+}
+
+// Time-of-day based theme selection (used by Auto button in ThemeSwitcher)
+export function getTimeBasedTheme(): 'dark' | 'light' {
+    const hour = new Date().getHours();
+    const isDaytime = hour >= 6 && hour < 18;
+    return isDaytime ? 'light' : 'dark';
 }

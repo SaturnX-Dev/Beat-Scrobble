@@ -23,10 +23,13 @@ func uuidToString(img *uuid.UUID) string {
 }
 
 type PublicProfileResponse struct {
-	Username   string              `json:"username"`
-	Stats      PublicStatsResponse `json:"stats"`
-	TopArtists []PublicTopArtist   `json:"topArtists"`
-	TopAlbums  []PublicTopAlbum    `json:"topAlbums"`
+	Username     string                 `json:"username"`
+	Stats        PublicStatsResponse    `json:"stats"`
+	TopArtists   []PublicTopArtist      `json:"topArtists"`
+	TopAlbums    []PublicTopAlbum       `json:"topAlbums"`
+	Theme        json.RawMessage        `json:"theme,omitempty"`
+	ProfileImage string                 `json:"profileImage,omitempty"`
+	Preferences  map[string]interface{} `json:"preferences,omitempty"`
 }
 
 type PublicStatsResponse struct {
@@ -100,6 +103,30 @@ func PublicProfileHandler(store db.DB) http.HandlerFunc {
 			return
 		}
 
+		// Get user theme for public profile
+		themeData, _ := store.GetUserTheme(ctx, user.ID)
+
+		// Extract profile image and public preferences
+		profileImage, _ := prefs["profile_image"].(string)
+
+		// Build public preferences (only theme-related ones)
+		publicPrefs := make(map[string]interface{})
+		if publicTheme, ok := prefs["public_profile_theme"]; ok {
+			publicPrefs["public_profile_theme"] = publicTheme
+		}
+		if showAI, ok := prefs["public_profile_show_ai"]; ok {
+			publicPrefs["public_profile_show_ai"] = showAI
+		}
+		if customColors, ok := prefs["customElementColors"]; ok {
+			publicPrefs["customElementColors"] = customColors
+		}
+		if bgType, ok := prefs["customBackgroundType"]; ok {
+			publicPrefs["customBackgroundType"] = bgType
+		}
+		if bgUrl, ok := prefs["customBackgroundUrl"]; ok {
+			publicPrefs["customBackgroundUrl"] = bgUrl
+		}
+
 		// Fetch public stats (all time)
 		listens, _ := store.CountListens(ctx, db.PeriodAllTime)
 		tracks, _ := store.CountTracks(ctx, db.PeriodAllTime)
@@ -157,8 +184,11 @@ func PublicProfileHandler(store db.DB) http.HandlerFunc {
 				TrackCount:      tracks,
 				MinutesListened: timeListened / 60,
 			},
-			TopArtists: topArtists,
-			TopAlbums:  topAlbums,
+			TopArtists:   topArtists,
+			TopAlbums:    topAlbums,
+			Theme:        themeData,
+			ProfileImage: profileImage,
+			Preferences:  publicPrefs,
 		}
 
 		l.Debug().Msgf("PublicProfileHandler: Successfully fetched public profile for %s", username)
