@@ -150,7 +150,7 @@ export default function SettingsModal({ open, setOpen }: Props) {
                             <h3 className="font-semibold text-[var(--color-fg)] mb-2">Version Info</h3>
                             <div className="grid grid-cols-2 gap-2 text-sm">
                                 <span className="text-[var(--color-fg-secondary)]">Version:</span>
-                                <span className="text-[var(--color-fg)] font-mono">1.0.0-beta</span>
+                                <span className="text-[var(--color-fg)] font-mono">0.1.0-alpha</span>
                                 <span className="text-[var(--color-fg-secondary)]">Build:</span>
                                 <span className="text-[var(--color-fg)] font-mono">Development</span>
                             </div>
@@ -159,7 +159,7 @@ export default function SettingsModal({ open, setOpen }: Props) {
                         <div className="flex flex-col gap-2">
                             <h3 className="font-semibold text-[var(--color-fg)]">Credits</h3>
                             <p className="text-sm text-[var(--color-fg-secondary)]">
-                                Developed with ❤️ by the open source community.
+                                Developed with ❤️ by saturnxdev.
                             </p>
                             <a
                                 href="https://github.com/saturnxdev/Beat Scrobble"
