@@ -44,7 +44,7 @@ const availableTargets = [
 ];
 
 export function CardAuraSelector() {
-    const { getPreference, savePreference } = usePreferences();
+    const { getPreference, savePreference, preferences } = usePreferences();
 
     const [selectedAura, setSelectedAura] = useState(() =>
         getPreference('card-aura-style', 'circle')
@@ -64,15 +64,28 @@ export function CardAuraSelector() {
     const [isExpanded, setIsExpanded] = useState(false);
     const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
+    // Sync state with preferences once they are loaded
+    useEffect(() => {
+        if (Object.keys(preferences).length > 0) {
+            setSelectedAura(getPreference('card-aura-style', 'circle'));
+            setIsEnabled(getPreference('card-aura-enabled', true));
+            setOpacity(getPreference('card-aura-opacity', 0.3));
+            setTargets(getPreference('card-aura-targets', ['dashboard']));
+            setPerCardStyles(getPreference('card-aura-per-card-styles', {}));
+        }
+    }, [preferences, getPreference]);
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             document.documentElement.setAttribute('data-aura-style', selectedAura);
             document.documentElement.style.setProperty('--aura-opacity', opacity.toString());
+            localStorage.setItem('card-aura-style', selectedAura);
         }
     }, [selectedAura, opacity]);
 
     useEffect(() => {
         savePreference('card-aura-per-card-styles', perCardStyles);
+        localStorage.setItem('card-aura-per-card-styles', JSON.stringify(perCardStyles));
         window.dispatchEvent(new Event('aura-settings-changed'));
     }, [perCardStyles, savePreference]);
 
@@ -80,6 +93,12 @@ export function CardAuraSelector() {
         savePreference('card-aura-enabled', newEnabled);
         savePreference('card-aura-opacity', newOpacity);
         savePreference('card-aura-targets', newTargets);
+
+        // Sync to localStorage for immediate consumption by components
+        localStorage.setItem('card-aura-enabled', String(newEnabled));
+        localStorage.setItem('card-aura-opacity', String(newOpacity));
+        localStorage.setItem('card-aura-targets', JSON.stringify(newTargets));
+
         window.dispatchEvent(new Event('aura-settings-changed'));
     };
 
