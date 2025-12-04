@@ -10,12 +10,6 @@
 name: Publish Docker image
 
 on:
-  push:
-    tags:
-      - "v*"
-    branches:
-      - main
-
   workflow_dispatch:
 
 jobs:
