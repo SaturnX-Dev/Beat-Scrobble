@@ -1,54 +1,81 @@
-# Koito
+# 🎵 Beat Scrobble
 
-Koito is a modern, themeable ListenBrainz-compatible scrobbler for self-hosters who want control over their data and insights into their listening habits. 
-It supports relaying to other compatible scrobblers, so you can try it safely without replacing your current setup.
+**Beat Scrobble** is a modern, AI-powered, self-hosted music analytics platform. Fork of [Koito](https://github.com/gabehf/koito) with enhanced features, AI integrations, and a mobile-first UI.
 
-> This project is currently pre-release, and therefore you can expect rapid development and some bugs. If you don't want to replace your current scrobbler
-with Koito quite yet, you can [set up a relay](https://koito.io/guides/scrobbler/#set-up-a-relay) from Koito to another ListenBrainz-compatible
-scrobbler. This is what I've been doing for the entire development of this app and it hasn't failed me once. Or, you can always use something
-like [multi-scrobbler](https://github.com/FoxxMD/multi-scrobbler).
+[![Go Reference](https://pkg.go.dev/badge/github.com/SaturnX-Dev/Beat-Scrobble.svg)](https://pkg.go.dev/github.com/SaturnX-Dev/Beat-Scrobble)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Features
+---
 
-- ⚡ More performant than similar software
-- 🖌️ Sleek UI
-- 🔁 Compatible with anything that scrobbles to ListenBrainz
-- 🔌 Easy relay to your existing setup
-- 📂 Import support for Maloja, ListenBrainz, LastFM, and Spotify
+## ✨ Features
 
-## Demo
+### Core Features (from Koito)
+- ⚡ **High Performance** - Built with Go and PostgreSQL
+- 🔁 **ListenBrainz Compatible** - Works with any LB-compatible scrobbler
+- 📂 **Import Support** - Maloja, ListenBrainz, Last.fm, Spotify
+- 🔌 **Relay Mode** - Forward scrobbles to other services
 
-You can view my public instance with my listening data at https://koito.mnrva.dev
+### 🆕 Beat Scrobble Exclusive Features
 
-## Screenshots
+#### 🤖 AI-Powered
+- **AI Music Critique** - Get witty AI reviews of your tracks
+- **AI Profile Critique** - Personalized analysis of your listening habits
+- **AI Playlists** - 7 types of auto-generated playlists:
+  - Mood Mix, Genre Dive, Discover Weekly
+  - Time Capsule, Artist Radio, Decade Mix, Hidden Gems
+- **OpenRouter Integration** - Use any LLM (GPT-4, Claude, Gemini, etc.)
 
-![screenshot one](assets/Original1.png)
-![screenshot two](assets/Original2.png)
-![screenshot three](assets/Original3.png)
-![screenshot four ](assets/Mod1.png)
-![screenshot five](assets/Mod2.png)
-![screenshot six](assets/Mod3.png)
-![screenshot seven](assets/Themes.png)
+#### 📊 Enhanced Analytics
+- **Yearly Recap** - Spotify Wrapped-style annual summary (auto-popup Dec 15)
+- **Activity Grid** - GitHub-style listening heatmap
+- **Timeline View** - Infinite scroll history with album art
+- **Period Filters** - Week, Month, Year, All Time stats
 
+#### 🎨 Premium UI
+- **Mobile-First Design** - Optimized bottom nav and responsive layouts
+- **Theme System** - Multiple themes with card aura effects
+- **Glassmorphism** - Modern glass card aesthetics
+- **Dark Mode** - Full dark theme support
 
-## Installation
+#### 🔗 Sharing
+- **Public Profiles** - Share your stats with friends (`/u/username`)
+- **Configurable Hostname** - Set your public domain in settings
+- **Export to JSON** - Backup playlists and data
 
-See the [installation guide](https://koito.io/guides/installation/), or, if you just want to cut to the chase, use this docker compose file:
+#### 🔧 Advanced Features
+- **Navidrome Integration** (Coming Soon) - Export playlists to your server
+- **Full Backup/Restore** - Settings, themes, and history
+- **Manual Scrobble** - Add listens manually
+
+---
+
+## 📸 Screenshots
+
+![Dashboard](assets/Mod1.png)
+![Profile](assets/Mod2.png)
+![Timeline](assets/Mod3.png)
+![Themes](assets/Themes.png)
+
+---
+
+## 🚀 Quick Start
+
+### Docker Compose
 
 ```yaml
 services:
-  koito:
-    image: gabehf/koito:latest
-    container_name: koito
+  beat-scrobble:
+    image: saturnxdev/beat-scrobble:latest
+    container_name: beat-scrobble
     depends_on:
       - db
     environment:
-      - KOITO_DATABASE_URL=postgres://postgres:secret_password@db:5432/koitodb
-      - KOITO_ALLOWED_HOSTS=koito.example.com,192.168.0.100:4110
+      - BEAT_SCROBBLE_DATABASE_URL=postgres://postgres:your_password@db:5432/beatscrobbledb
+      - BEAT_SCROBBLE_ALLOWED_HOSTS=your-domain.com,192.168.1.100:4110
     ports:
       - "4110:4110"
     volumes:
-      - ./koito-data:/etc/koito
+      - ./beat-scrobble-data:/etc/beat-scrobble
     restart: unless-stopped
 
   db:
@@ -56,38 +83,87 @@ services:
     container_name: psql
     restart: unless-stopped
     environment:
-      POSTGRES_DB: koitodb
+      POSTGRES_DB: beatscrobbledb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: secret_password
+      POSTGRES_PASSWORD: your_password
     volumes:
       - ./db-data:/var/lib/postgresql/data
 ```
 
-Be sure to replace `secret_password` with a random password of your choice, and set `KOITO_ALLOWED_HOSTS` to include the domain name or IP address you will be accessing Koito 
-from when using either of the Docker methods described above. You should also change the default username and password, if you didn't configure custom defaults.
+### Build from Source
 
-## Importing Data
+```bash
+git clone https://github.com/SaturnX-Dev/Beat-Scrobble.git
+cd Beat-Scrobble
 
-See the [data importing guide](https://koito.io/guides/importing/) in the docs.
+# Build backend
+go build -o beat-scrobble ./cmd/api
 
-## Full list of configuration options
+# Build frontend
+cd client && npm install && npm run build
+```
 
-See the [configuration reference](https://koito.io/reference/configuration/) in the docs.
+---
 
-## Contributing
+## ⚙️ Configuration
 
-There are currently some known issues that I am actively working on, in addition to adding new features. If you want to contribute (especially more and more robust testing) feel free to fork the repository and make a pull request with your changes.
+| Environment Variable | Description | Default |
+|---------------------|-------------|---------|
+| `BEAT_SCROBBLE_DATABASE_URL` | PostgreSQL connection string | Required |
+| `BEAT_SCROBBLE_ALLOWED_HOSTS` | Comma-separated allowed hosts | `localhost` |
+| `BEAT_SCROBBLE_PORT` | Server port | `4110` |
 
-If you have any feature ideas, open a GitHub issue to let me know. I'm sorting through ideas to decide which data visualizations and customization options to add next.
+---
 
-## Albums that fueled development + notes
+## 🤖 AI Setup
 
-More relevant here than any of my other projects...
+1. Get an API key from [OpenRouter](https://openrouter.ai)
+2. Go to **Settings → API Keys**
+3. Enter your OpenRouter key
+4. Enable features: AI Critique, Profile Critique, AI Playlists
 
-Not just during development, you can see my complete listening data on my [live demo instance](https://koito.mnrva.dev).
+---
 
-#### Random notes
+## 📦 Importing Data
 
-- I find it a little annoying when READMEs use emoji but everyone else is doing it so I felt like I had to...
-- It's funny how you can see the days in my listening history when I was just working on this project because they have way more listens than other days.
-- About 50% of the reason I built this was minor/not-so-minor greivances with Maloja. Could I have just contributed to Maloja? Maybe, but I like building stuff and I like Koito's UI a lot more anyways.
+Beat Scrobble supports importing from:
+- **Last.fm** - Export via lastfm-to-csv
+- **ListenBrainz** - Direct JSON export
+- **Maloja** - Native backup format
+- **Spotify** - Extended streaming history
+
+---
+
+## 🛠️ API Endpoints
+
+### Public
+- `GET /apis/web/v1/public/profile/{username}` - Public profile data
+
+### Authenticated
+- `POST /apis/web/v1/ai/critique` - Get track critique
+- `POST /apis/web/v1/ai/profile-critique` - Get profile analysis
+- `POST /apis/web/v1/ai/generate-playlist` - Generate AI playlist
+- `GET /apis/web/v1/yearly-recap?year=YYYY` - Yearly statistics
+
+### ListenBrainz Compatible
+- `POST /apis/listenbrainz/1/submit-listens` - Submit scrobbles
+- `GET /apis/listenbrainz/1/validate-token` - Validate API key
+
+---
+
+## 🙏 Credits
+
+- **Original Project**: [Koito](https://github.com/gabehf/koito) by Gabe Farrell
+- **Fork Maintainer**: [SaturnX-Dev](https://github.com/SaturnX-Dev)
+
+---
+
+## 📄 License
+
+MIT License - See [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  <b>Beat Scrobble</b> - Your music, your data, your insights.
+</p>
