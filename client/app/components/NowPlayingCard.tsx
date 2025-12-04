@@ -2,9 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { getNowPlaying, imageUrl } from "api/api";
 import { Link } from "react-router";
 import ArtistLinks from "./ArtistLinks";
-import { Pause, Play, SkipForward } from "lucide-react";
+import { Pause, Play, SkipForward, Sparkles } from "lucide-react";
 import { AsyncButton } from "./AsyncButton";
 import CardAura from "./CardAura";
+import { useState, useEffect, useRef } from "react";
+import { usePreferences } from "~/hooks/usePreferences";
 
 export default function NowPlayingCard() {
     const { data: npData, isLoading } = useQuery({
@@ -12,6 +14,61 @@ export default function NowPlayingCard() {
         queryFn: () => getNowPlaying(),
         refetchInterval: 10000, // Refresh every 10s
     });
+
+    const { getPreference } = usePreferences();
+    const [critique, setCritique] = useState<string | null>(null);
+    const [isCritiqueLoading, setIsCritiqueLoading] = useState(false);
+    const lastTrackIdRef = useRef<number | null>(null);
+    const aiEnabled = getPreference('ai_critique_enabled', false);
+
+    useEffect(() => {
+        if (!npData?.track || !aiEnabled) {
+            setCritique(null);
+            return;
+        }
+
+        const trackId = npData.track.id;
+
+        // Only fetch if track changed
+        if (trackId === lastTrackIdRef.current) {
+            return;
+        }
+
+        // Check visibility to save tokens
+        if (document.hidden) {
+            console.log("Page hidden, skipping AI critique fetch");
+            return;
+        }
+
+        lastTrackIdRef.current = trackId;
+        setIsCritiqueLoading(true);
+        setCritique(null);
+
+        fetch('/apis/web/v1/ai/critique', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                track_name: npData.track.title,
+                artist_name: npData.track.artists[0]?.name || "Unknown Artist",
+                album_name: (npData.track.album as any)?.title || npData.track.album || "Unknown Album"
+            })
+        })
+            .then(res => {
+                if (res.ok) return res.json();
+                throw new Error('Failed to fetch critique');
+            })
+            .then(data => {
+                setCritique(data.critique);
+            })
+            .catch(err => {
+                console.error("AI Critique error:", err);
+                setCritique(null);
+            })
+            .finally(() => {
+                setIsCritiqueLoading(false);
+            });
+
+    }, [npData?.track?.id, aiEnabled]);
 
     if (isLoading) {
         return (
@@ -39,8 +96,25 @@ export default function NowPlayingCard() {
             <CardAura size="large" id="now-playing" />
 
             <div className="relative z-10 flex flex-col h-full">
-                <div className="w-full aspect-square rounded-xl md:rounded-2xl overflow-hidden shadow-premium mb-4">
+                <div className="w-full aspect-square rounded-xl md:rounded-2xl overflow-hidden shadow-premium mb-4 relative">
                     <img src={image} alt={track.title} className="w-full h-full object-cover" />
+
+                    {/* AI Critique Overlay */}
+                    {aiEnabled && (critique || isCritiqueLoading) && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 pt-12 transform transition-transform duration-300 translate-y-full group-hover:translate-y-0">
+                            <div className="flex items-center gap-2 mb-1 text-[var(--color-primary)]">
+                                <Sparkles size={14} />
+                                <span className="text-xs font-bold uppercase tracking-wider">AI Critique</span>
+                            </div>
+                            {isCritiqueLoading ? (
+                                <div className="h-4 w-3/4 bg-white/20 rounded animate-pulse" />
+                            ) : (
+                                <p className="text-sm text-white/90 italic leading-relaxed">
+                                    "{critique}"
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex-grow">
