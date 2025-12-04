@@ -14,7 +14,7 @@ readonly SCRIPT_VERSION="1.0.0"
 readonly SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
 
 # Imágenes
-IMAGE_BEAT_SCROBBLE="${IMAGE_BEAT_SCROBBLE:-beat-scrobble:local}"
+IMAGE_BEAT_SCROBBLE="${IMAGE_BEAT_SCROBBLE:-ghcr.io/saturnx-dev/beat-scrobble:latest}"
 IMAGE_PG="${IMAGE_PG:-docker.io/library/postgres:16}"
 
 # Base de datos
