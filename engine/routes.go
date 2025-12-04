@@ -116,6 +116,9 @@ func bindRoutes(
 			r.Post("/import", handlers.ImportHandler(db))
 			// Profile Image
 			r.Post("/user/profile-image", handlers.UploadProfileImageBase64Handler(db))
+			// Spotify Integration
+			r.Get("/spotify/configured", handlers.SpotifyConfiguredHandler(db))
+			r.Get("/spotify/search", handlers.SpotifySearchHandler(db))
 		})
 
 		// Profile images (public, no auth required)

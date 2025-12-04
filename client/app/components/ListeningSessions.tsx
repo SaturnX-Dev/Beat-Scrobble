@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getLastListens, imageUrl, type Listen } from "api/api";
-import { Clock, Smartphone, Monitor } from "lucide-react";
+import { Clock, Music } from "lucide-react";
 
 interface Props {
     artistId?: number;
@@ -9,19 +9,32 @@ interface Props {
 }
 
 export default function ListeningSessions({ artistId, limit = 50 }: Props) {
-    const { data } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ["last-plays", { limit, artistId, page: 1 }],
         queryFn: () => getLastListens({ limit, period: "all", page: 1, artist_id: artistId }),
     });
 
-    if (!data || !data.items) return null;
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center py-8">
+                <div className="animate-pulse text-[var(--color-fg-secondary)] text-sm">Loading sessions...</div>
+            </div>
+        );
+    }
+
+    if (!data || !data.items || data.items.length === 0) {
+        return (
+            <div className="text-center py-6">
+                <Music className="w-8 h-8 mx-auto mb-2 text-[var(--color-fg-tertiary)]" />
+                <p className="text-[var(--color-fg-tertiary)] text-sm">No listening data yet</p>
+                <p className="text-[var(--color-fg-tertiary)] text-xs mt-1">Listen to some music to see your sessions!</p>
+            </div>
+        );
+    }
 
     // Group plays into sessions (break > 20 mins)
     const sessions: Listen[][] = [];
     let currentSession: Listen[] = [];
-
-    // Process in reverse chronological order (newest first)
-    // But for grouping logic, it's easier to iterate and check gaps
 
     for (let i = 0; i < data.items.length; i++) {
         const play = data.items[i];
@@ -32,9 +45,9 @@ export default function ListeningSessions({ artistId, limit = 50 }: Props) {
             continue;
         }
 
-        const timeDiff = new Date(prevPlay.time).getTime() - new Date(play.time).getTime(); // Difference in ms
+        const timeDiff = new Date(prevPlay.time).getTime() - new Date(play.time).getTime();
 
-        // If gap is more than 20 minutes (1200000 ms), start new session
+        // If gap is more than 20 minutes, start new session
         if (timeDiff > 1200000) {
             sessions.push(currentSession);
             currentSession = [play];
@@ -44,20 +57,21 @@ export default function ListeningSessions({ artistId, limit = 50 }: Props) {
     }
     if (currentSession.length > 0) sessions.push(currentSession);
 
-    // Filter out single-track sessions for this view to make it more interesting, or keep them
-    const interestingSessions = sessions.filter(s => s.length > 1).slice(0, 5);
+    // Show ALL sessions, not just multi-track ones
+    const displaySessions = sessions.slice(0, 5);
 
-    if (interestingSessions.length === 0) {
+    if (displaySessions.length === 0) {
         return (
-            <div className="text-center text-[var(--color-fg-tertiary)] py-4 text-sm">
-                No recent listening sessions found.
+            <div className="text-center py-6">
+                <Music className="w-8 h-8 mx-auto mb-2 text-[var(--color-fg-tertiary)]" />
+                <p className="text-[var(--color-fg-tertiary)] text-sm">No listening sessions found</p>
             </div>
         );
     }
 
     return (
         <div className="space-y-2 sm:space-y-3 md:space-y-4">
-            {interestingSessions.map((session, idx) => {
+            {displaySessions.map((session, idx) => {
                 const startTime = new Date(session[session.length - 1].time);
                 const endTime = new Date(session[0].time);
                 const duration = Math.round((endTime.getTime() - startTime.getTime()) / 60000);
@@ -73,11 +87,11 @@ export default function ListeningSessions({ artistId, limit = 50 }: Props) {
                                     <Clock size={10} />
                                     {startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {endTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     <span className="mx-1">•</span>
-                                    {duration} mins
+                                    {duration > 0 ? `${duration} mins` : '< 1 min'}
                                 </p>
                             </div>
                             <div className="text-xs font-bold bg-[var(--color-primary)]/10 text-[var(--color-primary)] px-2 py-1 rounded-full">
-                                {session.length} tracks
+                                {session.length} {session.length === 1 ? 'track' : 'tracks'}
                             </div>
                         </div>
 
@@ -88,7 +102,7 @@ export default function ListeningSessions({ artistId, limit = 50 }: Props) {
                                         <img
                                             src={imageUrl(play.track.image, "small")}
                                             alt={play.track.title}
-                                            title={`${play.track.title}`}
+                                            title={play.track.title}
                                             className="w-full h-full object-cover"
                                             onError={(e) => {
                                                 e.currentTarget.style.display = 'none';
@@ -116,3 +130,4 @@ export default function ListeningSessions({ artistId, limit = 50 }: Props) {
         </div>
     );
 }
+

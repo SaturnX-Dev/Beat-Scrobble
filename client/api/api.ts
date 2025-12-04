@@ -289,6 +289,20 @@ function getNowPlaying(): Promise<NowPlaying> {
   return request("/apis/web/v1/now-playing").then((r) => r.json());
 }
 
+
+function spotifySearch(q: string, type: "artist" | "album" | "track"): Promise<SpotifySearchResponse> {
+  q = encodeURIComponent(q);
+  return request(`/apis/web/v1/spotify/search?q=${q}&type=${type}`).then(
+    (r) => r.json() as Promise<SpotifySearchResponse>
+  );
+}
+
+function getSpotifyConfigured(): Promise<{ configured: boolean }> {
+  return request(`/apis/web/v1/spotify/configured`).then(
+    (r) => r.json() as Promise<{ configured: boolean }>
+  );
+}
+
 export {
   getLastListens,
   getTopTracks,
@@ -320,6 +334,8 @@ export {
   getExport,
   submitListen,
   getNowPlaying,
+  spotifySearch,
+  getSpotifyConfigured,
 };
 type Track = {
   id: number;
@@ -375,6 +391,7 @@ type PaginatedResponse<T> = {
 type ListenActivityItem = {
   start_time: Date;
   listens: number;
+  start_time_unix: number;
 };
 type SimpleArtists = {
   name: string;
@@ -405,6 +422,7 @@ type ApiKey = {
 };
 type ApiError = {
   error: string;
+  details?: string;
 };
 type Config = {
   default_theme: string;
@@ -412,6 +430,21 @@ type Config = {
 type NowPlaying = {
   currently_playing: boolean;
   track: Track;
+};
+type SpotifyImage = {
+  url: string;
+  width: number;
+  height: number;
+};
+type SpotifySearchResult = {
+  id: string;
+  name: string;
+  artists?: string[];
+  images: SpotifyImage[];
+  type: string;
+};
+type SpotifySearchResponse = {
+  results: SpotifySearchResult[];
 };
 
 export type {
@@ -431,4 +464,7 @@ export type {
   Config,
   NowPlaying,
   Stats,
+  SpotifySearchResponse,
+  SpotifySearchResult,
 };
+

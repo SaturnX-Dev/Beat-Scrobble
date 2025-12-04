@@ -51,6 +51,32 @@ func importBeatScrobbleData(ctx context.Context, store db.DB, r io.Reader) error
 
 	l.Info().Msgf("Beginning data import for user: %s (format v%s)", data.User, data.Version)
 
+	// For v2 format, restore preferences and theme
+	if data.Version == "2" {
+		// Restore preferences if present
+		if data.Preferences != nil && len(data.Preferences) > 0 {
+			prefsBytes, err := json.Marshal(data.Preferences)
+			if err == nil {
+				err = store.SaveUserPreferences(ctx, 1, prefsBytes) // UserID 1 (default user)
+				if err != nil {
+					l.Warn().Err(err).Msg("importBeatScrobbleData: Failed to restore preferences")
+				} else {
+					l.Info().Msg("importBeatScrobbleData: Preferences restored successfully")
+				}
+			}
+		}
+
+		// Restore theme if present
+		if len(data.Theme) > 0 && string(data.Theme) != "null" && string(data.Theme) != "{}" {
+			err = store.SaveUserTheme(ctx, 1, data.Theme) // UserID 1 (default user)
+			if err != nil {
+				l.Warn().Err(err).Msg("importBeatScrobbleData: Failed to restore theme")
+			} else {
+				l.Info().Msg("importBeatScrobbleData: Theme restored successfully")
+			}
+		}
+	}
+
 	count := 0
 
 	for i := range data.Listens {

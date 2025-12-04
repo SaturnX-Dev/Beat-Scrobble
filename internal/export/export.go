@@ -18,11 +18,11 @@ type BeatScrobbleExport struct {
 	ExportedAt  time.Time              `json:"exported_at"` // RFC3339
 	User        string                 `json:"user"`        // username
 	Preferences map[string]interface{} `json:"preferences,omitempty"`
-	Theme       string                 `json:"theme,omitempty"`
-	Listens     []BeatScrobbleListen          `json:"listens"`
+	Theme       json.RawMessage        `json:"theme,omitempty"`
+	Listens     []BeatScrobbleListen   `json:"listens"`
 }
 type BeatScrobbleListen struct {
-	ListenedAt time.Time     `json:"listened_at"`
+	ListenedAt time.Time            `json:"listened_at"`
 	Track      BeatScrobbleTrack    `json:"track"`
 	Album      BeatScrobbleAlbum    `json:"album"`
 	Artists    []BeatScrobbleArtist `json:"artists"`

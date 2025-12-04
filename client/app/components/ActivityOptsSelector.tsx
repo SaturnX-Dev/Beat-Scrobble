@@ -1,5 +1,4 @@
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { usePreferences } from "~/hooks/usePreferences";
 
 interface Props {
@@ -17,22 +16,22 @@ export default function ActivityOptsSelector({
     currentRange,
     disableCache = false,
 }: Props) {
-    const stepPeriods = ['day', 'week', 'month'];
-    const rangePeriods = [105, 182, 364];
-    const [collapsed, setCollapsed] = useState(true);
+    const stepOptions = [
+        { label: 'Day', value: 'day' },
+        { label: 'Week', value: 'week' },
+        { label: 'Month', value: 'month' }
+    ];
+    const rangeOptions = [
+        { label: '3 Months', value: 105 },
+        { label: '6 Months', value: 182 },
+        { label: '1 Year', value: 364 }
+    ];
     const { getPreference, savePreference } = usePreferences();
 
     const getStorageKeyPrefix = () => {
         if (typeof window === 'undefined') return 'activity_default';
         return 'activity_' + window.location.pathname.split('/')[1];
     };
-
-    const setMenuOpen = (val: boolean) => {
-        setCollapsed(val)
-        if (!disableCache) {
-            savePreference(getStorageKeyPrefix() + '_configuring', !val);
-        }
-    }
 
     const setStep = (val: string) => {
         stepSetter(val);
@@ -54,57 +53,49 @@ export default function ActivityOptsSelector({
             if (cachedRange) rangeSetter(cachedRange);
             const cachedStep = getPreference(getStorageKeyPrefix() + '_step', null);
             if (cachedStep) stepSetter(cachedStep);
-            const cachedConfiguring = getPreference(getStorageKeyPrefix() + '_configuring', false);
-            if (cachedStep) setMenuOpen(!cachedConfiguring);
         }
     }, [getPreference]);
 
     return (
-        <div className="relative w-full">
-            <button
-                onClick={() => setMenuOpen(!collapsed)}
-                className="absolute left-[75px] -top-9 text-muted hover:color-fg transition"
-                title="Toggle options"
-            >
-                {collapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-            </button>
+        <div className="flex flex-wrap items-center gap-3 mb-3">
+            {/* Step Selector */}
+            <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--color-fg-tertiary)] uppercase tracking-wide">Group by:</span>
+                <div className="flex bg-[var(--color-bg-tertiary)]/50 rounded-lg p-0.5">
+                    {stepOptions.map((opt) => (
+                        <button
+                            key={opt.value}
+                            className={`px-2 py-1 text-xs rounded-md transition-all ${opt.value === currentStep
+                                    ? 'bg-[var(--color-primary)] text-white shadow-sm'
+                                    : 'text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)]'
+                                }`}
+                            onClick={() => setStep(opt.value)}
+                        >
+                            {opt.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
 
-            <div
-                className={`overflow-hidden transition-[max-height,opacity] duration-250 ease ${collapsed ? 'max-h-0 opacity-0' : 'max-h-[100px] opacity-100'
-                    }`}
-            >
-                <div className="flex flex-wrap gap-4 mt-1 text-sm">
-                    <div className="flex items-center gap-1">
-                        <span className="text-muted">Step:</span>
-                        {stepPeriods.map((p) => (
-                            <button
-                                key={p}
-                                className={`px-1 rounded transition ${p === currentStep ? 'color-fg font-medium' : 'color-fg-secondary hover:color-fg'
-                                    }`}
-                                onClick={() => setStep(p)}
-                                disabled={p === currentStep}
-                            >
-                                {p}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="flex items-center gap-1">
-                        <span className="text-muted">Range:</span>
-                        {rangePeriods.map((r) => (
-                            <button
-                                key={r}
-                                className={`px-1 rounded transition ${r === currentRange ? 'color-fg font-medium' : 'color-fg-secondary hover:color-fg'
-                                    }`}
-                                onClick={() => setRange(r)}
-                                disabled={r === currentRange}
-                            >
-                                {r}
-                            </button>
-                        ))}
-                    </div>
+            {/* Range Selector */}
+            <div className="flex items-center gap-2">
+                <span className="text-xs text-[var(--color-fg-tertiary)] uppercase tracking-wide">Period:</span>
+                <div className="flex bg-[var(--color-bg-tertiary)]/50 rounded-lg p-0.5">
+                    {rangeOptions.map((opt) => (
+                        <button
+                            key={opt.value}
+                            className={`px-2 py-1 text-xs rounded-md transition-all ${opt.value === currentRange
+                                    ? 'bg-[var(--color-primary)] text-white shadow-sm'
+                                    : 'text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)]'
+                                }`}
+                            onClick={() => setRange(opt.value)}
+                        >
+                            {opt.label}
+                        </button>
+                    ))}
                 </div>
             </div>
         </div>
     );
 }
+

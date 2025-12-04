@@ -1,7 +1,7 @@
-import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
+import { Link, useLoaderData, useSearchParams, type LoaderFunctionArgs } from "react-router";
 import { deleteListen, getLastListens, type Listen, type PaginatedResponse } from "api/api";
 import { useState } from "react";
-import { Layers, List, Filter } from "lucide-react";
+import { Layers, List, Filter, ChevronDown } from "lucide-react";
 import TimelineView from "~/components/TimelineView";
 
 export async function clientLoader({ request }: LoaderFunctionArgs) {
@@ -15,7 +15,7 @@ export async function clientLoader({ request }: LoaderFunctionArgs) {
             limit: 25,
             period,
         });
-        return { listens, page };
+        return { listens, page, period };
     } catch (error) {
         console.error("Failed to load timeline:", error);
         return {
@@ -26,16 +26,25 @@ export async function clientLoader({ request }: LoaderFunctionArgs) {
                 current_page: 1,
                 items_per_page: 25
             },
-            page
+            page,
+            period: "all_time"
         };
     }
 }
 
 export default function Timeline() {
-    const { listens: initialData, page } = useLoaderData<{ listens: PaginatedResponse<Listen>, page: number }>();
+    const { listens: initialData, page, period } = useLoaderData<{ listens: PaginatedResponse<Listen>, page: number, period: string }>();
     const [items, setItems] = useState<Listen[] | null>(null);
     const [viewMode, setViewMode] = useState<'list' | 'session'>('list');
     const [showFilters, setShowFilters] = useState(false);
+
+    const periodLabels: Record<string, string> = {
+        'all_time': 'All Time',
+        'year': 'Last Year',
+        'month': 'Last Month',
+        'week': 'Last Week',
+        'day': 'Today'
+    };
 
     const handleDelete = (listen: Listen) => {
         setItems((prev) => (prev ?? initialData.items).filter((i) => i.time !== listen.time));
@@ -72,31 +81,33 @@ export default function Timeline() {
                             </button>
                         </div>
 
-                        {/* Filter Button */}
+                        {/* Filter Button with Current Selection */}
                         <div className="relative">
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
                                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-smooth ${showFilters ? 'bg-[var(--color-primary)] text-white shadow-md' : 'bg-[var(--color-bg-tertiary)]/50 hover:bg-[var(--color-bg-tertiary)] text-[var(--color-fg)]'}`}
                             >
                                 <Filter size={16} />
-                                <span className="hidden sm:inline">Filter</span>
+                                <span>{periodLabels[period] || 'All Time'}</span>
+                                <ChevronDown size={14} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
                             </button>
 
                             {/* Filter Dropdown */}
                             {showFilters && (
-                                <div className="absolute right-0 top-full mt-2 w-48 bg-[var(--color-bg-secondary)]/90 backdrop-blur-md border border-[var(--color-bg-tertiary)] rounded-xl shadow-xl p-2 z-50 flex flex-col gap-1">
+                                <div className="absolute right-0 top-full mt-2 w-48 bg-[var(--color-bg-secondary)] backdrop-blur-md border border-[var(--color-bg-tertiary)] rounded-xl shadow-xl p-2 z-50 flex flex-col gap-1">
                                     <p className="text-xs font-bold text-[var(--color-fg-secondary)] px-2 py-1 uppercase tracking-wider">Time Range</p>
                                     {[
                                         { label: 'All Time', value: 'all_time' },
                                         { label: 'Last Year', value: 'year' },
                                         { label: 'Last Month', value: 'month' },
-                                        { label: 'Last Week', value: 'week' }
+                                        { label: 'Last Week', value: 'week' },
+                                        { label: 'Today', value: 'day' }
                                     ].map((f) => (
                                         <Link
                                             key={f.value}
                                             to={`?period=${f.value}`}
                                             onClick={() => setShowFilters(false)}
-                                            className="text-left px-3 py-2 rounded-lg text-sm text-[var(--color-fg)] hover:bg-[var(--color-bg-tertiary)]/50 transition-colors block"
+                                            className={`text-left px-3 py-2 rounded-lg text-sm transition-colors block ${period === f.value ? 'bg-[var(--color-primary)] text-white' : 'text-[var(--color-fg)] hover:bg-[var(--color-bg-tertiary)]/50'}`}
                                         >
                                             {f.label}
                                         </Link>

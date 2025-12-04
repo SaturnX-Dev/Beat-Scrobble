@@ -2,12 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { getStats, getTopArtists, getTopAlbums, imageUrl } from "api/api";
 import { Link } from "react-router";
 import { Clock, PlayCircle, Calendar } from "lucide-react";
-import { useState } from "react";
 import { useAuraStyle } from "~/hooks/useAuraStyle";
 import CardAura from "./CardAura";
 
-export default function DashboardMetrics() {
-    const [period, setPeriod] = useState<"day" | "week" | "month" | "year" | "all_time">("week");
+interface Props {
+    period?: "day" | "week" | "month" | "year" | "all_time";
+}
+
+export default function DashboardMetrics({ period = "week" }: Props) {
     const auraClass = useAuraStyle('small');
 
     const { data: stats } = useQuery({
@@ -42,19 +44,8 @@ export default function DashboardMetrics() {
                 <div className="flex items-center justify-between mb-4 relative z-10">
                     <p className="text-xs uppercase tracking-wider text-[var(--color-fg-secondary)] font-semibold flex items-center gap-2">
                         <Calendar size={12} />
-                        Stats For:
+                        Stats: {periodLabel}
                     </p>
-                    <select
-                        value={period}
-                        onChange={(e) => setPeriod(e.target.value as any)}
-                        className="bg-[var(--color-bg)]/50 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-medium text-[var(--color-fg)] outline-none border border-[var(--color-bg-tertiary)]/50 cursor-pointer hover:bg-[var(--color-bg)]/80 transition-colors"
-                    >
-                        <option value="day">Today</option>
-                        <option value="week">This Week</option>
-                        <option value="month">This Month</option>
-                        <option value="year">This Year</option>
-                        <option value="all_time">All Time</option>
-                    </select>
                 </div>
 
                 <div className="flex items-baseline gap-2 mb-1 relative z-10">

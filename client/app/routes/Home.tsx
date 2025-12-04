@@ -51,8 +51,8 @@ export default function Home() {
               {/* Now Playing Card */}
               <NowPlayingCard />
 
-              {/* Metrics Card (Has its own internal filters) */}
-              <DashboardMetrics />
+              {/* Metrics Card (Uses global period filter) */}
+              <DashboardMetrics period={period as any} />
             </div>
           </div>
 
