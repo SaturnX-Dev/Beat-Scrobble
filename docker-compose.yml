@@ -1,33 +1,33 @@
 version: '3.8'
 
 services:
-  koito-db:
+  beat-scrobble-db:
     image: postgres:16
-    container_name: koito-db
+    container_name: beat-scrobble-db
     restart: always
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=secret
-      - POSTGRES_DB=koitodb
+      - POSTGRES_DB=beatscrobbledb
     volumes:
       - ./pgdata:/var/lib/postgresql/data
     networks:
-      - koito-net
+      - beat-scrobble-net
 
-  koito-app:
-    image: koito:local
-    container_name: koito-app
+  beat-scrobble-app:
+    image: saturnxdev/beat-scrobble:latest
+    container_name: beat-scrobble-app
     restart: always
     ports:
       - "4110:4110"
     environment:
-      - KOITO_DATABASE_URL=postgres://postgres:secret@koito-db:5432/koitodb?sslmode=disable
-      - KOITO_ALLOWED_HOSTS=*
+      - BEAT_SCROBBLE_DATABASE_URL=postgres://postgres:secret@beat-scrobble-db:5432/beatscrobbledb?sslmode=disable
+      - BEAT_SCROBBLE_ALLOWED_HOSTS=*
     depends_on:
-      - koito-db
+      - beat-scrobble-db
     networks:
-      - koito-net
+      - beat-scrobble-net
 
 networks:
-  koito-net:
+  beat-scrobble-net:
     driver: bridge
