@@ -23,7 +23,7 @@ export default defineConfig({
             src: './src/assets/logo_text.png',
             replacesTitle: true,
           },
-          social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/gabehf/koito' }],
+          social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/SaturnX-Dev/Beat-Scrobble' }],
           sidebar: [
               {
                   label: 'Guides',

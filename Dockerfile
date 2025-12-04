@@ -1,7 +1,7 @@
 FROM node AS frontend
 
-ARG KOITO_VERSION
-ENV VITE_KOITO_VERSION=$KOITO_VERSION
+ARG BEAT_SCROBBLE_VERSION
+ENV VITE_BEAT_SCROBBLE_VERSION=$BEAT_SCROBBLE_VERSION
 ENV BUILD_TARGET=docker
 
 WORKDIR /client
@@ -13,7 +13,7 @@ RUN yarn run build
 
 FROM golang:1.24 AS backend
 
-ARG KOITO_VERSION
+ARG BEAT_SCROBBLE_VERSION
 ENV CGO_ENABLED=1
 ENV GOOS=linux
 
@@ -28,7 +28,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -ldflags "-X main.Version=$KOITO_VERSION" -o app ./cmd/api
+RUN go build -ldflags "-X main.Version=$BEAT_SCROBBLE_VERSION" -o app ./cmd/api
 
 
 FROM debian:bookworm-slim AS final

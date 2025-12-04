@@ -8,7 +8,7 @@ By far the easiest way to get up and running with Koito is using docker. Here is
 ```yaml title="compose.yaml"
 services:
   koito:
-    image: gabehf/koito:latest
+    image: saturnxdev/beat-scrobble:latest
     container_name: koito
     depends_on:
       - db
@@ -60,7 +60,7 @@ you can find other ways to install `libvips-dev` on the [libvips wiki](https://g
 Then, clone the repository and execute the build command using the included Makefile:
 
 ```sh
-git clone https://github.com/gabehf/koito && cd koito
+git clone https://github.com/SaturnX-Dev/Beat-Scrobble && cd koito
 make build
 ```
 
