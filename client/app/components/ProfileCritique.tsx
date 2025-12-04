@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function ProfileCritique({ period }: Props) {
-    const { getPreference, savePreference } = usePreferences();
+    const { getPreference } = usePreferences();
     const [enabled, setEnabled] = useState(false);
     const [critique, setCritique] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
@@ -20,6 +20,18 @@ export default function ProfileCritique({ period }: Props) {
     useEffect(() => {
         if (!enabled) {
             setCritique(null);
+            return;
+        }
+
+        // Check cache first
+        const cacheKey = `comet_ai_profile_${period}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            setCritique(cached);
+            // Optional: Re-fetch in background if needed, but for now we trust cache to persist between sessions
+            // If we want to refresh on filter change, we should maybe clear cache or check timestamp?
+            // User said "guardadas entre sesiones", so permanent cache until explicit refresh (not implemented yet) or expiry is good.
+            // Let's just use the cache if it exists.
             return;
         }
 
@@ -37,6 +49,7 @@ export default function ProfileCritique({ period }: Props) {
             })
             .then(data => {
                 setCritique(data.critique);
+                localStorage.setItem(cacheKey, data.critique);
             })
             .catch(err => {
                 console.error(err);
@@ -48,52 +61,31 @@ export default function ProfileCritique({ period }: Props) {
 
     }, [period, enabled]);
 
-    const handleToggle = () => {
-        const newValue = !enabled;
-        setEnabled(newValue);
-        savePreference('profile_critique_enabled', newValue);
-    };
+    if (!enabled) return null;
 
     return (
         <div className="glass-card rounded-xl p-4 sm:p-6 border border-[var(--color-bg-tertiary)] flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
                     <Sparkles size={20} className="text-[var(--color-primary)]" />
-                    AI Critique
+                    Comet AI
                 </h3>
-                <div className="flex items-center gap-3">
-                    <span className="text-xs sm:text-sm font-medium text-[var(--color-fg-secondary)]">
-                        {enabled ? 'On' : 'Off'}
-                    </span>
-                    <button
-                        onClick={handleToggle}
-                        className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors duration-300 ${enabled ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-bg-tertiary)]'
-                            }`}
-                    >
-                        <div
-                            className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${enabled ? 'translate-x-5' : 'translate-x-0'
-                                }`}
-                        />
-                    </button>
-                </div>
             </div>
 
-            {enabled && (
-                <div className="min-h-[60px] flex items-center justify-center">
-                    {loading ? (
-                        <div className="flex items-center gap-2 text-[var(--color-fg-secondary)] animate-pulse">
-                            <RefreshCw size={16} className="animate-spin" />
-                            <span className="text-sm">Analyzing your taste...</span>
-                        </div>
-                    ) : error ? (
-                        <p className="text-sm text-red-400">{error}</p>
-                    ) : (
-                        <p className="text-sm sm:text-base italic text-[var(--color-fg-secondary)] leading-relaxed text-center">
-                            "{critique}"
-                        </p>
-                    )}
-                </div>
-            )}
+            <div className="min-h-[60px] flex items-center justify-center">
+                {loading ? (
+                    <div className="flex items-center gap-2 text-[var(--color-fg-secondary)] animate-pulse">
+                        <RefreshCw size={16} className="animate-spin" />
+                        <span className="text-sm">Analyzing your taste...</span>
+                    </div>
+                ) : error ? (
+                    <p className="text-sm text-red-400">{error}</p>
+                ) : (
+                    <p className="text-sm sm:text-base italic text-[var(--color-fg-secondary)] leading-relaxed text-center">
+                        "{critique}"
+                    </p>
+                )}
+            </div>
         </div>
     );
 }

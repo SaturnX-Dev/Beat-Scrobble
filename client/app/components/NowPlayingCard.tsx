@@ -34,6 +34,15 @@ export default function NowPlayingCard() {
             return;
         }
 
+        // Check cache first
+        const cacheKey = `comet_ai_track_${trackId}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+            setCritique(cached);
+            lastTrackIdRef.current = trackId;
+            return;
+        }
+
         // Check visibility to save tokens
         if (document.hidden) {
             console.log("Page hidden, skipping AI critique fetch");
@@ -59,6 +68,7 @@ export default function NowPlayingCard() {
             })
             .then(data => {
                 setCritique(data.critique);
+                localStorage.setItem(cacheKey, data.critique);
             })
             .catch(err => {
                 console.error("AI Critique error:", err);
@@ -98,23 +108,6 @@ export default function NowPlayingCard() {
             <div className="relative z-10 flex flex-col h-full">
                 <div className="w-full aspect-square rounded-xl md:rounded-2xl overflow-hidden shadow-premium mb-4 relative">
                     <img src={image} alt={track.title} className="w-full h-full object-cover" />
-
-                    {/* AI Critique Overlay */}
-                    {aiEnabled && (critique || isCritiqueLoading) && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-4 pt-12 transform transition-transform duration-300 translate-y-full group-hover:translate-y-0">
-                            <div className="flex items-center gap-2 mb-1 text-[var(--color-primary)]">
-                                <Sparkles size={14} />
-                                <span className="text-xs font-bold uppercase tracking-wider">AI Critique</span>
-                            </div>
-                            {isCritiqueLoading ? (
-                                <div className="h-4 w-3/4 bg-white/20 rounded animate-pulse" />
-                            ) : (
-                                <p className="text-sm text-white/90 italic leading-relaxed">
-                                    "{critique}"
-                                </p>
-                            )}
-                        </div>
-                    )}
                 </div>
 
                 <div className="flex-grow">
@@ -127,6 +120,23 @@ export default function NowPlayingCard() {
                         {track.artists && <ArtistLinks artists={track.artists} />}
                     </div>
                 </div>
+
+                {/* Comet AI Section */}
+                {aiEnabled && (critique || isCritiqueLoading) && (
+                    <div className="mt-4 p-3 bg-black/20 rounded-xl border border-white/5 backdrop-blur-sm">
+                        <div className="flex items-center gap-2 mb-2 text-[var(--color-primary)]">
+                            <Sparkles size={14} />
+                            <span className="text-xs font-bold uppercase tracking-wider">Comet AI</span>
+                        </div>
+                        {isCritiqueLoading ? (
+                            <div className="h-4 w-3/4 bg-white/10 rounded animate-pulse" />
+                        ) : (
+                            <p className="text-sm text-[var(--color-fg-secondary)] italic leading-relaxed line-clamp-3">
+                                "{critique}"
+                            </p>
+                        )}
+                    </div>
+                )}
 
                 {/* Fake Controls for visual completeness - functionality would need API endpoints */}
                 <div className="flex items-center justify-between mt-4 md:mt-6 pt-4 md:pt-6 border-t border-[var(--color-bg-tertiary)]/50">
