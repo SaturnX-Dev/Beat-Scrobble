@@ -108,6 +108,8 @@ func bindRoutes(
 			// AI Critique
 			r.Post("/ai/critique", handlers.GetAICritiqueHandler(db))
 			r.Post("/ai/profile-critique", handlers.GetAIProfileCritiqueHandler(db))
+			// Import/Backup
+			r.Post("/import", handlers.ImportHandler(db))
 		})
 	})
 

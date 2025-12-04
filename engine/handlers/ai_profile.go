@@ -140,7 +140,10 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 		statsSummary := fmt.Sprintf("Listens: %d, Unique Artists: %d, Unique Albums: %d, Unique Tracks: %d", listens, artistCount, albumCount, trackCount)
 		topArtistsStr := strings.Join(topArtistsNames, ", ")
 
-		systemPrompt := "You are a music critic. Give a short, witty, and slightly judgmental assessment of this user's listening habits based on their stats and top artists. Keep it under 60 words."
+		systemPrompt, ok := prefs["profile_critique_prompt"].(string)
+		if !ok || systemPrompt == "" {
+			systemPrompt = "You are a music critic. Give a short, witty, and slightly judgmental assessment of this user's listening habits based on their stats and top artists. Keep it under 60 words."
+		}
 		userMessage := fmt.Sprintf("Stats for %s: %s. Top Artists: %s.", periodStr, statsSummary, topArtistsStr)
 
 		openRouterReq := OpenRouterRequest{

@@ -15,7 +15,7 @@ readonly SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
 
 # Imágenes
 IMAGE_KOITO="${IMAGE_KOITO:-koito:local}"
-IMAGE_PG="${IMAGE_PG:-postgres:16}"
+IMAGE_PG="${IMAGE_PG:-docker.io/library/postgres:16}"
 
 # Base de datos
 DB_USER="${DB_USER:-postgres}"

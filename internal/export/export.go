@@ -14,10 +14,12 @@ import (
 )
 
 type KoitoExport struct {
-	Version    string        `json:"version"`
-	ExportedAt time.Time     `json:"exported_at"` // RFC3339
-	User       string        `json:"user"`        // username
-	Listens    []KoitoListen `json:"listens"`
+	Version     string                 `json:"version"`
+	ExportedAt  time.Time              `json:"exported_at"` // RFC3339
+	User        string                 `json:"user"`        // username
+	Preferences map[string]interface{} `json:"preferences,omitempty"`
+	Theme       string                 `json:"theme,omitempty"`
+	Listens     []KoitoListen          `json:"listens"`
 }
 type KoitoListen struct {
 	ListenedAt time.Time     `json:"listened_at"`
@@ -52,15 +54,30 @@ func ExportData(ctx context.Context, user *models.User, store db.DB, out io.Writ
 	l.Info().Msg("ExportData: Generating Koito export file...")
 
 	exportedAt := time.Now()
-	// exportFile := path.Join(cfg.ConfigDir(), fmt.Sprintf("koito_export_%d.json", exportedAt.Unix()))
-	// f, err := os.Create(exportFile)
-	// if err != nil {
-	// 	return fmt.Errorf("ExportData: %w", err)
-	// }
-	// defer f.Close()
+
+	// Fetch user preferences
+	var prefs map[string]interface{}
+	prefBytes, err := store.GetUserPreferences(ctx, user.ID)
+	if err == nil && prefBytes != nil {
+		json.Unmarshal(prefBytes, &prefs)
+	}
+
+	// Fetch user theme
+	themeBytes, _ := store.GetUserTheme(ctx, user.ID)
+	themeJSON := "{}"
+	if themeBytes != nil {
+		themeJSON = string(themeBytes)
+	}
 
 	// Write the opening of the JSON manually
-	_, err := fmt.Fprintf(out, "{\n  \"version\": \"1\",\n  \"exported_at\": \"%s\",\n  \"user\": \"%s\",\n  \"listens\": [\n", exportedAt.UTC().Format(time.RFC3339), user.Username)
+	prefsJSON := "{}"
+	if prefs != nil {
+		if b, err := json.Marshal(prefs); err == nil {
+			prefsJSON = string(b)
+		}
+	}
+
+	_, err = fmt.Fprintf(out, "{\n  \"version\": \"2\",\n  \"exported_at\": \"%s\",\n  \"user\": \"%s\",\n  \"preferences\": %s,\n  \"theme\": %s,\n  \"listens\": [\n", exportedAt.UTC().Format(time.RFC3339), user.Username, prefsJSON, themeJSON)
 	if err != nil {
 		return fmt.Errorf("ExportData: %w", err)
 	}

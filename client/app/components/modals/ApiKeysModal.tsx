@@ -27,6 +27,7 @@ export default function ApiKeysModal() {
     const [aiPrompt, setAiPrompt] = useState('');
     const [aiEnabled, setAiEnabled] = useState(false);
     const [profileCritiqueEnabled, setProfileCritiqueEnabled] = useState(false);
+    const [profilePrompt, setProfilePrompt] = useState('');
     const [showOpenRouterKey, setShowOpenRouterKey] = useState(false);
 
     useEffect(() => {
@@ -35,6 +36,7 @@ export default function ApiKeysModal() {
         setAiPrompt(getPreference('ai_critique_prompt', 'Give a short, witty, and slightly pretentious music critique of this song. Keep it under 50 words.'));
         setAiEnabled(getPreference('ai_critique_enabled', false));
         setProfileCritiqueEnabled(getPreference('profile_critique_enabled', false));
+        setProfilePrompt(getPreference('profile_critique_prompt', 'You are a music critic. Give a short, witty, and slightly judgmental assessment of this user\'s listening habits based on their stats and top artists. Keep it under 60 words.'));
     }, [getPreference]);
 
     const handleSaveAIConfig = () => {
@@ -43,6 +45,7 @@ export default function ApiKeysModal() {
         savePreference('ai_critique_prompt', aiPrompt);
         savePreference('ai_critique_enabled', aiEnabled);
         savePreference('profile_critique_enabled', profileCritiqueEnabled);
+        savePreference('profile_critique_prompt', profilePrompt);
     };
 
     const handleRevealAndSelect = (key: string) => {
@@ -301,7 +304,73 @@ export default function ApiKeysModal() {
                             </button>
                         </div>
 
+                        {profileCritiqueEnabled && (
+                            <div className="flex flex-col gap-2 mt-2">
+                                <label className="text-sm font-medium">Profile Prompt</label>
+                                <textarea
+                                    className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-md p-2 text-sm min-h-[60px]"
+                                    value={profilePrompt}
+                                    onChange={(e) => setProfilePrompt(e.target.value)}
+                                    onBlur={handleSaveAIConfig}
+                                    placeholder="Enter instructions for the AI critic..."
+                                />
+                            </div>
+                        )}
+
                     </div>
+                </div>
+            </div>
+
+            <hr className="border-[var(--color-bg-tertiary)]" />
+
+            {/* Backup & Restore Section */}
+            <div>
+                <h2 className="text-xl font-bold mb-4">Backup & Restore</h2>
+                <div className="flex flex-col gap-4 p-4 rounded-xl bg-[var(--color-bg-secondary)]/50 border border-[var(--color-bg-tertiary)]">
+                    <p className="text-sm text-[var(--color-fg-secondary)]">
+                        Export your settings, themes, and listening history to a JSON file. You can import this file later to restore your data.
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                        <a
+                            href="/apis/web/v1/export"
+                            download="koito_backup.json"
+                            className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm font-semibold hover:bg-[var(--color-primary-dim)] transition-colors"
+                        >
+                            Export All Data
+                        </a>
+                        <label className="px-4 py-2 rounded-lg bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] text-sm font-semibold hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer">
+                            Import Data
+                            <input
+                                type="file"
+                                accept=".json"
+                                className="hidden"
+                                onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    const text = await file.text();
+                                    try {
+                                        const res = await fetch('/apis/web/v1/import', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: text,
+                                        });
+                                        if (res.ok) {
+                                            alert('Settings restored successfully! Please refresh the page.');
+                                        } else {
+                                            const data = await res.json();
+                                            alert('Import failed: ' + (data.error || 'Unknown error'));
+                                        }
+                                    } catch (err) {
+                                        alert('Import failed: Network error');
+                                    }
+                                    e.target.value = '';
+                                }}
+                            />
+                        </label>
+                    </div>
+                    <p className="text-xs text-[var(--color-fg-tertiary)]">
+                        Note: Scrobble history import is not yet supported. Only settings and themes will be restored.
+                    </p>
                 </div>
             </div>
 
