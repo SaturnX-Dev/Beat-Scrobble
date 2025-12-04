@@ -19,22 +19,22 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func ImportKoitoFile(ctx context.Context, store db.DB, filename string) error {
+func ImportBeatScrobbleFile(ctx context.Context, store db.DB, filename string) error {
 	l := logger.FromContext(ctx)
-	l.Info().Msgf("Beginning Koito import on file: %s", filename)
-	data := new(export.KoitoExport)
+	l.Info().Msgf("Beginning Beat Scrobble import on file: %s", filename)
+	data := new(export.BeatScrobbleExport)
 	f, err := os.Open(path.Join(cfg.ConfigDir(), "import", filename))
 	if err != nil {
-		return fmt.Errorf("ImportKoitoFile: os.Open: %w", err)
+		return fmt.Errorf("ImportBeatScrobbleFile: os.Open: %w", err)
 	}
 	defer f.Close()
 	err = json.NewDecoder(f).Decode(data)
 	if err != nil {
-		return fmt.Errorf("ImportKoitoFile: Decode: %w", err)
+		return fmt.Errorf("ImportBeatScrobbleFile: Decode: %w", err)
 	}
 
 	if data.Version != "1" {
-		return fmt.Errorf("ImportKoitoFile: unupported version: %s", data.Version)
+		return fmt.Errorf("ImportBeatScrobbleFile: unupported version: %s", data.Version)
 	}
 
 	l.Info().Msgf("Beginning data import for user: %s", data.User)
@@ -71,11 +71,11 @@ func ImportKoitoFile(ctx context.Context, store db.DB, filename string) error {
 					Aliases:       utils.FlattenAliases(ia.Aliases),
 				})
 				if err != nil {
-					return fmt.Errorf("ImportKoitoFile: %w", err)
+					return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 				}
 				artistIds = append(artistIds, artist.ID)
 			} else if err != nil {
-				return fmt.Errorf("ImportKoitoFile: %w", err)
+				return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 			} else {
 				artistIds = append(artistIds, artist.ID)
 			}
@@ -109,11 +109,11 @@ func ImportKoitoFile(ctx context.Context, store db.DB, filename string) error {
 				VariousArtists: data.Listens[i].Album.VariousArtists,
 			})
 			if err != nil {
-				return fmt.Errorf("ImportKoitoFile: %w", err)
+				return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 			}
 			albumId = album.ID
 		} else if err != nil {
-			return fmt.Errorf("ImportKoitoFile: %w", err)
+			return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 		} else {
 			albumId = album.ID
 		}
@@ -138,15 +138,15 @@ func ImportKoitoFile(ctx context.Context, store db.DB, filename string) error {
 				AlbumID:        albumId,
 			})
 			if err != nil {
-				return fmt.Errorf("ImportKoitoFile: %w", err)
+				return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 			}
 			// save track aliases
 			err = store.SaveTrackAliases(ctx, track.ID, utils.FlattenAliases(data.Listens[i].Track.Aliases), "Import")
 			if err != nil {
-				return fmt.Errorf("ImportKoitoFile: %w", err)
+				return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 			}
 		} else if err != nil {
-			return fmt.Errorf("ImportKoitoFile: %w", err)
+			return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 		}
 
 		// save listen
@@ -156,10 +156,10 @@ func ImportKoitoFile(ctx context.Context, store db.DB, filename string) error {
 			UserID:  1,
 		})
 		if err != nil {
-			return fmt.Errorf("ImportKoitoFile: %w", err)
+			return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 		}
 
-		l.Info().Msgf("ImportKoitoFile: Imported listen for track %s", track.Title)
+		l.Info().Msgf("ImportBeatScrobbleFile: Imported listen for track %s", track.Title)
 		count++
 	}
 

@@ -262,7 +262,7 @@ func TestImportListenBrainz_MbzDisabled(t *testing.T) {
 	truncateTestData(t)
 }
 
-func TestImportKoito(t *testing.T) {
+func TestImportBeatScrobble(t *testing.T) {
 
 	src := path.Join("..", "test_assets", "beat_scrobble_export_test.json")
 	destDir := filepath.Join(cfg.ConfigDir(), "import")

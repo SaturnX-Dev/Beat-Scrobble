@@ -266,7 +266,7 @@ func RunImporter(l *zerolog.Logger, store db.DB, mbzc mbz.MusicBrainzCaller) {
 			}
 		} else if strings.Contains(file.Name(), "beat_scrobble") {
 			l.Info().Msgf("Import file %s detecting as being Beat Scrobble export", file.Name())
-			err := importer.ImportKoitoFile(logger.NewContext(l), store, file.Name())
+			err := importer.ImportBeatScrobbleFile(logger.NewContext(l), store, file.Name())
 			if err != nil {
 				l.Err(err).Msgf("Failed to import file: %s", file.Name())
 			}

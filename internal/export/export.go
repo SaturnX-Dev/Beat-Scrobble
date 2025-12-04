@@ -13,32 +13,32 @@ import (
 	"github.com/google/uuid"
 )
 
-type KoitoExport struct {
+type BeatScrobbleExport struct {
 	Version     string                 `json:"version"`
 	ExportedAt  time.Time              `json:"exported_at"` // RFC3339
 	User        string                 `json:"user"`        // username
 	Preferences map[string]interface{} `json:"preferences,omitempty"`
 	Theme       string                 `json:"theme,omitempty"`
-	Listens     []KoitoListen          `json:"listens"`
+	Listens     []BeatScrobbleListen          `json:"listens"`
 }
-type KoitoListen struct {
+type BeatScrobbleListen struct {
 	ListenedAt time.Time     `json:"listened_at"`
-	Track      KoitoTrack    `json:"track"`
-	Album      KoitoAlbum    `json:"album"`
-	Artists    []KoitoArtist `json:"artists"`
+	Track      BeatScrobbleTrack    `json:"track"`
+	Album      BeatScrobbleAlbum    `json:"album"`
+	Artists    []BeatScrobbleArtist `json:"artists"`
 }
-type KoitoTrack struct {
+type BeatScrobbleTrack struct {
 	MBID     *uuid.UUID     `json:"mbid"`
 	Duration int            `json:"duration"`
 	Aliases  []models.Alias `json:"aliases"`
 }
-type KoitoAlbum struct {
+type BeatScrobbleAlbum struct {
 	ImageUrl       string         `json:"image_url"`
 	MBID           *uuid.UUID     `json:"mbid"`
 	Aliases        []models.Alias `json:"aliases"`
 	VariousArtists bool           `json:"various_artists"`
 }
-type KoitoArtist struct {
+type BeatScrobbleArtist struct {
 	ImageUrl  string         `json:"image_url"`
 	MBID      *uuid.UUID     `json:"mbid"`
 	IsPrimary bool           `json:"is_primary"`
@@ -51,7 +51,7 @@ func ExportData(ctx context.Context, user *models.User, store db.DB, out io.Writ
 	pageSize := int32(1000)
 
 	l := logger.FromContext(ctx)
-	l.Info().Msg("ExportData: Generating Koito export file...")
+	l.Info().Msg("ExportData: Generating Beat Scrobble export file...")
 
 	exportedAt := time.Now()
 
@@ -135,15 +135,15 @@ func ExportData(ctx context.Context, user *models.User, store db.DB, out io.Writ
 	return nil
 }
 
-func convertToExportFormat(item *db.ExportItem) *KoitoListen {
-	ret := &KoitoListen{
+func convertToExportFormat(item *db.ExportItem) *BeatScrobbleListen {
+	ret := &BeatScrobbleListen{
 		ListenedAt: item.ListenedAt.UTC(),
-		Track: KoitoTrack{
+		Track: BeatScrobbleTrack{
 			MBID:     item.TrackMbid,
 			Duration: int(item.TrackDuration),
 			Aliases:  item.TrackAliases,
 		},
-		Album: KoitoAlbum{
+		Album: BeatScrobbleAlbum{
 			MBID:           item.ReleaseMbid,
 			ImageUrl:       item.ReleaseImageSource,
 			VariousArtists: item.VariousArtists,
@@ -151,7 +151,7 @@ func convertToExportFormat(item *db.ExportItem) *KoitoListen {
 		},
 	}
 	for i := range item.Artists {
-		ret.Artists = append(ret.Artists, KoitoArtist{
+		ret.Artists = append(ret.Artists, BeatScrobbleArtist{
 			IsPrimary: item.Artists[i].IsPrimary,
 			MBID:      item.Artists[i].MbzID,
 			Aliases:   item.Artists[i].Aliases,
