@@ -15,7 +15,7 @@ services:
       - beat-scrobble-net
 
   beat-scrobble-app:
-    image: saturnxdev/beat-scrobble:latest
+    image: ghcr.io/saturnx-dev/beat-scrobble:latest
     container_name: beat-scrobble-app
     restart: always
     ports:
