@@ -27,6 +27,7 @@ interface Props {
     subContent: React.ReactNode
     onRefreshMetadata?: () => void
     refreshing?: boolean
+    spotifyId?: string
 }
 
 export default function MediaLayout(props: Props) {
@@ -40,7 +41,7 @@ export default function MediaLayout(props: Props) {
 
     useEffect(() => {
         average(imageUrl(props.img, 'small'), { amount: 1 }).then((color) => {
-            setBgColor(`rgba(${color[0]},${color[1]},${color[2]},0.4)`);
+            setBgColor(`rgba(${color[0]},${color[1]},${color[2]},0.3)`);
         });
     }, [props.img]);
 
@@ -57,11 +58,24 @@ export default function MediaLayout(props: Props) {
 
     let iconSize = vw > 768 ? normalIconSize : mobileIconSize
 
+    // Spotify URL based on type
+    const getSpotifyUrl = () => {
+        if (!props.spotifyId) return null;
+        const typeMap: Record<string, string> = {
+            'Artist': 'artist',
+            'Album': 'album',
+            'Track': 'track'
+        };
+        return `https://open.spotify.com/${typeMap[props.type]}/${props.spotifyId}`;
+    };
+
+    const spotifyUrl = getSpotifyUrl();
+
     return (
         <main
-            className="w-full flex flex-col flex-grow"
+            className="w-full flex flex-col flex-grow bg-transparent"
             style={{
-                background: `linear-gradient(to bottom, ${bgColor}, var(--color-bg) 700px)`,
+                background: `linear-gradient(to bottom, ${bgColor}, transparent 700px)`,
                 transition: '1000',
             }}
         >
@@ -87,34 +101,51 @@ export default function MediaLayout(props: Props) {
                         <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-[var(--color-fg)] mb-4 leading-tight">{props.title}</h1>
                         {props.subContent}
                     </div>
-                    {user &&
-                        <div className="flex gap-2 items-center self-end md:absolute md:top-0 md:right-0">
-                            {props.type === "Track" &&
-                                <>
-                                    <button title="Add Listen" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-primary)] hover:text-white transition-all" onClick={() => setAddListenModalOpen(true)}><Plus size={20} /></button>
-                                    <AddListenModal open={addListenModalOpen} setOpen={setAddListenModalOpen} trackid={props.id} />
-                                </>
-                            }
-                            <button title="Edit Item" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-all" onClick={() => setRenameModalOpen(true)}><Edit size={18} /></button>
-                            <button title="Replace Image" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-all" onClick={() => setImageModalOpen(true)}><ImageIcon size={18} /></button>
-                            <button title="Merge Items" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-all" onClick={() => setMergeModalOpen(true)}><Merge size={18} /></button>
-                            <button title="Delete Item" className="w-10 h-10 rounded-full bg-[var(--color-error)]/20 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-error)] hover:text-white transition-all text-[var(--color-error)]" onClick={() => setDeleteModalOpen(true)}><Trash size={18} /></button>
-                            {props.onRefreshMetadata && (
-                                <button title="Refresh Metadata" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-all" onClick={props.onRefreshMetadata} disabled={props.refreshing}>
-                                    <RefreshCw size={18} className={props.refreshing ? "animate-spin" : ""} />
-                                </button>
-                            )}
-                            <EditModal open={renameModalOpen} setOpen={setRenameModalOpen} type={props.type.toLowerCase()} id={props.id} />
-                            <ImageReplaceModal open={imageModalOpen} setOpen={setImageModalOpen} id={props.imgItemId} musicbrainzId={props.musicbrainzId} type={props.type === "Track" ? "Album" : props.type} />
-                            <MergeModal currentTitle={props.title} mergeFunc={props.mergeFunc} mergeCleanerFunc={props.mergeCleanerFunc} type={props.type} currentId={props.id} open={mergeModalOpen} setOpen={setMergeModalOpen} />
-                            <DeleteModal open={deleteModalOpen} setOpen={setDeleteModalOpen} title={props.title} id={props.id} type={props.type} />
-                        </div>
-                    }
+                    <div className="flex gap-2 items-center self-end md:absolute md:top-0 md:right-0">
+                        {/* Spotify Link - Always visible if available */}
+                        {spotifyUrl && (
+                            <a
+                                href={spotifyUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title="Open in Spotify"
+                                className="w-10 h-10 rounded-full bg-[#1DB954]/20 backdrop-blur-md flex items-center justify-center hover:bg-[#1DB954]/40 transition-all"
+                            >
+                                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" className="text-[#1DB954]">
+                                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+                                </svg>
+                            </a>
+                        )}
+                        {user &&
+                            <>
+                                {props.type === "Track" &&
+                                    <>
+                                        <button title="Add Listen" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-primary)] hover:text-white transition-all" onClick={() => setAddListenModalOpen(true)}><Plus size={20} /></button>
+                                        <AddListenModal open={addListenModalOpen} setOpen={setAddListenModalOpen} trackid={props.id} />
+                                    </>
+                                }
+                                <button title="Edit Item" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-all" onClick={() => setRenameModalOpen(true)}><Edit size={18} /></button>
+                                <button title="Replace Image" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-all" onClick={() => setImageModalOpen(true)}><ImageIcon size={18} /></button>
+                                <button title="Merge Items" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-all" onClick={() => setMergeModalOpen(true)}><Merge size={18} /></button>
+                                <button title="Delete Item" className="w-10 h-10 rounded-full bg-[var(--color-error)]/20 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-error)] hover:text-white transition-all text-[var(--color-error)]" onClick={() => setDeleteModalOpen(true)}><Trash size={18} /></button>
+                                {props.onRefreshMetadata && (
+                                    <button title="Refresh Metadata" className="w-10 h-10 rounded-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md flex items-center justify-center hover:bg-[var(--color-bg-tertiary)] transition-all" onClick={props.onRefreshMetadata} disabled={props.refreshing}>
+                                        <RefreshCw size={18} className={props.refreshing ? "animate-spin" : ""} />
+                                    </button>
+                                )}
+                                <EditModal open={renameModalOpen} setOpen={setRenameModalOpen} type={props.type.toLowerCase()} id={props.id} />
+                                <ImageReplaceModal open={imageModalOpen} setOpen={setImageModalOpen} id={props.imgItemId} musicbrainzId={props.musicbrainzId} type={props.type === "Track" ? "Album" : props.type} />
+                                <MergeModal currentTitle={props.title} mergeFunc={props.mergeFunc} mergeCleanerFunc={props.mergeCleanerFunc} type={props.type} currentId={props.id} open={mergeModalOpen} setOpen={setMergeModalOpen} />
+                                <DeleteModal open={deleteModalOpen} setOpen={setDeleteModalOpen} title={props.title} id={props.id} type={props.type} />
+                            </>
+                        }
+                    </div>
                 </div>
-                <div className="glass-card rounded-3xl p-6 md:p-8 border border-[var(--color-bg-tertiary)]/50 shadow-xl">
+                <div className="glass-card rounded-3xl p-6 md:p-8 border border-[var(--color-bg-tertiary)]/50 shadow-xl backdrop-blur-md">
                     {props.children}
                 </div>
             </div>
         </main>
     );
 }
+

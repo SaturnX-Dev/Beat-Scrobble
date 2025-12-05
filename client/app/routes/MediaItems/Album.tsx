@@ -50,6 +50,7 @@ export default function Album() {
       id={album.id}
       musicbrainzId={album.musicbrainz_id}
       imgItemId={album.id}
+      spotifyId={album.spotify_id}
       mergeFunc={mergeAlbums}
       mergeCleanerFunc={(r, id) => {
         r.artists = [];

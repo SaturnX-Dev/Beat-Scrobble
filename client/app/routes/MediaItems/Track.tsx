@@ -35,6 +35,7 @@ export default function Track() {
       id={track.id}
       musicbrainzId={album.musicbrainz_id}
       imgItemId={track.album_id}
+      spotifyId={track.spotify_id}
       mergeFunc={mergeTracks}
       mergeCleanerFunc={(r, id) => {
         r.albums = [];
