@@ -4,6 +4,7 @@ import { Link } from "react-router";
 
 interface Props {
     artistId: number;
+    period?: string;
 }
 
 // Distinct complementary colors for album distribution
@@ -16,10 +17,10 @@ const ALBUM_COLORS = [
     "#ec4899", // Pink
 ];
 
-export default function MiniDiscography({ artistId }: Props) {
+export default function MiniDiscography({ artistId, period = "all_time" }: Props) {
     const { data } = useQuery({
-        queryKey: ["top-albums", { limit: 10, artistId, page: 1 }],
-        queryFn: () => getTopAlbums({ limit: 10, period: "all", artist_id: artistId, page: 1 }),
+        queryKey: ["top-albums", { limit: 10, artistId, page: 1, period }],
+        queryFn: () => getTopAlbums({ limit: 10, period, artist_id: artistId, page: 1 }),
     });
 
     if (!data || !data.items || data.items.length === 0) return null;

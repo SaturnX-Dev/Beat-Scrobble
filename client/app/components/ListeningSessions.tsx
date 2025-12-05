@@ -6,12 +6,13 @@ import { Clock, Music } from "lucide-react";
 interface Props {
     artistId?: number;
     limit?: number;
+    period?: string;
 }
 
-export default function ListeningSessions({ artistId, limit = 50 }: Props) {
+export default function ListeningSessions({ artistId, limit = 50, period = "all_time" }: Props) {
     const { data, isLoading } = useQuery({
-        queryKey: ["last-plays", { limit, artistId, page: 1 }],
-        queryFn: () => getLastListens({ limit, period: "all", page: 1, artist_id: artistId }),
+        queryKey: ["last-plays", { limit, artistId, page: 1, period }],
+        queryFn: () => getLastListens({ limit, period, page: 1, artist_id: artistId }),
     });
 
     if (isLoading) {

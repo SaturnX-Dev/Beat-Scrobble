@@ -87,7 +87,7 @@ export default function App() {
         <ThemeProvider>
           <QueryClientProvider client={queryClient}>
             <GlobalBackground />
-            <div className="flex-col flex sm:flex-row min-h-screen">
+            <div className="flex-col flex sm:flex-row min-h-screen relative z-10">
               <Sidebar />
               <div className="flex flex-col items-center mx-auto w-full ml-0 pb-14 sm:pb-0 sm:ml-20 transition-all duration-300">
                 <Outlet />

@@ -8,14 +8,17 @@ export function CustomBackground() {
     const [backgroundUrl, setBackgroundUrl] = useState('');
     const [previewUrl, setPreviewUrl] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [opacity, setOpacity] = useState(50);
     const { getPreference, savePreference } = usePreferences();
 
     // Load from server preferences on mount
     useEffect(() => {
         const storedType = getPreference('customBackgroundType', 'none') as 'none' | 'image' | 'video';
         const storedUrl = getPreference('customBackgroundUrl', '');
+        const storedOpacity = getPreference('background_opacity', 50);
         setBackgroundType(storedType);
         setBackgroundUrl(storedUrl);
+        setOpacity(storedOpacity);
         if (storedUrl) {
             setPreviewUrl(storedUrl);
             applyBackground(storedType, storedUrl);
@@ -218,6 +221,32 @@ export function CustomBackground() {
                                 className="hidden"
                             />
                         </label>
+                    )}
+
+                    {/* Opacity Slider */}
+                    {previewUrl && (
+                        <div className="p-4 rounded-lg bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)]">
+                            <div className="flex justify-between items-center mb-3">
+                                <span className="text-sm font-medium text-[var(--color-fg)]">Background Opacity</span>
+                                <span className="text-sm text-[var(--color-fg-secondary)]">{opacity}%</span>
+                            </div>
+                            <input
+                                type="range"
+                                min="10"
+                                max="100"
+                                value={opacity}
+                                onChange={(e) => {
+                                    const newOpacity = parseInt(e.target.value);
+                                    setOpacity(newOpacity);
+                                    savePreference('background_opacity', newOpacity);
+                                }}
+                                className="w-full h-2 bg-[var(--color-bg-tertiary)] rounded-lg appearance-none cursor-pointer accent-[var(--color-primary)]"
+                            />
+                            <div className="flex justify-between text-[10px] text-[var(--color-fg-tertiary)] mt-1">
+                                <span>Subtle</span>
+                                <span>Visible</span>
+                            </div>
+                        </div>
                     )}
 
                     <p className="text-[10px] text-[var(--color-fg-tertiary)] text-center">

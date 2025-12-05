@@ -242,12 +242,12 @@ export default function Artist() {
               {/* Listening Sessions */}
               <section className="bg-[var(--color-bg-secondary)]/30 backdrop-blur-md rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-3 md:p-4 border border-[var(--color-bg-tertiary)]/50">
                 <h2 className="text-base sm:text-lg md:text-xl font-bold text-[var(--color-fg)] mb-2 sm:mb-3 md:mb-4">Listening Sessions</h2>
-                <ListeningSessions artistId={artist.id} />
+                <ListeningSessions artistId={artist.id} period={period} />
               </section>
 
               {/* Mini Discography */}
               <section className="bg-[var(--color-bg-secondary)]/30 backdrop-blur-md rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-3 md:p-6 border border-[var(--color-bg-tertiary)]/50">
-                <MiniDiscography artistId={artist.id} />
+                <MiniDiscography artistId={artist.id} period={period} />
               </section>
             </div>
 

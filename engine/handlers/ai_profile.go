@@ -47,6 +47,8 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 		periodStr := strings.ToLower(req.Period)
 		var period db.Period
 		switch periodStr {
+		case "day":
+			period = db.PeriodDay
 		case "week":
 			period = db.PeriodWeek
 		case "month":

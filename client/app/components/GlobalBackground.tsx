@@ -1,43 +1,58 @@
 import { usePreferences } from "~/hooks/usePreferences";
-import { useLocation } from "react-router";
+import { useEffect, useState } from "react";
 
 export default function GlobalBackground() {
-    const { getPreference } = usePreferences();
-    // const location = useLocation();
+    const { preferences, getPreference } = usePreferences();
+    const [backgroundType, setBackgroundType] = useState<'none' | 'image' | 'video'>('none');
+    const [backgroundUrl, setBackgroundUrl] = useState('');
+    const [opacity, setOpacity] = useState(50);
 
-    // Get background image and opacity from preferences
-    const backgroundImage = getPreference('background_image', null);
-    const opacity = getPreference('background_opacity', 50); // Default 50%
+    // Update state when preferences change
+    useEffect(() => {
+        const type = getPreference('customBackgroundType', 'none') as 'none' | 'image' | 'video';
+        const url = getPreference('customBackgroundUrl', '');
+        const op = getPreference('background_opacity', 50);
 
-    // Don't show if no image is set
-    if (!backgroundImage) return null;
+        setBackgroundType(type);
+        setBackgroundUrl(url);
+        setOpacity(op);
 
-    // Check if we are on a public profile page (which might have its own background)
-    // The user said "el background no se ve... se supone que el back ground se ve al fondo de todo"
-    // If we are on a public profile, we might want to suppress this global background 
-    // if the public profile has its own. But for now, let's assume global overrides 
-    // or sits behind. 
-    // Actually, if I'm viewing a public profile, I should probably see *their* background if implemented.
-    // But the user's request was about *their* background not being visible.
-    // Let's implement it globally for now.
+        console.log('[GlobalBackground] Preferences updated:', { type, url: url ? 'SET' : 'EMPTY', opacity: op });
+    }, [preferences, getPreference]);
+
+    // Don't show if no background is set
+    if (backgroundType === 'none' || !backgroundUrl) {
+        return null;
+    }
 
     return (
         <div
-            className="fixed inset-0 w-full h-full z-[-1] pointer-events-none overflow-hidden"
-            style={{ backgroundColor: 'var(--color-bg)' }} // Fallback
+            className="fixed inset-0 w-full h-full pointer-events-none overflow-hidden"
+            style={{ zIndex: 0 }}
         >
             <div
                 className="absolute inset-0 w-full h-full transition-opacity duration-500"
                 style={{ opacity: opacity / 100 }}
             >
-                <img
-                    src={backgroundImage}
-                    alt="Background"
-                    className="w-full h-full object-cover blur-[2px] scale-105"
-                />
+                {backgroundType === 'video' ? (
+                    <video
+                        src={backgroundUrl}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover"
+                    />
+                ) : (
+                    <img
+                        src={backgroundUrl}
+                        alt="Background"
+                        className="w-full h-full object-cover"
+                    />
+                )}
             </div>
-            {/* Overlay to ensure text readability if needed, though opacity handles most of it */}
-            <div className="absolute inset-0 bg-black/40" />
+            {/* Overlay for text readability */}
+            <div className="absolute inset-0 bg-black/20" />
         </div>
     );
 }

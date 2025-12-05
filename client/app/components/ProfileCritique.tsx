@@ -3,7 +3,7 @@ import { Sparkles, RefreshCw } from "lucide-react";
 import { usePreferences } from "~/hooks/usePreferences";
 
 interface Props {
-    period: "week" | "month" | "year" | "all_time";
+    period: "day" | "week" | "month" | "year" | "all_time";
 }
 
 export default function ProfileCritique({ period }: Props) {
