@@ -20,6 +20,11 @@ export default function Account() {
     const [uploadingImage, setUploadingImage] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
 
+    // Background image
+    const [backgroundImage, setBackgroundImage] = useState<string | null>(null)
+    const [uploadingBgImage, setUploadingBgImage] = useState(false)
+    const bgFileInputRef = useRef<HTMLInputElement>(null)
+
     // Expandable sections
     const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
         account: true,
@@ -40,7 +45,9 @@ export default function Account() {
         setShareEnabled(getPreference('profile_share_enabled', false))
         setPublicTheme(getPreference('public_profile_theme', 'dark'))
         setShowCometAI(getPreference('public_profile_show_ai', true))
+        setShowCometAI(getPreference('public_profile_show_ai', true))
         setProfileImage(getPreference('profile_image', null))
+        setBackgroundImage(getPreference('background_image', null))
     }, [getPreference, preferences])
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,6 +102,61 @@ export default function Account() {
         } catch (err) {
             setError('Failed to upload image')
             setUploadingImage(false)
+        }
+    }
+
+    const handleBgImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        if (!file.type.startsWith('image/')) {
+            setError('Please select an image file.')
+            return
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+            setError('Image must be less than 10MB.')
+            return
+        }
+
+        setUploadingBgImage(true)
+        setError('')
+
+        try {
+            // Convert to base64
+            const reader = new FileReader()
+            reader.onload = async (event) => {
+                const base64 = event.target?.result as string
+
+                try {
+                    const res = await fetch('/apis/web/v1/user/background-image', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: base64 })
+                    })
+
+                    if (res.ok) {
+                        const data = await res.json()
+                        setBackgroundImage(data.path)
+                        setSuccess('Background image updated!')
+                    } else {
+                        const err = await res.json()
+                        setError(err.error || 'Failed to upload image')
+                    }
+                } catch (err) {
+                    setError('Failed to upload image')
+                }
+
+                setUploadingBgImage(false)
+            }
+            reader.onerror = () => {
+                setError('Failed to read file')
+                setUploadingBgImage(false)
+            }
+            reader.readAsDataURL(file)
+        } catch (err) {
+            setError('Failed to upload image')
+            setUploadingBgImage(false)
         }
     }
 
@@ -291,6 +353,61 @@ export default function Account() {
                                     <p className="text-xs text-[var(--color-fg-tertiary)] mt-1">
                                         Saved on server, syncs across devices. Max 5MB.
                                     </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Background Image Upload */}
+                        <div className="space-y-3">
+                            <h4 className="text-sm font-bold text-[var(--color-fg-secondary)]">Background Image</h4>
+                            <div className="flex flex-col gap-3">
+                                <div className="relative w-full h-32 rounded-xl bg-[var(--color-bg-tertiary)] overflow-hidden border-2 border-[var(--color-bg-tertiary)] group">
+                                    {backgroundImage ? (
+                                        <img
+                                            src={backgroundImage}
+                                            alt="Background"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <Image size={32} className="text-[var(--color-fg-tertiary)]" />
+                                        </div>
+                                    )}
+
+                                    {backgroundImage && (
+                                        <button
+                                            onClick={() => {
+                                                savePreference('background_image', null)
+                                                setBackgroundImage(null)
+                                            }}
+                                            className="absolute top-2 right-2 p-1.5 rounded-full bg-[var(--color-error)] text-white hover:bg-[var(--color-error)]/80 transition-colors shadow-md"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                    )}
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs text-[var(--color-fg-tertiary)]">
+                                        Displayed on your public profile header. Max 10MB.
+                                    </p>
+                                    <div>
+                                        <input
+                                            ref={bgFileInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleBgImageUpload}
+                                            className="hidden"
+                                        />
+                                        <button
+                                            onClick={() => bgFileInputRef.current?.click()}
+                                            disabled={uploadingBgImage}
+                                            className={`px-4 py-2 bg-[var(--color-bg-tertiary)] text-[var(--color-fg)] rounded-lg text-sm hover:bg-[var(--color-primary)]/20 transition-colors ${uploadingBgImage ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        >
+                                            <Upload size={14} className="inline mr-2" />
+                                            {uploadingBgImage ? 'Uploading...' : backgroundImage ? 'Change Banner' : 'Upload Banner'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

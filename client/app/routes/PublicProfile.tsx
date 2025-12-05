@@ -26,6 +26,8 @@ interface PublicProfileData {
         listen_count: number;
     }>;
     memberSince?: string;
+    profileImage?: string;
+    backgroundImage?: string;
 }
 
 export default function PublicProfile() {
@@ -74,15 +76,45 @@ export default function PublicProfile() {
     return (
         <main className="min-h-screen w-full bg-gradient-to-b from-[var(--color-bg-secondary)] to-[var(--color-bg)] px-4 py-8 pb-24">
             <div className="max-w-4xl mx-auto">
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center mx-auto mb-4">
-                        <User size={48} className="text-white" />
+                {/* Header with Banner */}
+                <div className="relative mb-8 rounded-2xl overflow-hidden bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
+                    {/* Banner Image */}
+                    <div className="h-48 sm:h-64 w-full bg-[var(--color-bg-tertiary)] relative">
+                        {profile.backgroundImage ? (
+                            <img
+                                src={profile.backgroundImage}
+                                alt="Profile Banner"
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-gradient-to-r from-[var(--color-primary)]/20 to-[var(--color-accent)]/20" />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-secondary)] to-transparent opacity-60" />
                     </div>
-                    <h1 className="text-3xl font-bold text-[var(--color-fg)] mb-1">{profile.username}</h1>
-                    <p className="text-[var(--color-fg-secondary)] text-sm">
-                        Beat Scrobble Profile
-                    </p>
+
+                    {/* Profile Info (Overlapping Banner) */}
+                    <div className="relative px-6 pb-6 -mt-16 sm:-mt-20 flex flex-col items-center text-center">
+                        <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-[var(--color-bg-secondary)] p-1.5 mb-4 shadow-xl">
+                            <div className="w-full h-full rounded-full overflow-hidden bg-[var(--color-bg-tertiary)] relative">
+                                {profile.profileImage ? (
+                                    <img
+                                        src={profile.profileImage}
+                                        alt={profile.username}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center">
+                                        <User size={64} className="text-white" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <h1 className="text-3xl sm:text-4xl font-bold text-[var(--color-fg)] mb-2">{profile.username}</h1>
+                        <p className="text-[var(--color-fg-secondary)] text-sm">
+                            Beat Scrobble Profile
+                        </p>
+                    </div>
                 </div>
 
                 {/* Stats Cards */}

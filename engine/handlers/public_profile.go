@@ -23,13 +23,14 @@ func uuidToString(img *uuid.UUID) string {
 }
 
 type PublicProfileResponse struct {
-	Username     string                 `json:"username"`
-	Stats        PublicStatsResponse    `json:"stats"`
-	TopArtists   []PublicTopArtist      `json:"topArtists"`
-	TopAlbums    []PublicTopAlbum       `json:"topAlbums"`
-	Theme        json.RawMessage        `json:"theme,omitempty"`
-	ProfileImage string                 `json:"profileImage,omitempty"`
-	Preferences  map[string]interface{} `json:"preferences,omitempty"`
+	Username        string                 `json:"username"`
+	Stats           PublicStatsResponse    `json:"stats"`
+	TopArtists      []PublicTopArtist      `json:"topArtists"`
+	TopAlbums       []PublicTopAlbum       `json:"topAlbums"`
+	Theme           json.RawMessage        `json:"theme,omitempty"`
+	ProfileImage    string                 `json:"profileImage,omitempty"`
+	BackgroundImage string                 `json:"backgroundImage,omitempty"`
+	Preferences     map[string]interface{} `json:"preferences,omitempty"`
 }
 
 type PublicStatsResponse struct {
@@ -108,6 +109,7 @@ func PublicProfileHandler(store db.DB) http.HandlerFunc {
 
 		// Extract profile image and public preferences
 		profileImage, _ := prefs["profile_image"].(string)
+		backgroundImage, _ := prefs["background_image"].(string)
 
 		// Build public preferences (only theme-related ones)
 		publicPrefs := make(map[string]interface{})
@@ -184,11 +186,12 @@ func PublicProfileHandler(store db.DB) http.HandlerFunc {
 				TrackCount:      tracks,
 				MinutesListened: timeListened / 60,
 			},
-			TopArtists:   topArtists,
-			TopAlbums:    topAlbums,
-			Theme:        themeData,
-			ProfileImage: profileImage,
-			Preferences:  publicPrefs,
+			TopArtists:      topArtists,
+			TopAlbums:       topAlbums,
+			Theme:           themeData,
+			ProfileImage:    profileImage,
+			BackgroundImage: backgroundImage,
+			Preferences:     publicPrefs,
 		}
 
 		l.Debug().Msgf("PublicProfileHandler: Successfully fetched public profile for %s", username)

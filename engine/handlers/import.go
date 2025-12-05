@@ -60,12 +60,28 @@ func ImportHandler(store db.DB) http.HandlerFunc {
 
 		// Restore Preferences (v2 only)
 		if importData.Preferences != nil && len(importData.Preferences) > 0 {
-			prefBytes, err := json.Marshal(importData.Preferences)
+			// Get current preferences first to merge
+			currentPrefBytes, err := store.GetUserPreferences(ctx, user.ID)
+			var currentPrefs map[string]interface{}
+			if err == nil && currentPrefBytes != nil {
+				json.Unmarshal(currentPrefBytes, &currentPrefs)
+			}
+			if currentPrefs == nil {
+				currentPrefs = make(map[string]interface{})
+			}
+
+			// Merge imported preferences into current ones
+			// This preserves local keys (like AI cache) that might not be in the import
+			for k, v := range importData.Preferences {
+				currentPrefs[k] = v
+			}
+
+			mergedPrefBytes, err := json.Marshal(currentPrefs)
 			if err == nil {
-				if err := store.SaveUserPreferences(ctx, user.ID, prefBytes); err != nil {
+				if err := store.SaveUserPreferences(ctx, user.ID, mergedPrefBytes); err != nil {
 					l.Error().Err(err).Msg("ImportHandler: Failed to save preferences")
 				} else {
-					l.Info().Msg("ImportHandler: Preferences restored")
+					l.Info().Msg("ImportHandler: Preferences restored (merged)")
 					prefsRestored = true
 				}
 			}

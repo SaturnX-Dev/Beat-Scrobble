@@ -381,9 +381,20 @@ func (d *Psql) UpdateTrackMetadata(ctx context.Context, opts db.UpdateTrackMetad
 	}
 	l.Debug().Msgf("Updating metadata for track %d", opts.ID)
 	err := d.q.UpdateTrackMetadata(ctx, repository.UpdateTrackMetadataParams{
-		ID:         opts.ID,
-		Popularity: opts.Popularity,
-		SpotifyID:  opts.SpotifyID,
+		ID:               opts.ID,
+		Popularity:       opts.Popularity,
+		SpotifyID:        opts.SpotifyID,
+		Danceability:     opts.Danceability,
+		Energy:           opts.Energy,
+		Key:              opts.Key,
+		Loudness:         opts.Loudness,
+		Mode:             opts.Mode,
+		Speechiness:      opts.Speechiness,
+		Acousticness:     opts.Acousticness,
+		Instrumentalness: opts.Instrumentalness,
+		Liveness:         opts.Liveness,
+		Valence:          opts.Valence,
+		Tempo:            opts.Tempo,
 	})
 	if err != nil {
 		return fmt.Errorf("UpdateTrackMetadata: %w", err)

@@ -134,7 +134,18 @@ WHERE artist_id = $1 AND track_id = $2;
 -- name: UpdateTrackMetadata :exec
 UPDATE tracks SET 
   popularity = $2,
-  spotify_id = $3
+  spotify_id = $3,
+  danceability = $4,
+  energy = $5,
+  key = $6,
+  loudness = $7,
+  mode = $8,
+  speechiness = $9,
+  acousticness = $10,
+  instrumentalness = $11,
+  liveness = $12,
+  valence = $13,
+  tempo = $14
 WHERE id = $1;
 
 -- name: DeleteTrack :exec

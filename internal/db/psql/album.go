@@ -448,11 +448,13 @@ func (d *Psql) UpdateReleaseMetadata(ctx context.Context, opts db.UpdateReleaseM
 	}
 	l.Debug().Msgf("Updating metadata for release %d", opts.ID)
 	err := d.q.UpdateReleaseMetadata(ctx, repository.UpdateReleaseMetadataParams{
-		ID:          opts.ID,
-		Genres:      opts.Genres,
-		ReleaseDate: opts.ReleaseDate,
-		Popularity:  opts.Popularity,
-		SpotifyID:   opts.SpotifyID,
+		ID:                   opts.ID,
+		Genres:               opts.Genres,
+		ReleaseDate:          opts.ReleaseDate,
+		Popularity:           opts.Popularity,
+		SpotifyID:            opts.SpotifyID,
+		Label:                opts.Label,
+		ReleaseDatePrecision: opts.ReleaseDatePrecision,
 	})
 	if err != nil {
 		return fmt.Errorf("UpdateReleaseMetadata: %w", err)

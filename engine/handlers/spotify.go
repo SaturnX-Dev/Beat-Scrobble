@@ -355,13 +355,12 @@ func SpotifyFetchMetadataHandler(store db.DB) http.HandlerFunc {
 
 		switch entityType {
 		case "artist":
-			// If we don't have spotifyID, we might need to search or error.
-			// For now, assume frontend passes spotifyID from search result.
 			if spotifyID == "" {
 				utils.WriteError(w, "spotify_id is required", http.StatusBadRequest)
 				return
 			}
 
+			// Fetch Artist Details: https://api.spotify.com/v1/artists/{id}
 			req, _ := http.NewRequest("GET", "https://api.spotify.com/v1/artists/"+spotifyID, nil)
 			req.Header.Set("Authorization", "Bearer "+token)
 			resp, err := client.Do(req)
@@ -379,6 +378,9 @@ func SpotifyFetchMetadataHandler(store db.DB) http.HandlerFunc {
 			var artistData struct {
 				Genres     []string `json:"genres"`
 				Popularity int      `json:"popularity"`
+				Followers  struct {
+					Total int `json:"total"`
+				} `json:"followers"`
 			}
 			if err := json.NewDecoder(resp.Body).Decode(&artistData); err != nil {
 				utils.WriteError(w, "failed to decode spotify response", http.StatusInternalServerError)
@@ -386,12 +388,14 @@ func SpotifyFetchMetadataHandler(store db.DB) http.HandlerFunc {
 			}
 
 			// Update DB
+			// TODO: Add support for saving Followers count in DB (schema update required)
 			err = store.UpdateArtistMetadata(ctx, db.UpdateArtistMetadataParams{
 				ID:         int32(id),
 				Genres:     artistData.Genres,
 				Popularity: pgtype.Int4{Int32: int32(artistData.Popularity), Valid: true},
 				SpotifyID:  pgtype.Text{String: spotifyID, Valid: true},
 				Bio:        pgtype.Text{Valid: false}, // Spotify API doesn't provide bio
+				Followers:  pgtype.Int4{Int32: int32(artistData.Followers.Total), Valid: true},
 			})
 			if err != nil {
 				l.Error().Err(err).Msg("Failed to update artist metadata")
@@ -405,6 +409,7 @@ func SpotifyFetchMetadataHandler(store db.DB) http.HandlerFunc {
 				return
 			}
 
+			// Fetch Album Details: https://api.spotify.com/v1/albums/{id}
 			req, _ := http.NewRequest("GET", "https://api.spotify.com/v1/albums/"+spotifyID, nil)
 			req.Header.Set("Authorization", "Bearer "+token)
 			resp, err := client.Do(req)
@@ -420,21 +425,26 @@ func SpotifyFetchMetadataHandler(store db.DB) http.HandlerFunc {
 			}
 
 			var albumData struct {
-				Genres      []string `json:"genres"`
-				Popularity  int      `json:"popularity"`
-				ReleaseDate string   `json:"release_date"`
+				Genres               []string `json:"genres"`
+				Popularity           int      `json:"popularity"`
+				ReleaseDate          string   `json:"release_date"`
+				ReleaseDatePrecision string   `json:"release_date_precision"`
+				Label                string   `json:"label"`
 			}
 			if err := json.NewDecoder(resp.Body).Decode(&albumData); err != nil {
 				utils.WriteError(w, "failed to decode spotify response", http.StatusInternalServerError)
 				return
 			}
 
+			// TODO: Add support for saving Label and ReleaseDatePrecision in DB (schema update required)
 			err = store.UpdateReleaseMetadata(ctx, db.UpdateReleaseMetadataParams{
-				ID:          int32(id),
-				Genres:      albumData.Genres,
-				Popularity:  pgtype.Int4{Int32: int32(albumData.Popularity), Valid: true},
-				ReleaseDate: pgtype.Text{String: albumData.ReleaseDate, Valid: true},
-				SpotifyID:   pgtype.Text{String: spotifyID, Valid: true},
+				ID:                   int32(id),
+				Genres:               albumData.Genres,
+				Popularity:           pgtype.Int4{Int32: int32(albumData.Popularity), Valid: true},
+				ReleaseDate:          pgtype.Text{String: albumData.ReleaseDate, Valid: true},
+				SpotifyID:            pgtype.Text{String: spotifyID, Valid: true},
+				Label:                pgtype.Text{String: albumData.Label, Valid: true},
+				ReleaseDatePrecision: pgtype.Text{String: albumData.ReleaseDatePrecision, Valid: true},
 			})
 			if err != nil {
 				l.Error().Err(err).Msg("Failed to update release metadata")
@@ -448,6 +458,7 @@ func SpotifyFetchMetadataHandler(store db.DB) http.HandlerFunc {
 				return
 			}
 
+			// 1. Fetch Track Details: https://api.spotify.com/v1/tracks/{id}
 			req, _ := http.NewRequest("GET", "https://api.spotify.com/v1/tracks/"+spotifyID, nil)
 			req.Header.Set("Authorization", "Bearer "+token)
 			resp, err := client.Do(req)
@@ -464,16 +475,82 @@ func SpotifyFetchMetadataHandler(store db.DB) http.HandlerFunc {
 
 			var trackData struct {
 				Popularity int `json:"popularity"`
+				Album      struct {
+					ReleaseDate string `json:"release_date"`
+				} `json:"album"`
 			}
 			if err := json.NewDecoder(resp.Body).Decode(&trackData); err != nil {
 				utils.WriteError(w, "failed to decode spotify response", http.StatusInternalServerError)
 				return
 			}
 
+			// 2. Fetch Audio Features: https://api.spotify.com/v1/audio-features/{id}
+			reqFeatures, _ := http.NewRequest("GET", "https://api.spotify.com/v1/audio-features/"+spotifyID, nil)
+			reqFeatures.Header.Set("Authorization", "Bearer "+token)
+			respFeatures, err := client.Do(reqFeatures)
+
+			var (
+				danceability     pgtype.Float8
+				energy           pgtype.Float8
+				key              pgtype.Int4
+				loudness         pgtype.Float8
+				mode             pgtype.Int4
+				speechiness      pgtype.Float8
+				acousticness     pgtype.Float8
+				instrumentalness pgtype.Float8
+				liveness         pgtype.Float8
+				valence          pgtype.Float8
+				tempo            pgtype.Float8
+			)
+
+			// Audio features are optional, don't fail if this fails
+			if err == nil && respFeatures.StatusCode == http.StatusOK {
+				defer respFeatures.Body.Close()
+				var audioFeatures struct {
+					Danceability     float64 `json:"danceability"`
+					Energy           float64 `json:"energy"`
+					Key              int     `json:"key"`
+					Loudness         float64 `json:"loudness"`
+					Mode             int     `json:"mode"`
+					Speechiness      float64 `json:"speechiness"`
+					Acousticness     float64 `json:"acousticness"`
+					Instrumentalness float64 `json:"instrumentalness"`
+					Liveness         float64 `json:"liveness"`
+					Valence          float64 `json:"valence"`
+					Tempo            float64 `json:"tempo"`
+				}
+
+				if err := json.NewDecoder(respFeatures.Body).Decode(&audioFeatures); err == nil {
+					l.Debug().Interface("features", audioFeatures).Msg("Fetched audio features")
+					danceability = pgtype.Float8{Float64: audioFeatures.Danceability, Valid: true}
+					energy = pgtype.Float8{Float64: audioFeatures.Energy, Valid: true}
+					key = pgtype.Int4{Int32: int32(audioFeatures.Key), Valid: true}
+					loudness = pgtype.Float8{Float64: audioFeatures.Loudness, Valid: true}
+					mode = pgtype.Int4{Int32: int32(audioFeatures.Mode), Valid: true}
+					speechiness = pgtype.Float8{Float64: audioFeatures.Speechiness, Valid: true}
+					acousticness = pgtype.Float8{Float64: audioFeatures.Acousticness, Valid: true}
+					instrumentalness = pgtype.Float8{Float64: audioFeatures.Instrumentalness, Valid: true}
+					liveness = pgtype.Float8{Float64: audioFeatures.Liveness, Valid: true}
+					valence = pgtype.Float8{Float64: audioFeatures.Valence, Valid: true}
+					tempo = pgtype.Float8{Float64: audioFeatures.Tempo, Valid: true}
+				}
+			}
+
 			err = store.UpdateTrackMetadata(ctx, db.UpdateTrackMetadataParams{
-				ID:         int32(id),
-				Popularity: pgtype.Int4{Int32: int32(trackData.Popularity), Valid: true},
-				SpotifyID:  pgtype.Text{String: spotifyID, Valid: true},
+				ID:               int32(id),
+				Popularity:       pgtype.Int4{Int32: int32(trackData.Popularity), Valid: true},
+				SpotifyID:        pgtype.Text{String: spotifyID, Valid: true},
+				Danceability:     danceability,
+				Energy:           energy,
+				Key:              key,
+				Loudness:         loudness,
+				Mode:             mode,
+				Speechiness:      speechiness,
+				Acousticness:     acousticness,
+				Instrumentalness: instrumentalness,
+				Liveness:         liveness,
+				Valence:          valence,
+				Tempo:            tempo,
 			})
 			if err != nil {
 				l.Error().Err(err).Msg("Failed to update track metadata")

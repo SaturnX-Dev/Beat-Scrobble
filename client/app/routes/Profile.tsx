@@ -42,6 +42,8 @@ export default function Profile() {
     const [copied, setCopied] = useState(false);
     const { getPreference, savePreference } = usePreferences();
     const { user } = useAppContext();
+    const backgroundImage = getPreference('background_image', null);
+    const profileImage = getPreference('profile_image', null);
 
     // Check if recap should be visible (Dec 15-21 only)
     const isRecapPeriod = () => {
@@ -157,58 +159,89 @@ export default function Profile() {
             <YearlyRecapModal open={recapOpen} setOpen={setRecapOpen} />
 
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="text-center mb-6 md:mb-8">
-                    <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[var(--color-fg)] tracking-tight mb-2">
-                        Your Profile
-                    </h1>
-                    <p className="text-[var(--color-fg-secondary)] text-sm md:text-base max-w-lg mx-auto mb-4">
-                        Complete statistics, trends, and insights about your listening habits
-                    </p>
-
-                    {/* Action buttons */}
-                    <div className="flex items-center justify-center gap-3">
-                        <button
-                            onClick={handleShare}
-                            className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dim)] text-white rounded-xl text-sm font-medium transition-all"
-                        >
-                            <Share2 size={16} />
-                            Share Profile
-                        </button>
-                        {showRecapButton && (
-                            <button
-                                onClick={() => setRecapOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl text-sm font-medium transition-all"
-                            >
-                                <Gift size={16} />
-                                {new Date().getFullYear()} Recap
-                            </button>
+                {/* Header with Banner */}
+                <div className="relative mb-8 rounded-2xl overflow-hidden bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
+                    {/* Banner Image */}
+                    <div className="h-48 sm:h-64 w-full bg-[var(--color-bg-tertiary)] relative">
+                        {backgroundImage ? (
+                            <img
+                                src={backgroundImage}
+                                alt="Profile Banner"
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-gradient-to-r from-[var(--color-primary)]/20 to-[var(--color-accent)]/20" />
                         )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-secondary)] to-transparent opacity-60" />
                     </div>
 
-                    {/* Share URL popup */}
-                    {shareUrl && (
-                        <div className="mt-4 p-4 bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-bg-tertiary)] max-w-md mx-auto">
-                            <p className="text-xs text-[var(--color-fg-secondary)] mb-2">Share this link:</p>
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={shareUrl}
-                                    readOnly
-                                    className="flex-1 bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-lg px-3 py-2 text-sm"
-                                />
-                                <button
-                                    onClick={copyShareUrl}
-                                    className="px-3 py-2 bg-[var(--color-primary)] text-white rounded-lg"
-                                >
-                                    {copied ? <Check size={16} /> : <Copy size={16} />}
-                                </button>
+                    {/* Profile Info (Overlapping Banner) */}
+                    <div className="relative px-6 pb-6 -mt-16 sm:-mt-20 flex flex-col items-center text-center">
+                        <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-[var(--color-bg-secondary)] p-1.5 mb-4 shadow-xl">
+                            <div className="w-full h-full rounded-full overflow-hidden bg-[var(--color-bg-tertiary)] relative">
+                                {profileImage ? (
+                                    <img
+                                        src={profileImage}
+                                        alt="Profile"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center">
+                                        <User size={64} className="text-white" />
+                                    </div>
+                                )}
                             </div>
-                            <p className="text-[10px] text-[var(--color-fg-tertiary)] mt-2">
-                                Configure your hostname in Settings → Sharing
-                            </p>
                         </div>
-                    )}
+
+                        <h1 className="text-3xl sm:text-4xl font-bold text-[var(--color-fg)] mb-2">Your Profile</h1>
+                        <p className="text-[var(--color-fg-secondary)] text-sm md:text-base max-w-lg mx-auto mb-4">
+                            Complete statistics, trends, and insights about your listening habits
+                        </p>
+
+                        {/* Action buttons */}
+                        <div className="flex items-center justify-center gap-3">
+                            <button
+                                onClick={handleShare}
+                                className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dim)] text-white rounded-xl text-sm font-medium transition-all"
+                            >
+                                <Share2 size={16} />
+                                Share Profile
+                            </button>
+                            {showRecapButton && (
+                                <button
+                                    onClick={() => setRecapOpen(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl text-sm font-medium transition-all"
+                                >
+                                    <Gift size={16} />
+                                    {new Date().getFullYear()} Recap
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Share URL popup */}
+                        {shareUrl && (
+                            <div className="mt-4 p-4 bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-bg-tertiary)] max-w-md mx-auto">
+                                <p className="text-xs text-[var(--color-fg-secondary)] mb-2">Share this link:</p>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={shareUrl}
+                                        readOnly
+                                        className="flex-1 bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-lg px-3 py-2 text-sm"
+                                    />
+                                    <button
+                                        onClick={copyShareUrl}
+                                        className="px-3 py-2 bg-[var(--color-primary)] text-white rounded-lg"
+                                    >
+                                        {copied ? <Check size={16} /> : <Copy size={16} />}
+                                    </button>
+                                </div>
+                                <p className="text-[10px] text-[var(--color-fg-tertiary)] mt-2">
+                                    Configure your hostname in Settings → Sharing
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Centered Period Selector */}

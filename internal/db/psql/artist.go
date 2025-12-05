@@ -431,6 +431,7 @@ func (d *Psql) UpdateArtistMetadata(ctx context.Context, opts db.UpdateArtistMet
 		Bio:        opts.Bio,
 		Popularity: opts.Popularity,
 		SpotifyID:  opts.SpotifyID,
+		Followers:  opts.Followers,
 	})
 	if err != nil {
 		return fmt.Errorf("UpdateArtistMetadata: %w", err)

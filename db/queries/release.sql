@@ -121,7 +121,9 @@ UPDATE releases SET
   genres = $2,
   release_date = $3,
   popularity = $4,
-  spotify_id = $5
+  spotify_id = $5,
+  label = $6,
+  release_date_precision = $7
 WHERE id = $1;
 
 -- name: DeleteRelease :exec

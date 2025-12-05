@@ -62,6 +62,9 @@ func ExportData(ctx context.Context, user *models.User, store db.DB, out io.Writ
 		json.Unmarshal(prefBytes, &prefs)
 	}
 
+	// Filter out AI cache data from export (keeps prompts/keys, removes cached responses)
+	prefs = filterAICacheFromPrefs(prefs)
+
 	// Fetch user theme
 	themeBytes, _ := store.GetUserTheme(ctx, user.ID)
 	themeJSON := "{}"
@@ -159,4 +162,29 @@ func convertToExportFormat(item *db.ExportItem) *BeatScrobbleListen {
 		})
 	}
 	return ret
+}
+
+func filterAICacheFromPrefs(prefs map[string]interface{}) map[string]interface{} {
+	if prefs == nil {
+		return nil
+	}
+
+	newPrefs := make(map[string]interface{})
+	for k, v := range prefs {
+		// Filter out Profile Critiques Cache
+		if k == "profile_critiques" {
+			continue
+		}
+		// Filter out AI Playlists Cache
+		if k == "ai_playlists_cache" {
+			continue
+		}
+		// Filter out Track Critiques Cache (starts with comet_ai_track_)
+		if len(k) >= 15 && k[:15] == "comet_ai_track_" {
+			continue
+		}
+
+		newPrefs[k] = v
+	}
+	return newPrefs
 }

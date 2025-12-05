@@ -2,8 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { createApiKey, deleteApiKey, getApiKeys, type ApiKey } from "api/api";
 import { AsyncButton } from "../AsyncButton";
 import { useEffect, useRef, useState } from "react";
-import { Copy, Trash, Eye, EyeOff } from "lucide-react";
+import { Copy, Trash, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { usePreferences } from "~/hooks/usePreferences";
+import SpotifySettings from "./SpotifySettings";
 
 type CopiedState = {
     x: number;
@@ -46,6 +47,65 @@ export default function ApiKeysModal() {
         savePreference('ai_critique_enabled', aiEnabled);
         savePreference('profile_critique_enabled', profileCritiqueEnabled);
         savePreference('profile_critique_prompt', profilePrompt);
+    };
+
+    const [clearingCache, setClearingCache] = useState(false);
+    const [cacheCleared, setCacheCleared] = useState(false);
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [importingCache, setImportingCache] = useState(false);
+    const [importMsg, setImportMsg] = useState<string | null>(null);
+
+    const handleClearAICache = async () => {
+        setClearingCache(true);
+        setCacheCleared(false);
+        try {
+            const res = await fetch('/apis/web/v1/ai/clear-cache', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (res.ok) {
+                setCacheCleared(true);
+                setTimeout(() => setCacheCleared(false), 3000);
+            }
+        } catch (err) {
+            console.error('Failed to clear AI cache:', err);
+        } finally {
+            setClearingCache(false);
+        }
+    };
+
+    const handleImportCache = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setImportingCache(true);
+        setImportMsg(null);
+
+        try {
+            const text = await file.text();
+            // Validate JSON
+            JSON.parse(text);
+
+            const res = await fetch('/apis/web/v1/ai/cache/import', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: text,
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setImportMsg(`Success! Imported ${data.count} items.`);
+            } else {
+                setImportMsg('Failed to import cache.');
+            }
+        } catch (err) {
+            console.error('Import failed:', err);
+            setImportMsg('Invalid JSON file.');
+        } finally {
+            setImportingCache(false);
+            // Reset input
+            e.target.value = '';
+        }
     };
 
     const handleRevealAndSelect = (key: string) => {
@@ -356,7 +416,80 @@ export default function ApiKeysModal() {
                             </div>
                         )}
 
+                        <hr className="border-[var(--color-bg-tertiary)] my-2" />
+
+                        {/* Regenerate AI Cache Button */}
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <span className="text-sm font-medium">Regenerate AI Cache</span>
+                                <p className="text-xs text-[var(--color-fg-secondary)]">Clear cached AI responses when you update prompts</p>
+                            </div>
+                            <button
+                                onClick={handleClearAICache}
+                                disabled={clearingCache}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-300 ${cacheCleared
+                                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                    : 'bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-secondary)] hover:border-[var(--color-primary)]'
+                                    } ${clearingCache ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                <RefreshCw size={16} className={clearingCache ? 'animate-spin' : ''} />
+                                {cacheCleared ? 'Cache Cleared!' : clearingCache ? 'Clearing...' : 'Clear Cache'}
+                            </button>
+                        </div>
+
+                        <hr className="border-[var(--color-bg-tertiary)] my-2" />
+
+                        {/* Advanced Cache Management */}
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowAdvanced(!showAdvanced)}>
+                                <div>
+                                    <span className="text-sm font-medium">Advanced: Cache Import/Export</span>
+                                    <p className="text-xs text-[var(--color-fg-secondary)]">Manage your AI cache data separately</p>
+                                </div>
+                                <button className="text-[var(--color-fg-secondary)]">
+                                    {showAdvanced ? 'Hide' : 'Show'}
+                                </button>
+                            </div>
+
+                            {showAdvanced && (
+                                <div className="flex flex-col gap-3 mt-2 p-3 bg-[var(--color-bg)]/50 rounded-md border border-[var(--color-bg-tertiary)]">
+                                    <p className="text-xs text-[var(--color-fg-secondary)]">
+                                        AI Cache contains all generated critiques and playlists. Exporting this allows you to save tokens when moving to a new device.
+                                        <br />
+                                        <span className="text-yellow-500">Warning: Files can be large.</span>
+                                    </p>
+
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => window.open('/apis/web/v1/ai/cache/export', '_blank')}
+                                            className="flex-1 bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-secondary)] rounded-md py-2 text-sm font-medium transition-colors"
+                                        >
+                                            Export Cache JSON
+                                        </button>
+                                        <div className="flex-1 relative">
+                                            <input
+                                                type="file"
+                                                accept=".json"
+                                                onChange={handleImportCache}
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                            />
+                                            <button className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] hover:bg-[var(--color-bg-secondary)] rounded-md py-2 text-sm font-medium transition-colors">
+                                                {importingCache ? 'Importing...' : 'Import Cache JSON'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {importMsg && (
+                                        <p className={`text-xs text-center ${importMsg.includes('Success') ? 'text-green-400' : 'text-red-400'}`}>
+                                            {importMsg}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
+
+                    {/* Spotify Config */}
+                    <SpotifySettings />
                 </div>
             </div>
 
@@ -372,7 +505,8 @@ export default function ApiKeysModal() {
                 >
                     Copied!
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     )
 }

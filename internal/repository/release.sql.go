@@ -87,24 +87,26 @@ func (q *Queries) DeleteReleasesFromArtist(ctx context.Context, artistID int32) 
 
 const getRelease = `-- name: GetRelease :one
 SELECT 
-  id, musicbrainz_id, image, various_artists, image_source, genres, release_date, popularity, spotify_id, title,
+  id, musicbrainz_id, image, various_artists, image_source, genres, release_date, popularity, spotify_id, label, release_date_precision, title,
   get_artists_for_release(id) AS artists
 FROM releases_with_title
 WHERE id = $1 LIMIT 1
 `
 
 type GetReleaseRow struct {
-	ID             int32
-	MusicBrainzID  *uuid.UUID
-	Image          *uuid.UUID
-	VariousArtists bool
-	ImageSource    pgtype.Text
-	Genres         []string
-	ReleaseDate    pgtype.Text
-	Popularity     pgtype.Int4
-	SpotifyID      pgtype.Text
-	Title          string
-	Artists        []byte
+	ID                   int32
+	MusicBrainzID        *uuid.UUID
+	Image                *uuid.UUID
+	VariousArtists       bool
+	ImageSource          pgtype.Text
+	Genres               []string
+	ReleaseDate          pgtype.Text
+	Popularity           pgtype.Int4
+	SpotifyID            pgtype.Text
+	Label                pgtype.Text
+	ReleaseDatePrecision pgtype.Text
+	Title                string
+	Artists              []byte
 }
 
 func (q *Queries) GetRelease(ctx context.Context, id int32) (GetReleaseRow, error) {
@@ -120,6 +122,8 @@ func (q *Queries) GetRelease(ctx context.Context, id int32) (GetReleaseRow, erro
 		&i.ReleaseDate,
 		&i.Popularity,
 		&i.SpotifyID,
+		&i.Label,
+		&i.ReleaseDatePrecision,
 		&i.Title,
 		&i.Artists,
 	)
@@ -127,7 +131,7 @@ func (q *Queries) GetRelease(ctx context.Context, id int32) (GetReleaseRow, erro
 }
 
 const getReleaseByArtistAndTitle = `-- name: GetReleaseByArtistAndTitle :one
-SELECT r.id, r.musicbrainz_id, r.image, r.various_artists, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.title
+SELECT r.id, r.musicbrainz_id, r.image, r.various_artists, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.label, r.release_date_precision, r.title
 FROM releases_with_title r
 JOIN artist_releases ar ON r.id = ar.release_id
 WHERE r.title = $1 AND ar.artist_id = $2
@@ -152,13 +156,15 @@ func (q *Queries) GetReleaseByArtistAndTitle(ctx context.Context, arg GetRelease
 		&i.ReleaseDate,
 		&i.Popularity,
 		&i.SpotifyID,
+		&i.Label,
+		&i.ReleaseDatePrecision,
 		&i.Title,
 	)
 	return i, err
 }
 
 const getReleaseByArtistAndTitles = `-- name: GetReleaseByArtistAndTitles :one
-SELECT r.id, r.musicbrainz_id, r.image, r.various_artists, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.title
+SELECT r.id, r.musicbrainz_id, r.image, r.various_artists, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.label, r.release_date_precision, r.title
 FROM releases_with_title r
 JOIN artist_releases ar ON r.id = ar.release_id
 WHERE r.title = ANY ($1::TEXT[]) AND ar.artist_id = $2
@@ -183,13 +189,15 @@ func (q *Queries) GetReleaseByArtistAndTitles(ctx context.Context, arg GetReleas
 		&i.ReleaseDate,
 		&i.Popularity,
 		&i.SpotifyID,
+		&i.Label,
+		&i.ReleaseDatePrecision,
 		&i.Title,
 	)
 	return i, err
 }
 
 const getReleaseByImageID = `-- name: GetReleaseByImageID :one
-SELECT id, musicbrainz_id, image, various_artists, image_source, genres, release_date, popularity, spotify_id FROM releases
+SELECT id, musicbrainz_id, image, various_artists, image_source, genres, release_date, popularity, spotify_id, label, release_date_precision FROM releases
 WHERE image = $1 LIMIT 1
 `
 
@@ -206,12 +214,14 @@ func (q *Queries) GetReleaseByImageID(ctx context.Context, image *uuid.UUID) (Re
 		&i.ReleaseDate,
 		&i.Popularity,
 		&i.SpotifyID,
+		&i.Label,
+		&i.ReleaseDatePrecision,
 	)
 	return i, err
 }
 
 const getReleaseByMbzID = `-- name: GetReleaseByMbzID :one
-SELECT id, musicbrainz_id, image, various_artists, image_source, genres, release_date, popularity, spotify_id, title FROM releases_with_title
+SELECT id, musicbrainz_id, image, various_artists, image_source, genres, release_date, popularity, spotify_id, label, release_date_precision, title FROM releases_with_title
 WHERE musicbrainz_id = $1 LIMIT 1
 `
 
@@ -228,6 +238,8 @@ func (q *Queries) GetReleaseByMbzID(ctx context.Context, musicbrainzID *uuid.UUI
 		&i.ReleaseDate,
 		&i.Popularity,
 		&i.SpotifyID,
+		&i.Label,
+		&i.ReleaseDatePrecision,
 		&i.Title,
 	)
 	return i, err
@@ -235,7 +247,7 @@ func (q *Queries) GetReleaseByMbzID(ctx context.Context, musicbrainzID *uuid.UUI
 
 const getReleasesWithoutImages = `-- name: GetReleasesWithoutImages :many
 SELECT
-  r.id, r.musicbrainz_id, r.image, r.various_artists, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.title,
+  r.id, r.musicbrainz_id, r.image, r.various_artists, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.label, r.release_date_precision, r.title,
   r.genres,
   r.release_date,
   r.popularity,
@@ -254,21 +266,23 @@ type GetReleasesWithoutImagesParams struct {
 }
 
 type GetReleasesWithoutImagesRow struct {
-	ID             int32
-	MusicBrainzID  *uuid.UUID
-	Image          *uuid.UUID
-	VariousArtists bool
-	ImageSource    pgtype.Text
-	Genres         []string
-	ReleaseDate    pgtype.Text
-	Popularity     pgtype.Int4
-	SpotifyID      pgtype.Text
-	Title          string
-	Genres_2       []string
-	ReleaseDate_2  pgtype.Text
-	Popularity_2   pgtype.Int4
-	SpotifyID_2    pgtype.Text
-	Artists        []byte
+	ID                   int32
+	MusicBrainzID        *uuid.UUID
+	Image                *uuid.UUID
+	VariousArtists       bool
+	ImageSource          pgtype.Text
+	Genres               []string
+	ReleaseDate          pgtype.Text
+	Popularity           pgtype.Int4
+	SpotifyID            pgtype.Text
+	Label                pgtype.Text
+	ReleaseDatePrecision pgtype.Text
+	Title                string
+	Genres_2             []string
+	ReleaseDate_2        pgtype.Text
+	Popularity_2         pgtype.Int4
+	SpotifyID_2          pgtype.Text
+	Artists              []byte
 }
 
 func (q *Queries) GetReleasesWithoutImages(ctx context.Context, arg GetReleasesWithoutImagesParams) ([]GetReleasesWithoutImagesRow, error) {
@@ -290,6 +304,8 @@ func (q *Queries) GetReleasesWithoutImages(ctx context.Context, arg GetReleasesW
 			&i.ReleaseDate,
 			&i.Popularity,
 			&i.SpotifyID,
+			&i.Label,
+			&i.ReleaseDatePrecision,
 			&i.Title,
 			&i.Genres_2,
 			&i.ReleaseDate_2,
@@ -309,7 +325,7 @@ func (q *Queries) GetReleasesWithoutImages(ctx context.Context, arg GetReleasesW
 
 const getTopReleasesFromArtist = `-- name: GetTopReleasesFromArtist :many
 SELECT
-  r.id, r.musicbrainz_id, r.image, r.various_artists, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.title,
+  r.id, r.musicbrainz_id, r.image, r.various_artists, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.label, r.release_date_precision, r.title,
   r.genres,
   r.release_date,
   r.popularity,
@@ -322,7 +338,7 @@ JOIN releases_with_title r ON t.release_id = r.id
 JOIN artist_releases ar ON r.id = ar.release_id
 WHERE ar.artist_id = $5
   AND l.listened_at BETWEEN $1 AND $2
-GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id
+GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.label, r.release_date_precision
 ORDER BY listen_count DESC, r.id
 LIMIT $3 OFFSET $4
 `
@@ -336,22 +352,24 @@ type GetTopReleasesFromArtistParams struct {
 }
 
 type GetTopReleasesFromArtistRow struct {
-	ID             int32
-	MusicBrainzID  *uuid.UUID
-	Image          *uuid.UUID
-	VariousArtists bool
-	ImageSource    pgtype.Text
-	Genres         []string
-	ReleaseDate    pgtype.Text
-	Popularity     pgtype.Int4
-	SpotifyID      pgtype.Text
-	Title          string
-	Genres_2       []string
-	ReleaseDate_2  pgtype.Text
-	Popularity_2   pgtype.Int4
-	SpotifyID_2    pgtype.Text
-	ListenCount    int64
-	Artists        []byte
+	ID                   int32
+	MusicBrainzID        *uuid.UUID
+	Image                *uuid.UUID
+	VariousArtists       bool
+	ImageSource          pgtype.Text
+	Genres               []string
+	ReleaseDate          pgtype.Text
+	Popularity           pgtype.Int4
+	SpotifyID            pgtype.Text
+	Label                pgtype.Text
+	ReleaseDatePrecision pgtype.Text
+	Title                string
+	Genres_2             []string
+	ReleaseDate_2        pgtype.Text
+	Popularity_2         pgtype.Int4
+	SpotifyID_2          pgtype.Text
+	ListenCount          int64
+	Artists              []byte
 }
 
 func (q *Queries) GetTopReleasesFromArtist(ctx context.Context, arg GetTopReleasesFromArtistParams) ([]GetTopReleasesFromArtistRow, error) {
@@ -379,6 +397,8 @@ func (q *Queries) GetTopReleasesFromArtist(ctx context.Context, arg GetTopReleas
 			&i.ReleaseDate,
 			&i.Popularity,
 			&i.SpotifyID,
+			&i.Label,
+			&i.ReleaseDatePrecision,
 			&i.Title,
 			&i.Genres_2,
 			&i.ReleaseDate_2,
@@ -399,7 +419,7 @@ func (q *Queries) GetTopReleasesFromArtist(ctx context.Context, arg GetTopReleas
 
 const getTopReleasesPaginated = `-- name: GetTopReleasesPaginated :many
 SELECT
-  r.id, r.musicbrainz_id, r.image, r.various_artists, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.title,
+  r.id, r.musicbrainz_id, r.image, r.various_artists, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.label, r.release_date_precision, r.title,
   r.genres,
   r.release_date,
   r.popularity,
@@ -410,7 +430,7 @@ FROM listens l
 JOIN tracks t ON l.track_id = t.id
 JOIN releases_with_title r ON t.release_id = r.id
 WHERE l.listened_at BETWEEN $1 AND $2
-GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id
+GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.label, r.release_date_precision
 ORDER BY listen_count DESC, r.id
 LIMIT $3 OFFSET $4
 `
@@ -423,22 +443,24 @@ type GetTopReleasesPaginatedParams struct {
 }
 
 type GetTopReleasesPaginatedRow struct {
-	ID             int32
-	MusicBrainzID  *uuid.UUID
-	Image          *uuid.UUID
-	VariousArtists bool
-	ImageSource    pgtype.Text
-	Genres         []string
-	ReleaseDate    pgtype.Text
-	Popularity     pgtype.Int4
-	SpotifyID      pgtype.Text
-	Title          string
-	Genres_2       []string
-	ReleaseDate_2  pgtype.Text
-	Popularity_2   pgtype.Int4
-	SpotifyID_2    pgtype.Text
-	ListenCount    int64
-	Artists        []byte
+	ID                   int32
+	MusicBrainzID        *uuid.UUID
+	Image                *uuid.UUID
+	VariousArtists       bool
+	ImageSource          pgtype.Text
+	Genres               []string
+	ReleaseDate          pgtype.Text
+	Popularity           pgtype.Int4
+	SpotifyID            pgtype.Text
+	Label                pgtype.Text
+	ReleaseDatePrecision pgtype.Text
+	Title                string
+	Genres_2             []string
+	ReleaseDate_2        pgtype.Text
+	Popularity_2         pgtype.Int4
+	SpotifyID_2          pgtype.Text
+	ListenCount          int64
+	Artists              []byte
 }
 
 func (q *Queries) GetTopReleasesPaginated(ctx context.Context, arg GetTopReleasesPaginatedParams) ([]GetTopReleasesPaginatedRow, error) {
@@ -465,6 +487,8 @@ func (q *Queries) GetTopReleasesPaginated(ctx context.Context, arg GetTopRelease
 			&i.ReleaseDate,
 			&i.Popularity,
 			&i.SpotifyID,
+			&i.Label,
+			&i.ReleaseDatePrecision,
 			&i.Title,
 			&i.Genres_2,
 			&i.ReleaseDate_2,
@@ -486,7 +510,7 @@ func (q *Queries) GetTopReleasesPaginated(ctx context.Context, arg GetTopRelease
 const insertRelease = `-- name: InsertRelease :one
 INSERT INTO releases (musicbrainz_id, various_artists, image, image_source)
 VALUES ($1, $2, $3, $4)
-RETURNING id, musicbrainz_id, image, various_artists, image_source, genres, release_date, popularity, spotify_id
+RETURNING id, musicbrainz_id, image, various_artists, image_source, genres, release_date, popularity, spotify_id, label, release_date_precision
 `
 
 type InsertReleaseParams struct {
@@ -514,6 +538,8 @@ func (q *Queries) InsertRelease(ctx context.Context, arg InsertReleaseParams) (R
 		&i.ReleaseDate,
 		&i.Popularity,
 		&i.SpotifyID,
+		&i.Label,
+		&i.ReleaseDatePrecision,
 	)
 	return i, err
 }
@@ -554,16 +580,20 @@ UPDATE releases SET
   genres = $2,
   release_date = $3,
   popularity = $4,
-  spotify_id = $5
+  spotify_id = $5,
+  label = $6,
+  release_date_precision = $7
 WHERE id = $1
 `
 
 type UpdateReleaseMetadataParams struct {
-	ID          int32
-	Genres      []string
-	ReleaseDate pgtype.Text
-	Popularity  pgtype.Int4
-	SpotifyID   pgtype.Text
+	ID                   int32
+	Genres               []string
+	ReleaseDate          pgtype.Text
+	Popularity           pgtype.Int4
+	SpotifyID            pgtype.Text
+	Label                pgtype.Text
+	ReleaseDatePrecision pgtype.Text
 }
 
 func (q *Queries) UpdateReleaseMetadata(ctx context.Context, arg UpdateReleaseMetadataParams) error {
@@ -573,6 +603,8 @@ func (q *Queries) UpdateReleaseMetadata(ctx context.Context, arg UpdateReleaseMe
 		arg.ReleaseDate,
 		arg.Popularity,
 		arg.SpotifyID,
+		arg.Label,
+		arg.ReleaseDatePrecision,
 	)
 	return err
 }

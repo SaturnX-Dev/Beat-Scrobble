@@ -72,6 +72,7 @@ type Artist struct {
 	Bio           pgtype.Text
 	Popularity    pgtype.Int4
 	SpotifyID     pgtype.Text
+	Followers     pgtype.Int4
 }
 
 type ArtistAlias struct {
@@ -102,6 +103,7 @@ type ArtistsWithName struct {
 	Bio           pgtype.Text
 	Popularity    pgtype.Int4
 	SpotifyID     pgtype.Text
+	Followers     pgtype.Int4
 	Name          string
 }
 
@@ -113,15 +115,17 @@ type Listen struct {
 }
 
 type Release struct {
-	ID             int32
-	MusicBrainzID  *uuid.UUID
-	Image          *uuid.UUID
-	VariousArtists bool
-	ImageSource    pgtype.Text
-	Genres         []string
-	ReleaseDate    pgtype.Text
-	Popularity     pgtype.Int4
-	SpotifyID      pgtype.Text
+	ID                   int32
+	MusicBrainzID        *uuid.UUID
+	Image                *uuid.UUID
+	VariousArtists       bool
+	ImageSource          pgtype.Text
+	Genres               []string
+	ReleaseDate          pgtype.Text
+	Popularity           pgtype.Int4
+	SpotifyID            pgtype.Text
+	Label                pgtype.Text
+	ReleaseDatePrecision pgtype.Text
 }
 
 type ReleaseAlias struct {
@@ -132,16 +136,18 @@ type ReleaseAlias struct {
 }
 
 type ReleasesWithTitle struct {
-	ID             int32
-	MusicBrainzID  *uuid.UUID
-	Image          *uuid.UUID
-	VariousArtists bool
-	ImageSource    pgtype.Text
-	Genres         []string
-	ReleaseDate    pgtype.Text
-	Popularity     pgtype.Int4
-	SpotifyID      pgtype.Text
-	Title          string
+	ID                   int32
+	MusicBrainzID        *uuid.UUID
+	Image                *uuid.UUID
+	VariousArtists       bool
+	ImageSource          pgtype.Text
+	Genres               []string
+	ReleaseDate          pgtype.Text
+	Popularity           pgtype.Int4
+	SpotifyID            pgtype.Text
+	Label                pgtype.Text
+	ReleaseDatePrecision pgtype.Text
+	Title                string
 }
 
 type Session struct {
@@ -153,12 +159,23 @@ type Session struct {
 }
 
 type Track struct {
-	ID            int32
-	MusicBrainzID *uuid.UUID
-	Duration      int32
-	ReleaseID     int32
-	Popularity    pgtype.Int4
-	SpotifyID     pgtype.Text
+	ID               int32
+	MusicBrainzID    *uuid.UUID
+	Duration         int32
+	ReleaseID        int32
+	Popularity       pgtype.Int4
+	SpotifyID        pgtype.Text
+	Danceability     pgtype.Float8
+	Energy           pgtype.Float8
+	Key              pgtype.Int4
+	Loudness         pgtype.Float8
+	Mode             pgtype.Int4
+	Speechiness      pgtype.Float8
+	Acousticness     pgtype.Float8
+	Instrumentalness pgtype.Float8
+	Liveness         pgtype.Float8
+	Valence          pgtype.Float8
+	Tempo            pgtype.Float8
 }
 
 type TrackAlias struct {
@@ -169,13 +186,24 @@ type TrackAlias struct {
 }
 
 type TracksWithTitle struct {
-	ID            int32
-	MusicBrainzID *uuid.UUID
-	Duration      int32
-	ReleaseID     int32
-	Popularity    pgtype.Int4
-	SpotifyID     pgtype.Text
-	Title         string
+	ID               int32
+	MusicBrainzID    *uuid.UUID
+	Duration         int32
+	ReleaseID        int32
+	Popularity       pgtype.Int4
+	SpotifyID        pgtype.Text
+	Danceability     pgtype.Float8
+	Energy           pgtype.Float8
+	Key              pgtype.Int4
+	Loudness         pgtype.Float8
+	Mode             pgtype.Int4
+	Speechiness      pgtype.Float8
+	Acousticness     pgtype.Float8
+	Instrumentalness pgtype.Float8
+	Liveness         pgtype.Float8
+	Valence          pgtype.Float8
+	Tempo            pgtype.Float8
+	Title            string
 }
 
 type User struct {

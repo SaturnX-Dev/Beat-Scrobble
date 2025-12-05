@@ -110,12 +110,18 @@ func bindRoutes(
 			r.Post("/ai/profile-critique", handlers.GetAIProfileCritiqueHandler(db))
 			// AI Playlists
 			r.Post("/ai/generate-playlist", handlers.GenerateAIPlaylistHandler(db))
+			// AI Cache Management
+			r.Post("/ai/clear-cache", handlers.ClearAICacheHandler(db))
+			r.Get("/ai/cache/export", handlers.ExportAICacheHandler(db))
+			r.Post("/ai/cache/import", handlers.ImportAICacheHandler(db))
 			// Yearly Recap
 			r.Get("/yearly-recap", handlers.YearlyRecapHandler(db))
 			// Import/Backup
 			r.Post("/import", handlers.ImportHandler(db))
 			// Profile Image
 			r.Post("/user/profile-image", handlers.UploadProfileImageBase64Handler(db))
+			// Background Image
+			r.Post("/user/background-image", handlers.UploadBackgroundImageBase64Handler(db))
 			// Spotify Integration
 			r.Get("/spotify/configured", handlers.SpotifyConfiguredHandler(db))
 			r.Get("/spotify/search", handlers.SpotifySearchHandler(db))
@@ -123,12 +129,15 @@ func bindRoutes(
 			r.Post("/spotify/bulk-fetch", handlers.SpotifyBulkFetchHandler(db))
 		})
 
-		// Profile images (public, no auth required)
-		r.Get("/profile-images/{filename}", handlers.GetProfileImageHandler())
-
 		// Public routes (no auth required)
 		r.Get("/public/profile/{username}", handlers.PublicProfileHandler(db))
 	})
+
+	// Profile images (public, no auth required)
+	r.Get("/profile-images/{filename}", handlers.GetProfileImageHandler())
+
+	// Background images (public, no auth required)
+	r.Get("/background-images/{filename}", handlers.GetBackgroundImageHandler())
 
 	r.Route("/apis/listenbrainz/1", func(r chi.Router) {
 		r.Use(cors.Handler(cors.Options{

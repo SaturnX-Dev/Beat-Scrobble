@@ -94,7 +94,7 @@ export default function SpotifySettings() {
     return (
         <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
-                <h2 className="text-2xl font-bold text-[var(--color-fg)]">Spotify Integration</h2>
+                <h3 className="text-xl font-bold text-[var(--color-fg)]">Spotify Integration</h3>
                 <p className="text-[var(--color-fg-secondary)]">
                     Connect your Spotify Developer credentials to enable metadata fetching for artists, albums, and tracks.
                 </p>

@@ -95,7 +95,8 @@ UPDATE artists SET
   genres = $2,
   bio = $3,
   popularity = $4,
-  spotify_id = $5
+  spotify_id = $5,
+  followers = $6
 WHERE id = $1;
 
 -- name: DeleteConflictingArtistTracks :exec

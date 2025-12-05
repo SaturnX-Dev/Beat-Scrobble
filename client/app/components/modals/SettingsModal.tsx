@@ -6,8 +6,6 @@ import { useAppContext } from "~/providers/AppProvider";
 import ApiKeysModal from "./ApiKeysModal";
 import BackupModal from "./BackupModal";
 
-import SpotifySettings from "./SpotifySettings";
-
 interface Props {
     open: boolean
     setOpen: Function
@@ -35,7 +33,6 @@ export default function SettingsModal({ open, setOpen }: Props) {
                             <TabsTrigger className={triggerClasses} value="API Keys">
                                 API Keys
                             </TabsTrigger>
-                            <TabsTrigger className={triggerClasses} value="Spotify">Spotify</TabsTrigger>
                             <TabsTrigger className={triggerClasses} value="Backup">Backup</TabsTrigger>
                         </>
                     )}
@@ -53,9 +50,6 @@ export default function SettingsModal({ open, setOpen }: Props) {
                 </TabsContent>
                 <TabsContent value="Backup" className={contentClasses}>
                     <BackupModal />
-                </TabsContent>
-                <TabsContent value="Spotify" className={contentClasses}>
-                    <SpotifySettings />
                 </TabsContent>
                 <TabsContent value="About" className={contentClasses}>
                     <div className="flex flex-col gap-6">
