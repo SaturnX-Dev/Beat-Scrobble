@@ -12,6 +12,11 @@ type Artist struct {
 	TimeListened int64      `json:"time_listened"`
 	FirstListen  int64      `json:"first_listen"`
 	IsPrimary    bool       `json:"is_primary,omitempty"`
+	// Spotify metadata
+	Genres     []string `json:"genres,omitempty"`
+	Bio        string   `json:"bio,omitempty"`
+	Popularity int      `json:"popularity,omitempty"`
+	SpotifyID  string   `json:"spotify_id,omitempty"`
 }
 
 type SimpleArtist struct {
@@ -30,4 +35,9 @@ type ArtistWithFullAliases struct {
 	TimeListened int64      `json:"time_listened"`
 	FirstListen  int64      `json:"first_listen"`
 	IsPrimary    bool       `json:"is_primary,omitempty"`
+	// Spotify metadata
+	Genres     []string `json:"genres,omitempty"`
+	Bio        string   `json:"bio,omitempty"`
+	Popularity int      `json:"popularity,omitempty"`
+	SpotifyID  string   `json:"spotify_id,omitempty"`
 }

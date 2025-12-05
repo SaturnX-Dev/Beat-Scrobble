@@ -63,6 +63,10 @@ func (d *Psql) GetTopAlbumsPaginated(ctx context.Context, opts db.GetItemsOpts) 
 				Artists:        artists,
 				VariousArtists: v.VariousArtists,
 				ListenCount:    v.ListenCount,
+				Genres:         v.Genres,
+				ReleaseDate:    v.ReleaseDate.String,
+				Popularity:     int(v.Popularity.Int32),
+				SpotifyID:      v.SpotifyID.String,
 			}
 		}
 		count, err = d.q.CountReleasesFromArtist(ctx, int32(opts.ArtistID))
@@ -98,6 +102,10 @@ func (d *Psql) GetTopAlbumsPaginated(ctx context.Context, opts db.GetItemsOpts) 
 				Artists:        artists,
 				VariousArtists: row.VariousArtists,
 				ListenCount:    row.ListenCount,
+				Genres:         row.Genres,
+				ReleaseDate:    row.ReleaseDate.String,
+				Popularity:     int(row.Popularity.Int32),
+				SpotifyID:      row.SpotifyID.String,
 			}
 			rgs[i] = t
 		}

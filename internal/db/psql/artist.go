@@ -54,6 +54,10 @@ func (d *Psql) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.Ar
 			ListenCount:  count,
 			TimeListened: seconds,
 			FirstListen:  firstListen.ListenedAt.Unix(),
+			Genres:       row.Genres,
+			Bio:          row.Bio.String,
+			Popularity:   int(row.Popularity.Int32),
+			SpotifyID:    row.SpotifyID.String,
 		}, nil
 	} else if opts.MusicBrainzID != uuid.Nil {
 		l.Debug().Msgf("Fetching artist from DB with MusicBrainz ID %s", opts.MusicBrainzID)
@@ -89,6 +93,10 @@ func (d *Psql) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.Ar
 			ListenCount:  count,
 			TimeListened: seconds,
 			FirstListen:  firstListen.ListenedAt.Unix(),
+			Genres:       row.Genres,
+			Bio:          row.Bio.String,
+			Popularity:   int(row.Popularity.Int32),
+			SpotifyID:    row.SpotifyID.String,
 		}, nil
 	} else if opts.Name != "" {
 		l.Debug().Msgf("Fetching artist from DB with name '%s'", opts.Name)
@@ -124,6 +132,10 @@ func (d *Psql) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.Ar
 			ListenCount:  count,
 			TimeListened: seconds,
 			FirstListen:  firstListen.ListenedAt.Unix(),
+			Genres:       row.Genres,
+			Bio:          row.Bio.String,
+			Popularity:   int(row.Popularity.Int32),
+			SpotifyID:    row.SpotifyID.String,
 		}, nil
 	} else {
 		return nil, errors.New("insufficient information to get artist")

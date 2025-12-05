@@ -286,6 +286,7 @@ SELECT
     a.musicbrainz_id,
     a.image,
     a.genres,
+    a.bio,
     a.popularity,
     a.spotify_id,
     COUNT(*) AS listen_count
@@ -294,7 +295,7 @@ JOIN tracks t ON l.track_id = t.id
 JOIN artist_tracks at ON at.track_id = t.id
 JOIN artists_with_name a ON a.id = at.artist_id
 WHERE l.listened_at BETWEEN $1 AND $2
-GROUP BY a.id, a.name, a.musicbrainz_id, a.image, a.genres, a.popularity, a.spotify_id
+GROUP BY a.id, a.name, a.musicbrainz_id, a.image, a.genres, a.bio, a.popularity, a.spotify_id
 ORDER BY listen_count DESC, a.id
 LIMIT $3 OFFSET $4
 `
@@ -312,6 +313,7 @@ type GetTopArtistsPaginatedRow struct {
 	MusicBrainzID *uuid.UUID
 	Image         *uuid.UUID
 	Genres        []string
+	Bio           pgtype.Text
 	Popularity    pgtype.Int4
 	SpotifyID     pgtype.Text
 	ListenCount   int64
@@ -337,6 +339,7 @@ func (q *Queries) GetTopArtistsPaginated(ctx context.Context, arg GetTopArtistsP
 			&i.MusicBrainzID,
 			&i.Image,
 			&i.Genres,
+			&i.Bio,
 			&i.Popularity,
 			&i.SpotifyID,
 			&i.ListenCount,

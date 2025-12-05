@@ -34,6 +34,10 @@ func (d *Psql) GetAlbum(ctx context.Context, opts db.GetAlbumOpts) (*models.Albu
 		ret.Title = row.Title
 		ret.Image = row.Image
 		ret.VariousArtists = row.VariousArtists
+		ret.Genres = row.Genres
+		ret.ReleaseDate = row.ReleaseDate.String
+		ret.Popularity = int(row.Popularity.Int32)
+		ret.SpotifyID = row.SpotifyID.String
 		err = json.Unmarshal(row.Artists, &ret.Artists)
 		if err != nil {
 			return nil, fmt.Errorf("GetAlbum: json.Unmarshal: %w", err)
@@ -49,6 +53,10 @@ func (d *Psql) GetAlbum(ctx context.Context, opts db.GetAlbumOpts) (*models.Albu
 		ret.Title = row.Title
 		ret.Image = row.Image
 		ret.VariousArtists = row.VariousArtists
+		ret.Genres = row.Genres
+		ret.ReleaseDate = row.ReleaseDate.String
+		ret.Popularity = int(row.Popularity.Int32)
+		ret.SpotifyID = row.SpotifyID.String
 	} else if opts.ArtistID != 0 && opts.Title != "" {
 		l.Debug().Msgf("Fetching album from DB with artist_id %d and title %s", opts.ArtistID, opts.Title)
 		row, err := d.q.GetReleaseByArtistAndTitle(ctx, repository.GetReleaseByArtistAndTitleParams{
@@ -63,6 +71,10 @@ func (d *Psql) GetAlbum(ctx context.Context, opts db.GetAlbumOpts) (*models.Albu
 		ret.Title = row.Title
 		ret.Image = row.Image
 		ret.VariousArtists = row.VariousArtists
+		ret.Genres = row.Genres
+		ret.ReleaseDate = row.ReleaseDate.String
+		ret.Popularity = int(row.Popularity.Int32)
+		ret.SpotifyID = row.SpotifyID.String
 	} else if opts.ArtistID != 0 && len(opts.Titles) > 0 {
 		l.Debug().Msgf("Fetching release group from DB with artist_id %d and titles %v", opts.ArtistID, opts.Titles)
 		row, err := d.q.GetReleaseByArtistAndTitles(ctx, repository.GetReleaseByArtistAndTitlesParams{
@@ -77,6 +89,10 @@ func (d *Psql) GetAlbum(ctx context.Context, opts db.GetAlbumOpts) (*models.Albu
 		ret.Title = row.Title
 		ret.Image = row.Image
 		ret.VariousArtists = row.VariousArtists
+		ret.Genres = row.Genres
+		ret.ReleaseDate = row.ReleaseDate.String
+		ret.Popularity = int(row.Popularity.Int32)
+		ret.SpotifyID = row.SpotifyID.String
 	} else {
 		return nil, errors.New("GetAlbum: insufficient information to get album")
 	}

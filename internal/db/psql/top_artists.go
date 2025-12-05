@@ -46,6 +46,10 @@ func (d *Psql) GetTopArtistsPaginated(ctx context.Context, opts db.GetItemsOpts)
 			ID:          row.ID,
 			Image:       row.Image,
 			ListenCount: row.ListenCount,
+			Genres:      row.Genres,
+			Bio:         row.Bio.String,
+			Popularity:  int(row.Popularity.Int32),
+			SpotifyID:   row.SpotifyID.String,
 		}
 		rgs[i] = t
 	}

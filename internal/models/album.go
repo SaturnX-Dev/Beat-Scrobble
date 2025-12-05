@@ -12,11 +12,9 @@ type Album struct {
 	ListenCount    int64          `json:"listen_count"`
 	TimeListened   int64          `json:"time_listened"`
 	FirstListen    int64          `json:"first_listen"`
+	// Spotify metadata
+	Genres      []string `json:"genres,omitempty"`
+	ReleaseDate string   `json:"release_date,omitempty"`
+	Popularity  int      `json:"popularity,omitempty"`
+	SpotifyID   string   `json:"spotify_id,omitempty"`
 }
-
-// type SimpleAlbum struct {
-// 	ID             int32     `json:"id"`
-// 	Title          string    `json:"title"`
-// 	VariousArtists bool      `json:"is_various_artists"`
-// 	Image          uuid.UUID `json:"image"`
-// }
