@@ -120,6 +120,7 @@ func bindRoutes(
 			r.Get("/spotify/configured", handlers.SpotifyConfiguredHandler(db))
 			r.Get("/spotify/search", handlers.SpotifySearchHandler(db))
 			r.Post("/spotify/fetch-metadata", handlers.SpotifyFetchMetadataHandler(db))
+			r.Post("/spotify/bulk-fetch", handlers.SpotifyBulkFetchHandler(db))
 		})
 
 		// Profile images (public, no auth required)

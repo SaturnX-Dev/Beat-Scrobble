@@ -7,6 +7,7 @@ import PeriodSelector from "~/components/PeriodSelector";
 import MediaLayout from "./MediaLayout";
 import ActivityGrid from "~/components/ActivityGrid";
 import { timeListenedString } from "~/utils/utils";
+import { usePreferences } from "~/hooks/usePreferences";
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
   const res = await fetch(`/apis/web/v1/album?id=${params.id}`);
@@ -21,6 +22,10 @@ export default function Album() {
   const album = useLoaderData() as Album;
   const [period, setPeriod] = useState("week");
   const [refreshing, setRefreshing] = useState(false);
+  const { preferences } = usePreferences();
+
+  // Check if metadata should be displayed (default true)
+  const showMetadata = preferences?.spotify_show_metadata !== false;
 
   const handleRefreshMetadata = async () => {
     setRefreshing(true);
@@ -84,7 +89,7 @@ export default function Album() {
               View Artist
             </Link>
           )}
-          {album.genres && album.genres.length > 0 && (
+          {showMetadata && album.genres && album.genres.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-2">
               {album.genres.map(g => (
                 <span key={g} className="px-2 py-1 text-[10px] uppercase tracking-wider bg-[var(--color-bg)]/50 rounded-full text-[var(--color-fg-secondary)] border border-[var(--color-bg-tertiary)]">
@@ -93,12 +98,12 @@ export default function Album() {
               ))}
             </div>
           )}
-          {album.release_date && (
+          {showMetadata && album.release_date && (
             <p className="text-xs text-[var(--color-fg-secondary)]">
               Released: {album.release_date}
             </p>
           )}
-          {album.popularity !== undefined && (
+          {showMetadata && album.popularity !== undefined && (
             <p className="text-xs text-[var(--color-fg-tertiary)]">
               Popularity: {album.popularity}%
             </p>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getSpotifyConfigured } from "api/api";
+import { getSpotifyConfigured, bulkFetchSpotifyMetadata } from "api/api";
 import { usePreferences } from "~/hooks/usePreferences";
 
 export default function SpotifySettings() {
@@ -9,6 +9,16 @@ export default function SpotifySettings() {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
     const { preferences, savePreference } = usePreferences();
+
+    // Metadata fetch toggles
+    const [fetchArtistMetadata, setFetchArtistMetadata] = useState(true);
+    const [fetchAlbumMetadata, setFetchAlbumMetadata] = useState(true);
+    const [fetchTrackMetadata, setFetchTrackMetadata] = useState(true);
+    const [showMetadataOnPages, setShowMetadataOnPages] = useState(true);
+
+    // Bulk fetch state
+    const [bulkFetching, setBulkFetching] = useState(false);
+    const [bulkResult, setBulkResult] = useState<{ processed: number; failed: number; skipped: number } | null>(null);
 
     useEffect(() => {
         getSpotifyConfigured()
@@ -20,6 +30,10 @@ export default function SpotifySettings() {
         if (preferences) {
             setClientId(preferences.spotify_client_id || "");
             setClientSecret(preferences.spotify_client_secret || "");
+            setFetchArtistMetadata(preferences.spotify_fetch_artist_metadata !== false);
+            setFetchAlbumMetadata(preferences.spotify_fetch_album_metadata !== false);
+            setFetchTrackMetadata(preferences.spotify_fetch_track_metadata !== false);
+            setShowMetadataOnPages(preferences.spotify_show_metadata !== false);
         }
     }, [preferences]);
 
@@ -38,6 +52,44 @@ export default function SpotifySettings() {
             setSaving(false);
         }
     };
+
+    const handleBulkFetch = async () => {
+        setBulkFetching(true);
+        setBulkResult(null);
+        setMessage(null);
+        try {
+            const result = await bulkFetchSpotifyMetadata();
+            setBulkResult({ processed: result.processed, failed: result.failed, skipped: result.skipped });
+            setMessage({ type: "success", text: `Metadata fetched! ${result.processed} updated, ${result.skipped} skipped, ${result.failed} failed.` });
+        } catch (e) {
+            console.error(e);
+            setMessage({ type: "error", text: "Bulk fetch failed. Ensure Spotify is configured." });
+        } finally {
+            setBulkFetching(false);
+        }
+    };
+
+    const handleToggle = async (key: string, value: boolean, setter: (v: boolean) => void) => {
+        setter(value);
+        await savePreference(key, value);
+    };
+
+    const ToggleSwitch = ({ enabled, onChange, label, description }: { enabled: boolean; onChange: (v: boolean) => void; label: string; description: string }) => (
+        <div className="flex items-center justify-between py-3 border-b border-[var(--color-bg-tertiary)] last:border-b-0">
+            <div className="flex-1">
+                <p className="text-sm font-medium text-[var(--color-fg)]">{label}</p>
+                <p className="text-xs text-[var(--color-fg-tertiary)]">{description}</p>
+            </div>
+            <button
+                onClick={() => onChange(!enabled)}
+                className={`relative w-11 h-6 rounded-full transition-colors ${enabled ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-bg-tertiary)]'}`}
+            >
+                <span
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${enabled ? 'translate-x-5' : 'translate-x-0'}`}
+                />
+            </button>
+        </div>
+    );
 
     return (
         <div className="flex flex-col gap-6">
@@ -126,6 +178,101 @@ export default function SpotifySettings() {
                         {saving ? "Saving..." : "Save Credentials"}
                     </button>
                 </div>
+            </div>
+
+            {/* Metadata Fetch Toggles */}
+            <div className="p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
+                <h3 className="font-semibold text-[var(--color-fg)] mb-4">Metadata Fetching</h3>
+                <p className="text-xs text-[var(--color-fg-tertiary)] mb-4">
+                    Control what metadata is fetched when you click the refresh button on artist/album pages.
+                </p>
+
+                <ToggleSwitch
+                    enabled={fetchArtistMetadata}
+                    onChange={(v) => handleToggle("spotify_fetch_artist_metadata", v, setFetchArtistMetadata)}
+                    label="Fetch Artist Metadata"
+                    description="Genres, popularity, and Spotify ID for artists"
+                />
+                <ToggleSwitch
+                    enabled={fetchAlbumMetadata}
+                    onChange={(v) => handleToggle("spotify_fetch_album_metadata", v, setFetchAlbumMetadata)}
+                    label="Fetch Album Metadata"
+                    description="Release date, genres, and popularity for albums"
+                />
+                <ToggleSwitch
+                    enabled={fetchTrackMetadata}
+                    onChange={(v) => handleToggle("spotify_fetch_track_metadata", v, setFetchTrackMetadata)}
+                    label="Fetch Track Metadata"
+                    description="Popularity and Spotify ID for tracks"
+                />
+            </div>
+
+            {/* Bulk Fetch All */}
+            <div className="p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
+                <h3 className="font-semibold text-[var(--color-fg)] mb-2">Auto-Fetch All Metadata</h3>
+                <p className="text-xs text-[var(--color-fg-tertiary)] mb-4">
+                    Automatically fetch metadata from Spotify for your top 100 artists and albums. This searches Spotify by name and updates each item.
+                </p>
+
+                {bulkResult && (
+                    <div className="mb-4 p-3 rounded-lg bg-[var(--color-bg)]/50 text-sm">
+                        <div className="grid grid-cols-3 gap-2 text-center">
+                            <div>
+                                <p className="text-lg font-bold text-green-400">{bulkResult.processed}</p>
+                                <p className="text-xs text-[var(--color-fg-tertiary)]">Updated</p>
+                            </div>
+                            <div>
+                                <p className="text-lg font-bold text-yellow-400">{bulkResult.skipped}</p>
+                                <p className="text-xs text-[var(--color-fg-tertiary)]">Skipped</p>
+                            </div>
+                            <div>
+                                <p className="text-lg font-bold text-red-400">{bulkResult.failed}</p>
+                                <p className="text-xs text-[var(--color-fg-tertiary)]">Failed</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <button
+                    onClick={handleBulkFetch}
+                    disabled={bulkFetching || !configured}
+                    className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium hover:from-green-600 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                    {bulkFetching ? (
+                        <>
+                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            Fetching... (may take a few minutes)
+                        </>
+                    ) : (
+                        <>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                            </svg>
+                            Fetch All Metadata from Spotify
+                        </>
+                    )}
+                </button>
+
+                {!configured && (
+                    <p className="mt-2 text-xs text-yellow-400 text-center">
+                        Configure Spotify credentials above to enable bulk fetch
+                    </p>
+                )}
+            </div>
+
+            {/* Display Options */}
+            <div className="p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
+                <h3 className="font-semibold text-[var(--color-fg)] mb-4">Display Options</h3>
+
+                <ToggleSwitch
+                    enabled={showMetadataOnPages}
+                    onChange={(v) => handleToggle("spotify_show_metadata", v, setShowMetadataOnPages)}
+                    label="Show Metadata on Pages"
+                    description="Display genres, popularity, and other metadata on artist/album pages"
+                />
             </div>
 
             <div className="p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">

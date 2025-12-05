@@ -309,6 +309,12 @@ function fetchSpotifyMetadata(id: number, type: "artist" | "album" | "track", sp
   return request(url, { method: "POST" });
 }
 
+function bulkFetchSpotifyMetadata(): Promise<{ success: boolean; processed: number; failed: number; skipped: number }> {
+  return request(`/apis/web/v1/spotify/bulk-fetch`, { method: "POST" }).then(
+    (r) => r.json() as Promise<{ success: boolean; processed: number; failed: number; skipped: number }>
+  );
+}
+
 export {
   getLastListens,
   getTopTracks,
@@ -343,6 +349,7 @@ export {
   spotifySearch,
   getSpotifyConfigured,
   fetchSpotifyMetadata,
+  bulkFetchSpotifyMetadata,
 };
 type Track = {
   id: number;

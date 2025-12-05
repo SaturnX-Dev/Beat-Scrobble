@@ -15,6 +15,7 @@ import MergeModal from "~/components/modals/MergeModal";
 import ImageReplaceModal from "~/components/modals/ImageReplaceModal";
 import DeleteModal from "~/components/modals/DeleteModal";
 import EditModal from "~/components/modals/EditModal/EditModal";
+import { usePreferences } from "~/hooks/usePreferences";
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
   const res = await fetch(`/apis/web/v1/artist?id=${params.id}`);
@@ -34,6 +35,10 @@ export default function Artist() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const { user } = useAppContext();
+  const { preferences } = usePreferences();
+
+  // Check if metadata should be displayed (default true)
+  const showMetadata = preferences?.spotify_show_metadata !== false;
 
   const handleRefreshMetadata = async () => {
     setRefreshing(true);
@@ -148,7 +153,7 @@ export default function Artist() {
             {listenCountText} · {timeListened}
           </p>
 
-          {artist.genres && artist.genres.length > 0 && (
+          {showMetadata && artist.genres && artist.genres.length > 0 && (
             <div className="mt-3 flex flex-wrap justify-center gap-2">
               {artist.genres.map(g => (
                 <span key={g} className="px-2 py-1 text-[10px] uppercase tracking-wider bg-[var(--color-bg)]/50 rounded-full text-[var(--color-fg-secondary)] border border-[var(--color-bg-tertiary)]">
@@ -157,13 +162,13 @@ export default function Artist() {
               ))}
             </div>
           )}
-          {artist.popularity !== undefined && artist.popularity !== null && (
+          {showMetadata && artist.popularity !== undefined && artist.popularity !== null && (
             <div className="mt-2 text-xs text-[var(--color-fg-tertiary)]">
               Popularity: {artist.popularity}%
             </div>
           )}
 
-          {artist.bio && (
+          {showMetadata && artist.bio && (
             <p className="mt-4 text-sm text-[var(--color-fg-secondary)] max-w-2xl mx-auto line-clamp-4 hover:line-clamp-none transition-all cursor-pointer">
               {artist.bio}
             </p>
