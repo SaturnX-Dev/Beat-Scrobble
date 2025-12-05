@@ -155,14 +155,14 @@ export default function Profile() {
     };
 
     return (
-        <main className="min-h-screen w-full bg-gradient-to-b from-[var(--color-bg-secondary)] to-[var(--color-bg)] px-4 py-6 md:py-10 pb-24">
+        <main className="min-h-screen w-full bg-transparent px-4 py-6 md:py-10 pb-24">
             <YearlyRecapModal open={recapOpen} setOpen={setRecapOpen} />
 
             <div className="max-w-7xl mx-auto">
                 {/* Header with Banner */}
-                <div className="relative mb-8 rounded-2xl overflow-hidden bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
+                <div className="relative mb-8 rounded-2xl overflow-hidden bg-[var(--color-bg-secondary)]/60 backdrop-blur-md border border-[var(--color-bg-tertiary)]">
                     {/* Banner Image */}
-                    <div className="h-48 sm:h-64 w-full bg-[var(--color-bg-tertiary)] relative">
+                    <div className="h-56 sm:h-72 w-full bg-[var(--color-bg-tertiary)] relative">
                         {backgroundImage ? (
                             <img
                                 src={backgroundImage}
@@ -172,7 +172,7 @@ export default function Profile() {
                         ) : (
                             <div className="w-full h-full bg-gradient-to-r from-[var(--color-primary)]/20 to-[var(--color-accent)]/20" />
                         )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-secondary)] to-transparent opacity-60" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-secondary)] to-transparent opacity-40" />
                     </div>
 
                     {/* Profile Info (Overlapping Banner) */}
