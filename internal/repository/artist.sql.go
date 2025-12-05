@@ -84,7 +84,7 @@ SELECT
 FROM artists_with_name a
 LEFT JOIN artist_aliases aa ON a.id = aa.artist_id
 WHERE a.id = $1
-GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name
+GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id
 `
 
 type GetArtistRow struct {
@@ -145,7 +145,7 @@ SELECT
 FROM artists_with_name a
 LEFT JOIN artist_aliases aa ON a.id = aa.artist_id
 WHERE a.musicbrainz_id = $1
-GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name
+GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id
 `
 
 type GetArtistByMbzIDRow struct {
@@ -189,7 +189,7 @@ WITH artist_with_aliases AS (
   WHERE a.id IN (
     SELECT aa2.artist_id FROM artist_aliases aa2 WHERE aa2.alias = $1
   )
-  GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name
+  GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id
 )
 SELECT id, musicbrainz_id, image, image_source, genres, bio, popularity, spotify_id, name, aliases FROM artist_with_aliases
 `
@@ -232,7 +232,7 @@ SELECT
 FROM artists_with_name a
 LEFT JOIN artist_releases ar ON a.id = ar.artist_id
 WHERE ar.release_id = $1
-GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, ar.is_primary
+GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id, ar.is_primary
 `
 
 type GetReleaseArtistsRow struct {
@@ -294,7 +294,7 @@ JOIN tracks t ON l.track_id = t.id
 JOIN artist_tracks at ON at.track_id = t.id
 JOIN artists_with_name a ON a.id = at.artist_id
 WHERE l.listened_at BETWEEN $1 AND $2
-GROUP BY a.id, a.name, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.popularity, a.spotify_id
+GROUP BY a.id, a.name, a.musicbrainz_id, a.image, a.genres, a.popularity, a.spotify_id
 ORDER BY listen_count DESC, a.id
 LIMIT $3 OFFSET $4
 `
@@ -358,7 +358,7 @@ SELECT
 FROM artists_with_name a
 LEFT JOIN artist_tracks at ON a.id = at.artist_id
 WHERE at.track_id = $1
-GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, at.is_primary
+GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id, at.is_primary
 `
 
 type GetTrackArtistsRow struct {
