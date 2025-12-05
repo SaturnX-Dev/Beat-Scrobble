@@ -16,6 +16,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from './providers/ThemeProvider';
 import Sidebar from "./components/sidebar/Sidebar";
 import { AppProvider } from "./providers/AppProvider";
+import GlobalBackground from "./components/GlobalBackground";
 
 // Create a client
 const queryClient = new QueryClient()
@@ -85,6 +86,7 @@ export default function App() {
       <AppProvider>
         <ThemeProvider>
           <QueryClientProvider client={queryClient}>
+            <GlobalBackground />
             <div className="flex-col flex sm:flex-row min-h-screen">
               <Sidebar />
               <div className="flex flex-col items-center mx-auto w-full ml-0 pb-14 sm:pb-0 sm:ml-20 transition-all duration-300">
@@ -148,4 +150,3 @@ export function ErrorBoundary() {
     </AppProvider>
   );
 }
-

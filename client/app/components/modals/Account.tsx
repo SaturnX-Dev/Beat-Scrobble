@@ -22,6 +22,7 @@ export default function Account() {
 
     // Background image
     const [backgroundImage, setBackgroundImage] = useState<string | null>(null)
+    const [backgroundOpacity, setBackgroundOpacity] = useState(50)
     const [uploadingBgImage, setUploadingBgImage] = useState(false)
     const bgFileInputRef = useRef<HTMLInputElement>(null)
 
@@ -48,6 +49,7 @@ export default function Account() {
         setShowCometAI(getPreference('public_profile_show_ai', true))
         setProfileImage(getPreference('profile_image', null))
         setBackgroundImage(getPreference('background_image', null))
+        setBackgroundOpacity(getPreference('background_opacity', 50))
     }, [getPreference, preferences])
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -409,6 +411,28 @@ export default function Account() {
                                         </button>
                                     </div>
                                 </div>
+
+                                {/* Opacity Slider */}
+                                {backgroundImage && (
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <label className="font-medium text-[var(--color-fg)]">Background Opacity</label>
+                                            <span className="text-[var(--color-fg-secondary)]">{backgroundOpacity}%</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="100"
+                                            value={backgroundOpacity}
+                                            onChange={(e) => {
+                                                const val = parseInt(e.target.value)
+                                                setBackgroundOpacity(val)
+                                                savePreference('background_opacity', val)
+                                            }}
+                                            className="w-full h-2 bg-[var(--color-bg-tertiary)] rounded-lg appearance-none cursor-pointer accent-[var(--color-primary)]"
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </div>
 

@@ -333,7 +333,7 @@ export default function Profile() {
                     return (
                         <div className={`grid grid-cols-1 ${aiEnabled ? 'lg:grid-cols-4' : 'lg:grid-cols-1'} gap-6 mb-8`}>
                             {/* Left: Top Artists & Albums */}
-                            <div className={`${aiEnabled ? 'lg:col-span-2' : 'lg:col-span-1'} flex flex-col gap-6`}>
+                            <div className={`${aiEnabled ? 'lg:col-span-3' : 'lg:col-span-1'} flex flex-col gap-6`}>
                                 {/* Top Artists */}
                                 {topArtistsData && topArtistsData.items && topArtistsData.items.length > 0 && (
                                     <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
@@ -348,7 +348,7 @@ export default function Profile() {
                                                 View All →
                                             </Link>
                                         </div>
-                                        <div className={`grid grid-cols-1 sm:grid-cols-2 ${aiEnabled ? 'lg:grid-cols-5' : 'lg:grid-cols-6'} gap-4`}>
+                                        <div className={`grid grid-cols-1 sm:grid-cols-2 ${aiEnabled ? 'lg:grid-cols-4' : 'lg:grid-cols-5'} gap-4`}>
                                             {topArtistsData.items.map((artist: Artist, index: number) => (
                                                 <Link
                                                     to={`/artist/${artist.id}`}
@@ -462,8 +462,8 @@ export default function Profile() {
 
                             {/* Right: AI Critique - Only show if enabled */}
                             {aiEnabled && (
-                                <div className="lg:col-span-2">
-                                    <div className="sticky top-6 h-full">
+                                <div className="lg:col-span-1">
+                                    <div className="sticky top-24 h-fit">
                                         <ProfileCritique period={period as "week" | "month" | "year" | "all_time"} />
                                     </div>
                                 </div>

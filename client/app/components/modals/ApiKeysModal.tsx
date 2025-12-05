@@ -328,16 +328,17 @@ export default function ApiKeysModal() {
                         </div>
 
                         {aiEnabled && (
-                            <div className="flex flex-col gap-2 mt-2">
-                                <label className="text-sm font-medium">Now Playing Prompt</label>
-                                <textarea
-                                    className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-md p-2 text-sm min-h-[60px]"
-                                    value={aiPrompt}
-                                    onChange={(e) => setAiPrompt(e.target.value)}
-                                    onBlur={handleSaveAIConfig}
-                                    placeholder="Enter instructions for the AI critic..."
-                                />
-                            </div>
+                            <PromptEditor
+                                label="Now Playing Prompt"
+                                value={aiPrompt}
+                                onChange={setAiPrompt}
+                                onSave={() => {
+                                    savePreference('ai_critique_prompt', aiPrompt);
+                                    handleClearAICache();
+                                }}
+                                placeholder="Enter instructions for the AI critic..."
+                                description="Instructions for the AI when critiquing your currently playing track."
+                            />
                         )}
 
                         <hr className="border-[var(--color-bg-tertiary)] my-2" />
@@ -365,16 +366,17 @@ export default function ApiKeysModal() {
                         </div>
 
                         {profileCritiqueEnabled && (
-                            <div className="flex flex-col gap-2 mt-2">
-                                <label className="text-sm font-medium">Profile Prompt</label>
-                                <textarea
-                                    className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-md p-2 text-sm min-h-[60px]"
-                                    value={profilePrompt}
-                                    onChange={(e) => setProfilePrompt(e.target.value)}
-                                    onBlur={handleSaveAIConfig}
-                                    placeholder="Enter instructions for the AI critic..."
-                                />
-                            </div>
+                            <PromptEditor
+                                label="Profile Prompt"
+                                value={profilePrompt}
+                                onChange={setProfilePrompt}
+                                onSave={() => {
+                                    savePreference('profile_critique_prompt', profilePrompt);
+                                    handleClearAICache();
+                                }}
+                                placeholder="Enter instructions for the AI critic..."
+                                description="Instructions for the AI when critiquing your overall profile."
+                            />
                         )}
 
                         <hr className="border-[var(--color-bg-tertiary)] my-2" />
@@ -402,18 +404,18 @@ export default function ApiKeysModal() {
                         </div>
 
                         {getPreference('ai_playlists_enabled', false) && (
-                            <div className="flex flex-col gap-2 mt-2">
-                                <label className="text-sm font-medium">Playlist Generation Prompt</label>
-                                <textarea
-                                    className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-md p-2 text-sm min-h-[80px]"
-                                    defaultValue={getPreference('ai_playlists_prompt', 'Based on the user listening history, create a personalized playlist. Select tracks that match the requested mood or genre. Return a JSON array of track suggestions with name, artist, and reasoning.')}
-                                    onBlur={(e) => savePreference('ai_playlists_prompt', e.target.value)}
-                                    placeholder="Instructions for AI playlist generation..."
-                                />
-                                <p className="text-xs text-[var(--color-fg-tertiary)]">
-                                    Playlists are regenerated every 7 days automatically
-                                </p>
-                            </div>
+                            <PromptEditor
+                                label="Playlist Generation Prompt"
+                                value={getPreference('ai_playlists_prompt', '')}
+                                onChange={(val) => savePreference('ai_playlists_prompt', val)} // Direct save for now or manage state if needed
+                                onSave={() => {
+                                    // Already saved via onChange wrapper above, but we can trigger cache clear if needed
+                                    // For playlists, maybe we don't clear cache immediately or we do?
+                                    // Let's just save.
+                                }}
+                                placeholder="Instructions for AI playlist generation..."
+                                description="Playlists are regenerated every 7 days automatically."
+                            />
                         )}
 
                         <hr className="border-[var(--color-bg-tertiary)] my-2" />
@@ -509,4 +511,61 @@ export default function ApiKeysModal() {
             }
         </div >
     )
+}
+
+function PromptEditor({ label, value, onChange, onSave, placeholder, description }: { label: string, value: string, onChange: (val: string) => void, onSave: () => void, placeholder: string, description?: string }) {
+    const [expanded, setExpanded] = useState(false);
+    const [localValue, setLocalValue] = useState(value);
+    const [saved, setSaved] = useState(false);
+
+    useEffect(() => {
+        setLocalValue(value);
+    }, [value]);
+
+    const handleSave = () => {
+        onChange(localValue);
+        onSave();
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+    };
+
+    return (
+        <div className="border border-[var(--color-bg-tertiary)] rounded-lg overflow-hidden bg-[var(--color-bg)]">
+            <button
+                onClick={() => setExpanded(!expanded)}
+                className="w-full flex items-center justify-between p-3 hover:bg-[var(--color-bg-secondary)] transition-colors"
+            >
+                <div className="text-left">
+                    <span className="text-sm font-medium block">{label}</span>
+                    {description && <span className="text-xs text-[var(--color-fg-secondary)]">{description}</span>}
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-xs text-[var(--color-fg-tertiary)]">{expanded ? 'Collapse' : 'Edit'}</span>
+                    <RefreshCw size={14} className={`transform transition-transform ${expanded ? 'rotate-180' : ''}`} />
+                </div>
+            </button>
+
+            {expanded && (
+                <div className="p-3 border-t border-[var(--color-bg-tertiary)] bg-[var(--color-bg-secondary)]/30">
+                    <textarea
+                        className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-md p-3 text-sm min-h-[120px] focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] outline-none transition-all"
+                        value={localValue}
+                        onChange={(e) => setLocalValue(e.target.value)}
+                        placeholder={placeholder}
+                    />
+                    <div className="flex justify-end mt-2">
+                        <button
+                            onClick={handleSave}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${saved
+                                    ? 'bg-green-500/20 text-green-400'
+                                    : 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dim)]'
+                                }`}
+                        >
+                            {saved ? 'Saved & Cache Cleared!' : 'Save Prompt'}
+                        </button>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 }
