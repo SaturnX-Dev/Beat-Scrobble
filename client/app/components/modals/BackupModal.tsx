@@ -17,7 +17,7 @@ export default function BackupModal() {
         setError('');
         setSuccess('');
 
-        fetch(`/apis/web/v1/export`, {
+        fetch(`/apis/web/v1/export?mode=${exportMode}`, {
             method: "GET"
         })
             .then(res => {

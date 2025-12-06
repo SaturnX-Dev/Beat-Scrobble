@@ -23,7 +23,8 @@ func ExportHandler(store db.DB) http.HandlerFunc {
 			utils.WriteError(w, "unauthorized", http.StatusUnauthorized)
 			return
 		}
-		err := export.ExportData(ctx, u, store, w)
+		mode := r.URL.Query().Get("mode")
+		err := export.ExportData(ctx, u, store, mode, w)
 		if err != nil {
 			l.Err(err).Msg("ExportHandler: Failed to create export file")
 			utils.WriteError(w, "failed to create export file", http.StatusInternalServerError)

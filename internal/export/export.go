@@ -45,31 +45,34 @@ type BeatScrobbleArtist struct {
 	Aliases   []models.Alias `json:"aliases"`
 }
 
-func ExportData(ctx context.Context, user *models.User, store db.DB, out io.Writer) error {
+func ExportData(ctx context.Context, user *models.User, store db.DB, mode string, out io.Writer) error {
 	lastTime := time.Unix(0, 0)
 	lastTrackId := int32(0)
 	pageSize := int32(1000)
 
 	l := logger.FromContext(ctx)
-	l.Info().Msg("ExportData: Generating Beat Scrobble export file...")
+	l.Info().Msgf("ExportData: Generating Beat Scrobble export file (mode=%s)...", mode)
 
 	exportedAt := time.Now()
 
-	// Fetch user preferences
 	var prefs map[string]interface{}
-	prefBytes, err := store.GetUserPreferences(ctx, user.ID)
-	if err == nil && prefBytes != nil {
-		json.Unmarshal(prefBytes, &prefs)
-	}
-
-	// Filter out AI cache data from export (keeps prompts/keys, removes cached responses)
-	prefs = filterAICacheFromPrefs(prefs)
-
-	// Fetch user theme
-	themeBytes, _ := store.GetUserTheme(ctx, user.ID)
 	themeJSON := "{}"
-	if themeBytes != nil {
-		themeJSON = string(themeBytes)
+
+	if mode == "full" {
+		// Fetch user preferences
+		prefBytes, err := store.GetUserPreferences(ctx, user.ID)
+		if err == nil && prefBytes != nil {
+			json.Unmarshal(prefBytes, &prefs)
+		}
+
+		// Filter out AI cache data from export
+		prefs = filterAICacheFromPrefs(prefs)
+
+		// Fetch user theme
+		themeBytes, _ := store.GetUserTheme(ctx, user.ID)
+		if themeBytes != nil {
+			themeJSON = string(themeBytes)
+		}
 	}
 
 	// Write the opening of the JSON manually
@@ -80,7 +83,7 @@ func ExportData(ctx context.Context, user *models.User, store db.DB, out io.Writ
 		}
 	}
 
-	_, err = fmt.Fprintf(out, "{\n  \"version\": \"2\",\n  \"exported_at\": \"%s\",\n  \"user\": \"%s\",\n  \"preferences\": %s,\n  \"theme\": %s,\n  \"listens\": [\n", exportedAt.UTC().Format(time.RFC3339), user.Username, prefsJSON, themeJSON)
+	_, err := fmt.Fprintf(out, "{\n  \"version\": \"2\",\n  \"exported_at\": \"%s\",\n  \"user\": \"%s\",\n  \"preferences\": %s,\n  \"theme\": %s,\n  \"listens\": [\n", exportedAt.UTC().Format(time.RFC3339), user.Username, prefsJSON, themeJSON)
 	if err != nil {
 		return fmt.Errorf("ExportData: %w", err)
 	}
