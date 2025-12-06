@@ -86,7 +86,7 @@ export function usePreferences() {
         }
 
         return defaultValue;
-    }, [preferences]);
+    }, []);
 
     // Load preferences on mount
     useEffect(() => {
