@@ -5,23 +5,81 @@ import {
   type ListenActivityItem,
 } from "api/api";
 import Popup from "./Popup";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTheme } from "~/hooks/useTheme";
 import ActivityOptsSelector from "./ActivityOptsSelector";
 import type { Theme } from "~/styles/themes.css";
 
-function getPrimaryColor(theme: Theme): string {
-  const value = theme.primary;
-  const rgbMatch = value.match(
-    /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/
-  );
-  if (rgbMatch) {
-    const [, r, g, b] = rgbMatch.map(Number);
-    return "#" + [r, g, b].map((n) => n.toString(16).padStart(2, "0")).join("");
-  }
+// Color utilities separadas - más fácil de testear
+const colorUtils = {
+  getPrimaryColor(theme: Theme): string {
+    const value = theme.primary;
+    const rgbMatch = value.match(
+      /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/
+    );
 
-  return value;
-}
+    if (rgbMatch) {
+      const [, r, g, b] = rgbMatch.map(Number);
+      return "#" + [r, g, b].map((n) => n.toString(16).padStart(2, "0")).join("");
+    }
+    return value;
+  },
+
+  adjustLuminosity(hex: string, lum: number): string {
+    hex = String(hex).replace(/[^0-9a-f]/gi, "");
+    if (hex.length < 6) {
+      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    }
+
+    lum = lum || 0;
+    let rgb = "#";
+
+    for (let i = 0; i < 3; i++) {
+      let c = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
+      c = Math.round(Math.min(Math.max(0, c + c * lum), 255));
+      rgb += ("00" + c.toString(16)).slice(-2);
+    }
+
+    return rgb;
+  }
+};
+
+// Configuración de layout por rango - más declarativo
+const LAYOUT_CONFIG = {
+  week: {
+    maxRange: 14,
+    cellSize: "w-[30px] h-[30px] sm:w-[36px] sm:h-[36px]",
+    rounded: "rounded-[6px]",
+    gap: "gap-[6px]",
+    containerHeight: "h-24 sm:h-32",
+    horizontal: true
+  },
+  month: {
+    maxRange: 31,
+    cellSize: "w-[20px] h-[20px] sm:w-[24px] sm:h-[24px]",
+    rounded: "rounded-[4px]",
+    gap: "gap-[4px]",
+    containerHeight: "h-32 sm:h-40",
+    horizontal: false
+  },
+  year: {
+    maxRange: Infinity,
+    cellSize: "w-[10px] h-[10px] sm:w-[12px] sm:h-[12px] md:w-[14px] md:h-[14px]",
+    rounded: "rounded-[2px] md:rounded-[3px]",
+    gap: "gap-[3px] md:gap-[5px]",
+    containerHeight: "h-32 sm:h-40 md:h-48",
+    horizontal: false
+  }
+};
+
+// Targets de intensidad por step - constantes claras
+const INTENSITY_TARGETS = {
+  day: { base: 10, specific: 1 },
+  week: { base: 20, specific: 1 },
+  month: { base: 50, specific: 1 },
+  year: { base: 100, specific: 1 }
+} as const;
+
 interface Props {
   step?: string;
   range?: number;
@@ -47,13 +105,8 @@ export default function ActivityGrid({
   const [stepState, setStep] = useState(step);
   const [rangeState, setRange] = useState(range);
 
-  useEffect(() => {
-    setRange(range);
-  }, [range]);
-
-  useEffect(() => {
-    setStep(step);
-  }, [step]);
+  useEffect(() => setRange(range), [range]);
+  useEffect(() => setStep(step), [step]);
 
   const { isPending, isError, data, error } = useQuery({
     queryKey: [
@@ -61,8 +114,8 @@ export default function ActivityGrid({
       {
         step: stepState,
         range: rangeState,
-        month: month,
-        year: year,
+        month,
+        year,
         artist_id: artistId,
         album_id: albumId,
         track_id: trackId,
@@ -72,167 +125,135 @@ export default function ActivityGrid({
   });
 
   const { theme, themeName } = useTheme();
-  const color = getPrimaryColor(theme);
+  const primaryColor = useMemo(() => colorUtils.getPrimaryColor(theme), [theme]);
+
+  // Layout config basado en range - memoizado
+  const layoutConfig = useMemo(() => {
+    if (rangeState <= LAYOUT_CONFIG.week.maxRange) return LAYOUT_CONFIG.week;
+    if (rangeState <= LAYOUT_CONFIG.month.maxRange) return LAYOUT_CONFIG.month;
+    return LAYOUT_CONFIG.year;
+  }, [rangeState]);
+
+  // Cálculo de intensidad - más robusto
+  const getIntensityFactor = (listens: number): number => {
+    const isGlobalView = artistId === 0 && albumId === 0 && trackId === 0;
+    const targets = INTENSITY_TARGETS[stepState as keyof typeof INTENSITY_TARGETS] || INTENSITY_TARGETS.day;
+    const targetValue = isGlobalView ? targets.base : targets.specific;
+
+    const normalizedValue = Math.min(listens, targetValue);
+
+    if (themeName === "pearl") {
+      return (targetValue - normalizedValue) / targetValue;
+    }
+    return ((normalizedValue - targetValue) / targetValue) * 0.8;
+  };
+
+  // Grid style - más robusto con fallbacks
+  const gridStyle = useMemo(() => {
+    if (!data?.length) return {};
+
+    const totalItems = data.length;
+
+    if (layoutConfig.horizontal) {
+      return {
+        display: "grid",
+        gridTemplateColumns: `repeat(${totalItems}, 1fr)`,
+        gridTemplateRows: "1fr",
+        width: "100%",
+      };
+    }
+
+    const columns = Math.ceil(totalItems / 7);
+    return {
+      display: "grid",
+      gridTemplateRows: "repeat(7, 1fr)",
+      gridTemplateColumns: `repeat(${columns}, 1fr)`,
+      gridAutoFlow: "column" as const,
+      width: "100%",
+    };
+  }, [data?.length, layoutConfig.horizontal]);
 
   if (isPending) {
     return (
       <div className="w-full h-32 flex items-center justify-center">
-        <p className="text-[var(--color-fg-secondary)] animate-pulse">Loading activity...</p>
+        <p className="text-[var(--color-fg-secondary)] animate-pulse">
+          Loading activity...
+        </p>
       </div>
     );
-  } else if (isError) {
+  }
+
+  if (isError) {
     return (
       <div className="w-full p-4 bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-error)]/20">
-        <p className="text-[var(--color-error)] text-sm">Error: {error.message}</p>
+        <p className="text-[var(--color-error)] text-sm">
+          Error: {error.message}
+        </p>
       </div>
     );
   }
 
-  // from https://css-tricks.com/snippets/javascript/lighten-darken-color/
-  function LightenDarkenColor(hex: string, lum: number) {
-    // validate hex string
-    hex = String(hex).replace(/[^0-9a-f]/gi, "");
-    if (hex.length < 6) {
-      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-    }
-    lum = lum || 0;
-
-    // convert to decimal and change luminosity
-    var rgb = "#",
-      c,
-      i;
-    for (i = 0; i < 3; i++) {
-      c = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
-      c = Math.round(Math.min(Math.max(0, c + c * lum), 255)).toString(16);
-      rgb += ("00" + c).substring(c.length);
-    }
-
-    return rgb;
+  if (!data?.length) {
+    return (
+      <div className="w-full p-8 text-center">
+        <p className="text-[var(--color-fg-secondary)] text-sm">
+          No activity data available
+        </p>
+      </div>
+    );
   }
-
-  const getDarkenAmount = (v: number, t: number): number => {
-    // really ugly way to just check if this is for all items and not a specific item.
-    // is it jsut better to just pass the target in as a var? probably.
-    const adjustment =
-      artistId == albumId && albumId == trackId && trackId == 0 ? 10 : 1;
-
-    // automatically adjust the target value based on step
-    // the smartest way to do this would be to have the api return the
-    // highest value in the range. too bad im not smart
-    switch (stepState) {
-      case "day":
-        t = 10 * adjustment;
-        break;
-      case "week":
-        t = 20 * adjustment;
-        break;
-      case "month":
-        t = 50 * adjustment;
-        break;
-      case "year":
-        t = 100 * adjustment;
-        break;
-    }
-
-    v = Math.min(v, t);
-    if (themeName === "pearl") {
-      // special case for the only light theme lol
-      // could be generalized by pragmatically comparing the
-      // lightness of the bg vs the primary but eh
-      return (t - v) / t;
-    } else {
-      return ((v - t) / t) * 0.8;
-    }
-  };
-
-  const getSizeClasses = () => {
-    if (rangeState <= 14) { // Week or less
-      return "w-[30px] h-[30px] rounded-[6px]";
-    }
-    if (rangeState <= 31) { // Month
-      return "w-[20px] h-[20px] rounded-[4px]";
-    }
-    // Default (Year/All Time)
-    return "w-[10px] sm:w-[12px] h-[10px] sm:h-[12px] rounded-[2px] md:rounded-[3px]";
-  };
-  const sizeClass = getSizeClasses();
-
-  const getGapClass = () => {
-    if (rangeState <= 14) return "gap-[6px]";
-    if (rangeState <= 31) return "gap-[4px]";
-    return "gap-[3px] md:gap-[5px]";
-  }
-  const gapClass = getGapClass();
-
-
-  // Calculate grid dimensions
-  const totalItems = data.length;
-  // If range is small (e.g. week/2weeks), use a horizontal strip (1 row).
-  // Otherwise use the standard 7-row calendar layout.
-  const isHorizontalStrip = rangeState <= 14;
-
-  const gridStyle = isHorizontalStrip
-    ? {
-      display: "grid",
-      gridTemplateColumns: `repeat(${totalItems}, 1fr)`,
-      gridTemplateRows: "1fr",
-      width: "100%",
-      gap: "6px",
-    }
-    : {
-      display: "grid",
-      gridTemplateRows: "repeat(7, 1fr)",
-      gridTemplateColumns: `repeat(${Math.ceil(totalItems / 7)}, 1fr)`,
-      gridAutoFlow: "column",
-      width: "100%",
-      gap: "4px",
-    };
-
-  const containerHeightClass = isHorizontalStrip ? "h-24 sm:h-32" : "h-32 sm:h-40";
 
   return (
     <div className="w-full">
-      {configurable ? (
+      {configurable && (
         <ActivityOptsSelector
           rangeSetter={setRange}
           currentRange={rangeState}
           stepSetter={setStep}
           currentStep={stepState}
         />
-      ) : null}
+      )}
 
-      <div className={`w-full ${containerHeightClass}`}>
-        <div style={gridStyle} className="h-full">
-          {data.map((item) => (
-            <div
-              key={new Date(item.start_time).toString()}
-              className="w-full h-full min-w-0 min-h-0"
-            >
-              <Popup
-                position="top"
-                space={12}
-                extraClasses="left-2"
-                inner={`${new Date(item.start_time).toLocaleDateString()} ${item.listens
-                  } plays`}
+      <div className={`w-full ${layoutConfig.containerHeight}`}>
+        <div
+          style={gridStyle}
+          className={`h-full ${layoutConfig.gap}`}
+        >
+          {data.map((item) => {
+            const cellColor = item.listens > 0
+              ? colorUtils.adjustLuminosity(
+                primaryColor,
+                getIntensityFactor(item.listens)
+              )
+              : "var(--color-bg-secondary)";
+
+            return (
+              <div
+                key={`${item.start_time}-${item.listens}`}
+                className="w-full h-full min-w-0 min-h-0"
               >
-                <div
-                  style={{
-                    backgroundColor:
-                      item.listens > 0
-                        ? LightenDarkenColor(
-                          color,
-                          getDarkenAmount(item.listens, 100)
-                        )
-                        : "var(--color-bg-secondary)",
-                  }}
-                  className={`w-full h-full rounded-[4px] sm:rounded-[6px] transition-all hover:ring-2 hover:ring-[var(--color-fg)] hover:z-10 ${item.listens > 0
-                      ? ""
-                      : "border border-[var(--color-bg-tertiary)]"
-                    }`}
-                ></div>
-              </Popup>
-            </div>
-          ))}
+                <Popup
+                  position="top"
+                  space={12}
+                  extraClasses="left-2"
+                  inner={`${new Date(item.start_time).toLocaleDateString()} - ${item.listens} plays`}
+                  className="w-full h-full"
+                >
+                  <div
+                    style={{ backgroundColor: cellColor }}
+                    className={`
+                      w-full h-full
+                      ${layoutConfig.rounded}
+                      transition-all duration-200
+                      hover:ring-2 hover:ring-[var(--color-fg)] hover:z-10 hover:scale-110
+                      ${item.listens === 0 ? "border border-[var(--color-bg-tertiary)]" : ""}
+                    `}
+                    aria-label={`${item.listens} plays on ${new Date(item.start_time).toLocaleDateString()}`}
+                  />
+                </Popup>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

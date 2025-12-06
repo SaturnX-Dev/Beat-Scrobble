@@ -7,9 +7,10 @@ interface Props {
     space: number
     extraClasses?: string
     hint?: string
+    className?: string
 }
 
-export default function Popup({ inner, position, space, extraClasses, children }: PropsWithChildren<Props>) {
+export default function Popup({ inner, position, space, extraClasses, className, children }: PropsWithChildren<Props>) {
     const [isVisible, setIsVisible] = useState(false);
     const [coords, setCoords] = useState({ top: 0, left: 0 });
     const triggerRef = useRef<HTMLDivElement>(null);
@@ -67,7 +68,7 @@ export default function Popup({ inner, position, space, extraClasses, children }
     return (
         <div
             ref={triggerRef}
-            className="relative inline-block"
+            className={`relative inline-block ${className || ''}`}
             onMouseEnter={() => setIsVisible(true)}
             onMouseLeave={() => setIsVisible(false)}
         >
