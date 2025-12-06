@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
@@ -101,14 +102,14 @@ func UploadProfileImageHandler(store db.DB) http.HandlerFunc {
 		if prefsData != nil {
 			json.Unmarshal(prefsData, &prefs)
 		}
-		prefs["profile_image"] = fmt.Sprintf("/profile-images/%s", filename)
+		prefs["profile_image"] = fmt.Sprintf("/profile-images/%s?v=%d", filename, time.Now().Unix())
 		newPrefsData, _ := json.Marshal(prefs)
 		store.SaveUserPreferences(ctx, user.ID, newPrefsData)
 
 		l.Info().Msgf("UploadProfileImageHandler: Profile image saved for user %d", user.ID)
 		utils.WriteJSON(w, http.StatusOK, map[string]interface{}{
 			"success": true,
-			"path":    fmt.Sprintf("/profile-images/%s", filename),
+			"path":    fmt.Sprintf("/profile-images/%s?v=%d", filename, time.Now().Unix()),
 		})
 	}
 }
@@ -232,14 +233,14 @@ func UploadProfileImageBase64Handler(store db.DB) http.HandlerFunc {
 		if prefsData != nil {
 			json.Unmarshal(prefsData, &prefs)
 		}
-		prefs["profile_image"] = fmt.Sprintf("/profile-images/%s", filename)
+		prefs["profile_image"] = fmt.Sprintf("/profile-images/%s?v=%d", filename, time.Now().Unix())
 		newPrefsData, _ := json.Marshal(prefs)
 		store.SaveUserPreferences(ctx, user.ID, newPrefsData)
 
 		l.Info().Msgf("UploadProfileImageBase64Handler: Profile image saved for user %d", user.ID)
 		utils.WriteJSON(w, http.StatusOK, map[string]interface{}{
 			"success": true,
-			"path":    fmt.Sprintf("/profile-images/%s", filename),
+			"path":    fmt.Sprintf("/profile-images/%s?v=%d", filename, time.Now().Unix()),
 		})
 	}
 }
@@ -333,14 +334,14 @@ func UploadBackgroundImageBase64Handler(store db.DB) http.HandlerFunc {
 		if prefsData != nil {
 			json.Unmarshal(prefsData, &prefs)
 		}
-		prefs["background_image"] = fmt.Sprintf("/background-images/%s", filename)
+		prefs["background_image"] = fmt.Sprintf("/background-images/%s?v=%d", filename, time.Now().Unix())
 		newPrefsData, _ := json.Marshal(prefs)
 		store.SaveUserPreferences(ctx, user.ID, newPrefsData)
 
 		l.Info().Msgf("UploadBackgroundImageBase64Handler: Background image saved for user %d", user.ID)
 		utils.WriteJSON(w, http.StatusOK, map[string]interface{}{
 			"success": true,
-			"path":    fmt.Sprintf("/background-images/%s", filename),
+			"path":    fmt.Sprintf("/background-images/%s?v=%d", filename, time.Now().Unix()),
 		})
 	}
 }
