@@ -2,6 +2,9 @@ import { Link } from "react-router";
 import { imageUrl, type Album, type Artist, type Track, type PaginatedResponse } from "api/api";
 import { Skeleton } from "~/components/ui/skeleton";
 import CardAura from "./CardAura";
+import GridSkeleton from "./skeletons/GridSkeleton";
+import EmptyState from "./EmptyState";
+import { Disc, Mic2, Music } from "lucide-react";
 
 type Item = Album | Track | Artist;
 
@@ -15,29 +18,29 @@ interface Props<T extends Item> {
     carousel?: boolean
 }
 
-export default function TopItemList<T extends Item>({ data, separators, type, className, isLoading, limit = 5, carousel }: Props<T>) {
+export default function TopItemList<T extends Item>({ data, separators, type, className, isLoading, limit = 12, carousel }: Props<T>) {
 
     if (isLoading) {
-        return (
-            <div className={`grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 sm:gap-4 ${className}`}>
-                {Array.from({ length: limit }).map((_, i) => (
-                    <Skeleton key={i} className="aspect-[3/4] rounded-xl w-full" />
-                ))}
-            </div>
-        );
+        return <GridSkeleton count={limit} className={className} />;
     }
 
     if (!data || data.items.length === 0) {
+        const icons = { album: Disc, artist: Mic2, track: Music };
+        const Icon = icons[type] || Music;
+
         return (
-            <div className="w-full py-10 flex flex-col items-center justify-center text-[var(--color-fg-tertiary)] bg-[var(--color-bg-secondary)]/20 rounded-2xl border border-[var(--color-bg-tertiary)]/30 border-dashed">
-                <p className="text-sm">No items found for this period.</p>
-            </div>
+            <EmptyState
+                icon={Icon}
+                title={`No ${type}s found`}
+                description={`We couldn't find any ${type}s for this period.`}
+                className="my-8"
+            />
         );
     }
 
     if (carousel) {
         return (
-            <div className={`flex overflow-x-auto pb-3 gap-2 sm:gap-3 md:gap-4 snap-x snap-mandatory no-scrollbar ${className}`}>
+            <div className={`flex overflow-x-auto pb-6 gap-3 sm:gap-4 snap-x snap-mandatory no-scrollbar px-1 ${className}`}>
                 {data.items.map((item, index) => {
                     const key = `${type}-${item.id}`;
                     return (
@@ -101,28 +104,34 @@ function ItemCard({ item, type, index }: { item: Item; type: "album" | "track" |
     return (
         <Link
             to={link}
-            className="group glass-card rounded-xl sm:rounded-2xl overflow-hidden border border-[var(--color-bg-tertiary)] hover:border-[var(--color-primary)]/50 transition-all hover:shadow-lg hover:-translate-y-1 block h-full flex flex-col relative"
+            className="group glass-card rounded-2xl overflow-hidden border border-[var(--color-bg-tertiary)] hover:border-[var(--color-primary)]/50 transition-all duration-300 ease-out hover:shadow-xl hover:-translate-y-1.5 hover:scale-[1.02] block h-full flex flex-col relative"
         >
-            <CardAura size="small" id="top-items" className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+            <CardAura size="small" id="top-items" className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
             <div className="w-full aspect-square bg-[var(--color-bg-tertiary)] overflow-hidden relative z-10">
                 <img
                     loading="lazy"
                     src={imageUrl(image, "medium")}
                     alt={title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                    <span className="text-white text-xs font-bold bg-[var(--color-primary)] px-2 py-1 rounded-full shadow-sm">
-                        #{index + 1}
-                    </span>
+
+                {/* Gradient Gradient Overlay on Hover */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                    <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                        <span className="text-white text-xs font-bold bg-[var(--color-primary)] px-2 py-0.5 rounded-full shadow-lg">
+                            #{index + 1}
+                        </span>
+                    </div>
                 </div>
             </div>
-            <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between">
+
+            <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between relative z-10 bg-[var(--color-bg-secondary)]/30 group-hover:bg-[var(--color-bg-secondary)]/50 transition-colors">
                 <div>
-                    <p className="text-xs sm:text-sm font-bold text-[var(--color-fg)] line-clamp-2 group-hover:text-[var(--color-primary)] transition-colors leading-tight" title={title}>
+                    <h3 className="text-sm sm:text-base font-bold text-[var(--color-fg)] line-clamp-2 group-hover:text-[var(--color-primary)] transition-colors leading-tight mb-1" title={title}>
                         {title}
-                    </p>
-                    <p className="text-[10px] sm:text-xs text-[var(--color-fg-secondary)] mt-0.5 sm:mt-1">
+                    </h3>
+                    <p className="text-xs text-[var(--color-fg-secondary)] font-medium">
                         {subtitle}
                     </p>
                 </div>

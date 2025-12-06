@@ -12,6 +12,9 @@ import {
 } from "api/api";
 import { Link } from "react-router";
 import { useAppContext } from "~/providers/AppProvider";
+import TrackRow from "./TrackRow";
+import TrackRowSkeleton from "./skeletons/TrackRowSkeleton";
+import EmptyState from "./EmptyState";
 
 interface Props {
   limit: number;
@@ -62,16 +65,22 @@ export default function LastPlays(props: Props) {
 
   if (isPending) {
     return (
-      <div className="w-[300px] sm:w-[500px]">
-        <h2>Last Played</h2>
-        <p>Loading...</p>
+      <div className="w-full space-y-2">
+        <h2 className="mb-4">Last Played</h2>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <TrackRowSkeleton key={i} />
+        ))}
       </div>
     );
-  } else if (isError) {
+  }
+
+  if (isError) {
     return (
-      <div className="w-[300px] sm:w-[500px]">
-        <h2>Last Played</h2>
-        <p className="error">Error: {error.message}</p>
+      <div className="w-full">
+        <h2 className="mb-4">Last Played</h2>
+        <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm">
+          Error: {error.message}
+        </div>
       </div>
     );
   }
@@ -84,75 +93,52 @@ export default function LastPlays(props: Props) {
   params += props.trackId ? `&track_id=${props.trackId}` : "";
 
   return (
-    <div className="text-xs sm:text-sm">
-      <h2 className="hover:underline">
-        <Link to={`/timeline?period=all_time${params}`}>Last Played</Link>
-      </h2>
-      <table className="-ml-4">
-        <tbody>
-          {props.showNowPlaying && npData && npData.currently_playing && (
-            <tr className="group hover:bg-[--color-bg-secondary]">
-              <td className="w-[18px] pr-2 align-middle"></td>
-              <td className="color-fg-tertiary pr-2 sm:pr-4 text-xs sm:text-sm whitespace-nowrap w-0">
-                Now Playing
-              </td>
-              <td className="max-w-[200px] sm:max-w-[600px]">
-                <div className="line-clamp-2 leading-tight">
-                  {props.hideArtists ? null : (
-                    <>
-                      <ArtistLinks artists={npData.track.artists} /> –{" "}
-                    </>
-                  )}
-                  <Link
-                    className="hover:text-[--color-fg-secondary]"
-                    to={`/track/${npData.track.id}`}
-                  >
-                    {npData.track.title}
-                  </Link>
-                </div>
-              </td>
-            </tr>
-          )}
-          {listens.map((item) => (
-            <tr
+    <div className="text-xs sm:text-sm w-full">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="hover:underline mb-0">
+          <Link to={`/timeline?period=all_time${params}`}>Last Played</Link>
+        </h2>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        {props.showNowPlaying && npData && npData.currently_playing && (
+          <div className="mb-2">
+            <div className="text-[var(--color-primary)] text-xs font-bold uppercase tracking-wider mb-2 pl-2 flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-primary)] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--color-primary)]"></span>
+              </span>
+              Now Playing
+            </div>
+            <TrackRow
+              listen={{
+                time: new Date().toISOString(),
+                track: npData.track,
+              } as Listen}
+              showArtist={!props.hideArtists}
+            />
+          </div>
+        )}
+
+        {listens.length === 0 ? (
+          <EmptyState
+            title="No recent activity"
+            description="Start listening to music to populate your history."
+            actionLabel="Explore Music"
+            actionLink="/"
+          />
+        ) : (
+          listens.map((item) => (
+            <TrackRow
               key={`last_listen_${item.time}`}
-              className="group hover:bg-[--color-bg-secondary]"
-            >
-              <td className="w-[18px] pr-2 align-middle">
-                <button
-                  onClick={() => handleDelete(item)}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity text-(--color-fg-tertiary) hover:text-(--color-error)"
-                  aria-label="Delete"
-                  hidden={user === null || user === undefined}
-                >
-                  ×
-                </button>
-              </td>
-              <td
-                className="color-fg-tertiary pr-2 sm:pr-4 text-xs sm:text-sm whitespace-nowrap w-0"
-                title={new Date(item.time).toString()}
-              >
-                {timeSince(new Date(item.time))}
-              </td>
-              <td className="max-w-[200px] sm:max-w-[600px]">
-                <div className="line-clamp-2 leading-tight">
-                  {props.hideArtists ? null : (
-                    <>
-                      <ArtistLinks artists={item.track.artists} /> –{" "}
-                    </>
-                  )}
-                  <Link
-                    className="hover:text-[--color-fg-secondary]"
-                    to={`/track/${item.track.id}`}
-                  >
-                    {item.track.title}
-                  </Link>
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              listen={item}
+              showArtist={!props.hideArtists}
+              canDelete={!!user}
+              onDelete={handleDelete}
+            />
+          ))
+        )}
+      </div>
     </div>
   );
 }

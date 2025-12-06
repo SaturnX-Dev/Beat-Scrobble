@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { getStats, getTopArtists, getTopAlbums, imageUrl } from "api/api";
 import { Link } from "react-router";
-import { Clock, PlayCircle, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { useAuraStyle } from "~/hooks/useAuraStyle";
 import CardAura from "./CardAura";
+import { useCountUp } from "~/hooks/useCountUp";
 
 interface Props {
     period?: "day" | "week" | "month" | "year" | "all_time";
@@ -27,6 +28,9 @@ export default function DashboardMetrics({ period = "week" }: Props) {
         queryFn: () => getTopAlbums({ limit: 1, period, page: 1 }),
     });
 
+    const animatedListens = useCountUp(stats?.listen_count, 2000);
+    const animatedHours = useCountUp(stats ? Math.round(stats.minutes_listened / 60) : 0, 2000);
+
     const periodLabel = {
         day: "Today",
         week: "This Week",
@@ -38,7 +42,7 @@ export default function DashboardMetrics({ period = "week" }: Props) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-6 w-full h-full">
             {/* Stats Card - Large with Aura */}
-            <div className="col-span-1 md:col-span-2 lg:col-span-1 bg-[var(--color-bg-secondary)]/50 backdrop-blur-md rounded-3xl p-5 md:p-6 border border-[var(--color-bg-tertiary)]/50 shadow-xl relative overflow-hidden group">
+            <div className="col-span-1 md:col-span-2 lg:col-span-1 bg-[var(--color-bg-secondary)]/50 backdrop-blur-md rounded-3xl p-5 md:p-6 border border-[var(--color-bg-tertiary)]/50 shadow-premium relative overflow-hidden group hover:shadow-premium-hover transition-all duration-500">
                 <CardAura size="small" id="dashboard" />
 
                 <div className="flex items-center justify-between mb-4 relative z-10">
@@ -49,15 +53,15 @@ export default function DashboardMetrics({ period = "week" }: Props) {
                 </div>
 
                 <div className="flex items-baseline gap-2 mb-1 relative z-10">
-                    <p className="text-4xl md:text-5xl lg:text-6xl font-black text-[var(--color-fg)] tracking-tight">
-                        {stats ? stats.listen_count : "-"}
+                    <p className="text-4xl md:text-5xl lg:text-6xl font-black text-[var(--color-fg)] tracking-tight tabular-nums">
+                        {stats ? animatedListens.toLocaleString() : "-"}
                     </p>
                 </div>
-                <p className="text-xs text-[var(--color-fg-secondary)] relative z-10 mb-6">
-                    {stats ? Math.round(stats.minutes_listened / 60) : "-"} hours listened
+                <p className="text-xs text-[var(--color-fg-secondary)] relative z-10 mb-6 font-medium">
+                    {stats ? Math.round(animatedHours).toLocaleString() : "-"} hours listened
                 </p>
 
-                <Link to="/timeline" className="relative z-10 w-full block text-center bg-[var(--color-primary)] hover:bg-[var(--color-primary-dim)] text-white text-sm font-bold py-3 rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5 uppercase tracking-wide">
+                <Link to="/timeline" className="relative z-10 w-full block text-center bg-[var(--color-primary)] hover:bg-[var(--color-primary-dim)] text-white text-sm font-bold py-3 rounded-xl shadow-lg transition-all hover:shadow-xl hover:-translate-y-0.5 uppercase tracking-wide active:scale-[0.98]">
                     History
                 </Link>
             </div>
@@ -65,7 +69,7 @@ export default function DashboardMetrics({ period = "week" }: Props) {
             {/* Top Artist Card */}
             {topArtist && topArtist.items.length > 0 && (
                 <Link to={`/artist/${topArtist.items[0].id}`} className="block group relative">
-                    <div className="h-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md rounded-3xl p-4 md:p-5 border border-[var(--color-bg-tertiary)]/50 shadow-xl relative overflow-hidden transition-all hover:scale-[1.02] hover:shadow-2xl">
+                    <div className="h-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md rounded-3xl p-4 md:p-5 border border-[var(--color-bg-tertiary)]/50 shadow-premium relative overflow-hidden transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-premium-hover hover:-translate-y-1">
                         <CardAura size="small" id="dashboard" />
 
                         <div className="flex items-center gap-2 mb-3 relative z-10">
@@ -74,7 +78,7 @@ export default function DashboardMetrics({ period = "week" }: Props) {
                         </div>
 
                         <div className="flex items-center gap-3 md:gap-4 relative z-10">
-                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl overflow-hidden shadow-lg flex-shrink-0">
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group-hover:scale-105 transition-transform duration-500">
                                 <img
                                     src={imageUrl(topArtist.items[0].image, "medium")}
                                     alt={topArtist.items[0].name}
@@ -97,7 +101,7 @@ export default function DashboardMetrics({ period = "week" }: Props) {
             {/* Top Album Card */}
             {topAlbum && topAlbum.items.length > 0 && (
                 <Link to={`/album/${topAlbum.items[0].id}`} className="block group relative">
-                    <div className="h-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md rounded-3xl p-4 md:p-5 border border-[var(--color-bg-tertiary)]/50 shadow-xl relative overflow-hidden transition-all hover:scale-[1.02] hover:shadow-2xl">
+                    <div className="h-full bg-[var(--color-bg-secondary)]/50 backdrop-blur-md rounded-3xl p-4 md:p-5 border border-[var(--color-bg-tertiary)]/50 shadow-premium relative overflow-hidden transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-premium-hover hover:-translate-y-1">
                         <CardAura size="small" id="dashboard" />
 
                         <div className="flex items-center gap-2 mb-3 relative z-10">
@@ -106,7 +110,7 @@ export default function DashboardMetrics({ period = "week" }: Props) {
                         </div>
 
                         <div className="flex items-center gap-3 md:gap-4 relative z-10">
-                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl overflow-hidden shadow-lg flex-shrink-0">
+                            <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl overflow-hidden shadow-lg flex-shrink-0 group-hover:scale-105 transition-transform duration-500">
                                 <img
                                     src={imageUrl(topAlbum.items[0].image, "medium")}
                                     alt={topAlbum.items[0].title}

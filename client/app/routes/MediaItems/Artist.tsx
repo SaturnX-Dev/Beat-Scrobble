@@ -9,7 +9,7 @@ import ActivityGrid from "~/components/ActivityGrid";
 import { timeListenedString } from "~/utils/utils";
 import ListeningSessions from "~/components/ListeningSessions";
 import MiniDiscography from "~/components/MiniDiscography";
-import { Edit, ImageIcon, Merge, Trash, ArrowLeft, RefreshCw } from "lucide-react";
+import { Edit, ImageIcon, Merge, Trash, ArrowLeft, RefreshCw, Music } from "lucide-react";
 import { useAppContext } from "~/providers/AppProvider";
 import MergeModal from "~/components/modals/MergeModal";
 import ImageReplaceModal from "~/components/modals/ImageReplaceModal";
@@ -150,11 +150,17 @@ export default function Artist() {
         {/* Artist Cover + Name Section */}
         <div className="px-5 pt-4 pb-2 text-center md:px-8 md:pt-6">
           <div className="w-40 h-40 md:w-60 md:h-60 mx-auto rounded-3xl overflow-hidden shadow-premium bg-[var(--color-bg-tertiary)]">
-            <img
-              src={imageUrl(artist.image, "large")}
-              alt={artist.name}
-              className="w-full h-full object-cover"
-            />
+            {artist.image ? (
+              <img
+                src={imageUrl(artist.image, "large")}
+                alt={artist.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center">
+                <Music size={64} className="text-white opacity-50" />
+              </div>
+            )}
           </div>
 
           <p className="mt-4 text-xs uppercase tracking-[0.2em] text-[var(--color-primary)]">

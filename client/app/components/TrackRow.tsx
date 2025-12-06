@@ -1,9 +1,9 @@
 import { Link } from "react-router";
 import { type Listen, type Track } from "api/api";
 import { timeSince } from "~/utils/utils";
-import ArtistLinks from "../ArtistLinks";
+import ArtistLinks from "./ArtistLinks";
 import { Trash2 } from "lucide-react";
-import CardAura from "../CardAura";
+import CardAura from "./CardAura";
 
 interface Props {
     listen: Listen;

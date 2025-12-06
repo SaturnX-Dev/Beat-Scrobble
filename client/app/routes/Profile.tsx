@@ -162,7 +162,7 @@ export default function Profile() {
 
             <div className="flex w-full h-screen overflow-hidden">
                 {/* Main Content - Scrollable */}
-                <main className="flex-1 overflow-y-auto bg-transparent px-4 py-6 md:py-10 pb-24 hide-scrollbar">
+                <main className="flex-1 overflow-y-auto bg-transparent px-4 py-6 md:py-12 pb-24 hide-scrollbar">
                     <div className="max-w-7xl mx-auto">
                         {/* Header with Banner */}
                         <div className="relative mb-8 rounded-2xl overflow-hidden bg-[var(--color-bg-secondary)]/60 backdrop-blur-md border border-[var(--color-bg-tertiary)]">

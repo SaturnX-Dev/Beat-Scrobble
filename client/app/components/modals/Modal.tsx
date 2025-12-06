@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
+import { X } from 'lucide-react';
 
 export function Modal({
   isOpen,
@@ -29,7 +30,7 @@ export function Modal({
       setIsClosing(true);
       const timeout = setTimeout(() => {
         setShouldRender(false);
-      }, 100); // Match fade-out duration
+      }, 200); // Slower fade-out for premium feel
       return () => clearTimeout(timeout);
     }
   }, [isOpen, shouldRender]);
@@ -61,20 +62,21 @@ export function Modal({
 
   return ReactDOM.createPortal(
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 transition-opacity duration-100 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isClosing ? 'animate-fade-out' : 'animate-fade-in'
         }`}
     >
       <div
         ref={modalRef}
-        className={`glass-card rounded-2xl shadow-2xl p-6 w-full relative max-h-3/4 overflow-y-auto transition-all duration-100 border border-[var(--color-bg-tertiary)]/50 hide-scrollbar ${isClosing ? 'animate-fade-out-scale' : 'animate-fade-in-scale'
+        className={`glass-card rounded-3xl shadow-2xl p-6 w-full relative max-h-[85vh] overflow-y-auto transition-all duration-300 ease-out border border-[var(--color-bg-tertiary)]/50 hide-scrollbar ${isClosing ? 'animate-fade-out-scale' : 'animate-fade-in-scale'
           } ${className || ''}`}
         style={{ maxWidth: maxW ?? 600, height: h ?? '' }}
       >
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 color-fg-tertiary hover:cursor-pointer"
+          className="absolute top-4 right-4 p-2 rounded-full bg-[var(--color-bg)]/20 hover:bg-[var(--color-fg)]/10 text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)] transition-all duration-300 ease-out active:scale-95 backdrop-blur-sm z-50 border border-transparent hover:border-[var(--color-fg)]/10"
+          aria-label="Close modal"
         >
-          🞪
+          <X size={20} />
         </button>
         {children}
       </div>

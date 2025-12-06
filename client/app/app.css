@@ -55,8 +55,11 @@
 }
 
 
-
 :root {
+  /* Premium Curves */
+  --ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+  --ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
+
   --header-xl: 36px;
   --header-lg: 28px;
   --header-md: 22px;
@@ -562,7 +565,7 @@ button.default:hover {
 
 /* Fast transitions for mobile */
 .transition-smooth {
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s var(--ease-out-cubic);
 }
 
 /* Premium shadow utilities */
@@ -694,6 +697,8 @@ button.default:hover {
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+  width: 0px;
+  background: transparent;
   /* Chrome/Safari/Opera */
 }
 

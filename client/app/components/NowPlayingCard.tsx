@@ -83,8 +83,12 @@ export default function NowPlayingCard() {
 
     if (isLoading) {
         return (
-            <div className="w-full h-full min-h-[300px] bg-[var(--color-bg-secondary)]/50 backdrop-blur-md rounded-2xl p-6 flex items-center justify-center animate-pulse">
-                <p className="text-[var(--color-fg-secondary)]">Loading...</p>
+            <div className="w-full h-full min-h-[350px] md:min-h-[400px] bg-[var(--color-bg-secondary)]/30 backdrop-blur-md rounded-3xl p-6 flex flex-col gap-6 animate-pulse border border-[var(--color-bg-tertiary)]/30">
+                <div className="w-full aspect-square rounded-2xl bg-[var(--color-bg-tertiary)]/50" />
+                <div className="space-y-3">
+                    <div className="h-8 w-3/4 bg-[var(--color-bg-tertiary)]/50 rounded-lg" />
+                    <div className="h-5 w-1/2 bg-[var(--color-bg-tertiary)]/30 rounded-lg" />
+                </div>
             </div>
         );
     }
@@ -94,64 +98,74 @@ export default function NowPlayingCard() {
     }
 
     const track = npData.track;
-    const image = track.image ? imageUrl(track.image, "large") : "/assets/default_img/default.png"; // Fallback image
+    const image = track.image ? imageUrl(track.image, "large") : "/assets/default_img/default.png";
 
     return (
-        <div className="w-full h-full min-h-[350px] md:min-h-[400px] bg-[var(--color-bg)]/70 glass-bg backdrop-blur-md rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col gap-4 md:gap-6 border border-[var(--color-bg-tertiary)]/50 relative overflow-hidden group shadow-premium">
-            {/* Background Blur Effect */}
+        <div className="w-full h-full min-h-[350px] md:min-h-[400px] bg-[var(--color-bg)]/70 glass-bg backdrop-blur-md rounded-2xl md:rounded-3xl p-4 md:p-6 flex flex-col gap-4 md:gap-6 border border-[var(--color-bg-tertiary)]/50 relative overflow-hidden group shadow-premium hover:shadow-premium-hover transition-shadow duration-500">
+            {/* Background Blur Effect - Organic Breathing */}
             <div
-                className="absolute inset-0 z-0 opacity-20 blur-3xl scale-110 transition-transform duration-700 group-hover:scale-125"
+                className="absolute inset-0 z-0 opacity-30 blur-3xl scale-110 transition-transform duration-[3s] ease-in-out group-hover:scale-125"
                 style={{ backgroundImage: `url(${image})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
             />
 
             <CardAura size="large" id="now-playing" />
 
             <div className="relative z-10 flex flex-col h-full">
-                <div className="w-full aspect-square rounded-xl md:rounded-2xl overflow-hidden shadow-premium mb-4 relative">
-                    <img src={image} alt={track.title} className="w-full h-full object-cover" />
+                <div className="w-full aspect-square rounded-xl md:rounded-2xl overflow-hidden shadow-2xl mb-4 relative group/image">
+                    <img src={image} alt={track.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover/image:scale-105" />
+                    {/* Vinyl Shine Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-50 pointer-events-none" />
                 </div>
 
                 <div className="flex-grow">
-                    <h2 className="text-xl md:text-2xl font-bold text-[var(--color-fg)] line-clamp-2 mb-1">
-                        <Link to={`/track/${track.id}`} className="hover:underline transition-smooth">
+                    <h2 className="text-xl md:text-2xl font-bold text-[var(--color-fg)] line-clamp-2 mb-1 tracking-tight">
+                        <Link to={`/track/${track.id}`} className="hover:text-[var(--color-primary)] transition-colors">
                             {track.title}
                         </Link>
                     </h2>
-                    <div className="text-base md:text-lg text-[var(--color-fg-secondary)] line-clamp-1">
+                    <div className="text-base md:text-lg text-[var(--color-fg-secondary)] line-clamp-1 font-medium">
                         {track.artists && <ArtistLinks artists={track.artists} />}
                     </div>
                 </div>
 
                 {/* Comet AI Section */}
-                {aiEnabled && (critique || isCritiqueLoading) && (
-                    <div className="mt-4 p-3 bg-black/20 rounded-xl border border-white/5 backdrop-blur-sm">
+                {aiEnabled && (
+                    <div className={`mt-4 p-4 rounded-xl border border-white/5 backdrop-blur-md transition-all duration-500 ${critique ? 'bg-black/20' : 'bg-transparent border-transparent'}`}>
                         <div className="flex items-center gap-2 mb-2 text-[var(--color-primary)]">
-                            <Sparkles size={14} />
+                            <Sparkles size={14} className={isCritiqueLoading ? "animate-spin-slow" : ""} />
                             <span className="text-xs font-bold uppercase tracking-wider">Comet AI</span>
                         </div>
+
                         {isCritiqueLoading ? (
-                            <div className="h-4 w-3/4 bg-white/10 rounded animate-pulse" />
-                        ) : (
-                            <p className="text-sm text-[var(--color-fg-secondary)] italic leading-relaxed line-clamp-3">
-                                "{critique}"
+                            <div className="space-y-2">
+                                <div className="h-3 w-full bg-white/10 rounded animate-pulse" />
+                                <div className="h-3 w-5/6 bg-white/10 rounded animate-pulse" />
+                            </div>
+                        ) : critique ? (
+                            <p className="text-sm text-[var(--color-fg-secondary)] italic leading-relaxed font-serif tracking-wide opacity-0 animate-fade-in relative">
+                                <span className="absolute -left-2 -top-1 text-2xl text-[var(--color-primary)]/30 font-serif">"</span>
+                                {critique}
+                                <span className="absolute -bottom-2 -right-1 text-2xl text-[var(--color-primary)]/30 font-serif">"</span>
                             </p>
-                        )}
+                        ) : null}
                     </div>
                 )}
 
-                {/* Fake Controls for visual completeness - functionality would need API endpoints */}
-                <div className="flex items-center justify-between mt-4 md:mt-6 pt-4 md:pt-6 border-t border-[var(--color-bg-tertiary)]/50">
-                    <div className="flex gap-3 md:gap-4">
-                        {/* Placeholder buttons */}
-                        <button className="p-2 md:p-3 rounded-full bg-[var(--color-bg-tertiary)]/50 hover:bg-[var(--color-bg-tertiary)] transition-smooth text-[var(--color-fg)]">
-                            <Pause size={20} fill="currentColor" />
+                {/* Fake Controls */}
+                <div className="flex items-center justify-between mt-4 md:mt-6 pt-4 md:pt-6 border-t border-[var(--color-bg-tertiary)]/30">
+                    <div className="flex gap-4">
+                        <button className="p-3 rounded-full bg-[var(--color-bg-tertiary)]/30 hover:bg-[var(--color-bg-tertiary)]/70 text-[var(--color-fg)] transition-all duration-200 active:scale-90 hover:shadow-lg backdrop-blur-sm group/btn">
+                            <Pause size={20} fill="currentColor" className="group-hover/btn:scale-90 transition-transform" />
                         </button>
-                        <button className="p-2 md:p-3 rounded-full bg-[var(--color-bg-tertiary)]/50 hover:bg-[var(--color-bg-tertiary)] transition-smooth text-[var(--color-fg)]">
-                            <SkipForward size={20} fill="currentColor" />
+                        <button className="p-3 rounded-full bg-[var(--color-bg-tertiary)]/30 hover:bg-[var(--color-bg-tertiary)]/70 text-[var(--color-fg)] transition-all duration-200 active:scale-90 hover:shadow-lg backdrop-blur-sm group/btn">
+                            <SkipForward size={20} fill="currentColor" className="group-hover/btn:scale-90 transition-transform" />
                         </button>
                     </div>
-                    <div className="text-xs text-[var(--color-fg-tertiary)] uppercase tracking-wider font-bold">
-                        Now Playing
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-[var(--color-primary)] animate-pulse" />
+                        <span className="text-[10px] md:text-xs text-[var(--color-primary)] uppercase tracking-widest font-bold">
+                            Live
+                        </span>
                     </div>
                 </div>
             </div>
