@@ -69,16 +69,23 @@ export default function NowPlayingCard() {
             })
         })
             .then(async res => {
-                if (res.status === 429) {
-                    aiCircuitBreaker.triggerCooldown(60);
-                    const text = await res.text();
-                    try {
-                        const errData = JSON.parse(text);
-                        const msg = errData.error?.message || errData.message || JSON.stringify(errData);
-                        throw new Error(`Provider: ${msg}`);
-                    } catch (e) {
-                        throw new Error(`Provider: ${text.slice(0, 100)}`);
+                if (res.status === 400 || res.status === 401 || res.status === 403 || res.status === 429 || res.status === 500) {
+                    if (res.status === 429) {
+                        aiCircuitBreaker.triggerCooldown(60);
                     }
+                    const errorText = await res.text();
+                    let errorMessage = errorText;
+                    try {
+                        const json = JSON.parse(errorText);
+                        if (json.error) errorMessage = json.error;
+                        if (errorMessage.includes("AI Model not configured")) {
+                            errorMessage = "⚠️ AI Model not set. Please configure it in Settings -> API Keys.";
+                        }
+                    } catch (e) {
+                        // unparseable, use raw text (truncated)
+                        errorMessage = errorText.substring(0, 100);
+                    }
+                    throw new Error(errorMessage);
                 }
                 if (res.ok) return res.json();
 
