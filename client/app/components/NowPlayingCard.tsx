@@ -161,7 +161,7 @@ export default function NowPlayingCard() {
                 </div>
 
                 {/* Comet AI Section */}
-                {aiEnabled && (
+                {aiEnabled && (critique || isCritiqueLoading) && (
                     <div className={`mt-4 p-4 rounded-xl border border-white/5 backdrop-blur-md transition-all duration-500 ${critique ? 'bg-black/20' : 'bg-transparent border-transparent'}`}>
                         <div className="flex items-center gap-2 mb-2 text-[var(--color-primary)]">
                             <Sparkles size={14} className={isCritiqueLoading ? "animate-spin-slow" : ""} />
@@ -174,7 +174,7 @@ export default function NowPlayingCard() {
                                 <div className="h-3 w-5/6 bg-white/10 rounded animate-pulse" />
                             </div>
                         ) : critique ? (
-                            <p className="text-sm text-[var(--color-fg-secondary)] italic leading-relaxed font-serif tracking-wide opacity-0 animate-fade-in relative">
+                            <p className="text-sm text-[var(--color-fg-secondary)] italic leading-relaxed font-serif tracking-wide relative">
                                 <span className="absolute -left-2 -top-1 text-2xl text-[var(--color-primary)]/30 font-serif">"</span>
                                 {critique}
                                 <span className="absolute -bottom-2 -right-1 text-2xl text-[var(--color-primary)]/30 font-serif">"</span>

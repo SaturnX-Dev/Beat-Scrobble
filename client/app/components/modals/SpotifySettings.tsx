@@ -3,6 +3,7 @@ import { getSpotifyConfigured } from "api/api";
 import { usePreferences } from "~/hooks/usePreferences";
 import SpotifyFetchTerminal from "./SpotifyFetchTerminal";
 import { Terminal } from "lucide-react";
+import { useSpotify } from "../../providers/SpotifyProvider";
 
 export default function SpotifySettings() {
     const [configured, setConfigured] = useState<boolean | null>(null);
@@ -11,6 +12,7 @@ export default function SpotifySettings() {
     const [saving, setSaving] = useState(false);
     const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
     const { preferences, savePreference } = usePreferences();
+    const { startFetch } = useSpotify();
 
     // Metadata fetch toggles
     const [fetchArtistMetadata, setFetchArtistMetadata] = useState(true);
@@ -26,6 +28,19 @@ export default function SpotifySettings() {
             .then((res) => setConfigured(res.configured))
             .catch(() => setConfigured(false));
     }, []);
+    // ... (rest of file)
+    // ...
+    <button
+        onClick={() => {
+            setTerminalOpen(true);
+            startFetch();
+        }}
+        disabled={!configured}
+        className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium hover:from-green-600 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+    >
+        <Terminal size={18} />
+        Open Fetch Terminal
+    </button>
 
     useEffect(() => {
         if (preferences) {
@@ -202,7 +217,10 @@ export default function SpotifySettings() {
                 </p>
 
                 <button
-                    onClick={() => setTerminalOpen(true)}
+                    onClick={() => {
+                        setTerminalOpen(true);
+                        startFetch();
+                    }}
                     disabled={!configured}
                     className="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white font-medium hover:from-green-600 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >

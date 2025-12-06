@@ -103,30 +103,51 @@ export default function ProfileCritique({ period }: Props) {
 
     }, [period, enabled, getPreference, savePreference]);
 
-    if (!enabled) return null;
+    if (!enabled || (!critique && !loading)) return null;
 
     return (
-        <div className="glass-card rounded-xl p-4 sm:p-6 border border-[var(--color-bg-tertiary)] flex flex-col gap-4">
-            <div className="flex justify-between items-center">
-                <h3 className="text-base sm:text-lg font-bold flex items-center gap-2">
-                    <Sparkles size={20} className="text-[var(--color-primary)]" />
-                    Comet AI
-                </h3>
-            </div>
+        <div className="relative overflow-hidden rounded-2xl p-[1px] group">
+            {/* Gradient Border - Fully Theme Adaptive */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary)] via-[var(--color-primary-dim)] to-[var(--color-accent)] opacity-30 group-hover:opacity-60 transition-opacity duration-500" />
 
-            <div className="min-h-[60px] flex items-center justify-center">
-                {loading ? (
-                    <div className="flex items-center gap-2 text-[var(--color-fg-secondary)] animate-pulse">
-                        <RefreshCw size={16} className="animate-spin" />
-                        <span className="text-sm">Analyzing your taste...</span>
+            <div className="relative bg-[var(--color-bg-secondary)]/90 backdrop-blur-xl rounded-2xl p-6 h-full flex flex-col justify-between">
+
+                {/* Header */}
+                <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20">
+                        <Sparkles size={14} className="text-[var(--color-primary)]" />
+                        <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-primary)]">Comet AI</span>
                     </div>
-                ) : error ? (
-                    <p className="text-sm text-red-400">{error}</p>
-                ) : (
-                    <p className="text-sm sm:text-base italic text-[var(--color-fg-secondary)] leading-relaxed text-center">
-                        "{critique}"
-                    </p>
-                )}
+                </div>
+
+                {/* Content */}
+                <div className="relative flex-grow flex items-center justify-center min-h-[120px]">
+                    {loading ? (
+                        <div className="flex flex-col items-center gap-3 text-[var(--color-fg-secondary)] animate-pulse py-8">
+                            <RefreshCw size={24} className="animate-spin text-[var(--color-primary)] opacity-50" />
+                            <span className="text-sm font-medium tracking-wide">Analyzing your frequency...</span>
+                        </div>
+                    ) : error ? (
+                        <p className="text-sm text-red-400 text-center">{error}</p>
+                    ) : (
+                        <div className="relative z-10">
+                            <span className="absolute -top-6 -left-2 text-6xl text-[var(--color-primary)]/10 font-serif leading-none select-none">"</span>
+                            <p className="text-base sm:text-lg text-[var(--color-fg)] font-serif italic leading-relaxed text-center px-2">
+                                {critique}
+                            </p>
+                            <span className="absolute -bottom-8 -right-2 text-6xl text-[var(--color-primary)]/10 font-serif leading-none select-none transform rotate-180">"</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer / Decorative */}
+                <div className="mt-6 flex justify-center opacity-30">
+                    <div className="h-1 w-16 rounded-full bg-gradient-to-r from-transparent via-[var(--color-fg-tertiary)] to-transparent" />
+                </div>
+
+                {/* Subtle Background Glow */}
+                <div className="absolute -bottom-20 -right-20 w-40 h-40 bg-[var(--color-primary)]/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -top-20 -left-20 w-40 h-40 bg-[var(--color-accent)]/10 rounded-full blur-3xl pointer-events-none" />
             </div>
         </div>
     );

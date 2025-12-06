@@ -13,11 +13,18 @@
 - [x] **Import Theme from JSON**: Fully functional theme import.
 - [x] **Mobile-First Design**: Bottom navigation, responsive layouts.
 - [x] **Activity Grid**: GitHub-style listening heatmap.
+- [x] **Auto Dark/Light Mode**: Configurable time-based theme switching with Day/Night hours.
+- [x] **Collapsible Theme Editor**: Clean, organized custom theme configuration.
 
 ### 🔗 Social & Sharing
 - [x] **Public Profiles**: Shareable `/u/username` profiles.
 - [x] **Yearly Recap**: Spotify Wrapped-style annual summary.
 - [x] **Configurable Hostname**: Custom domain support for sharing.
+
+### 🎵 Spotify Integration
+- [x] **Metadata Fetching**: Genres, popularity, release dates for artists/albums.
+- [x] **Audio Features Display**: BPM, Key, Energy, Danceability, Mood on track pages.
+- [x] **Persistent Fetch Terminal**: Progress persists when closing modal.
 
 ### 🛠️ Infrastructure
 - [x] **Docker Automation**: Auto-build and publish to `ghcr.io`.
@@ -55,11 +62,6 @@
   - **Feed**: See what friends are listening to.
   - **Collaborative Playlists**: AI playlists based on two users' tastes (Blend).
 
-### 5. Auto Dark/Light Mode 🌓
-**Status**: 🟡 Skeleton Ready
-- **Goal**: Switch theme based on system preference or time of day.
-- **Implementation**: Use `window.matchMedia` listener in `ThemeHelper.tsx`.
-
 ---
 
 ## 💡 Feature Requests & Ideas
@@ -70,4 +72,4 @@
 
 ---
 
-*Last Updated: v0.1.0 Release*
+*Last Updated: December 2024*

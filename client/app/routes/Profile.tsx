@@ -507,9 +507,7 @@ export default function Profile() {
                 {
                     aiEnabled && (
                         <aside className="hidden lg:block w-96 flex-shrink-0 overflow-y-auto bg-transparent p-4 py-6 md:py-10 hide-scrollbar">
-                            <div className="glass-card rounded-xl p-4 border border-[var(--color-bg-tertiary)] backdrop-blur-md bg-[var(--color-bg-secondary)]/80">
-                                <ProfileCritique period={period as "day" | "week" | "month" | "year" | "all_time"} />
-                            </div>
+                            <ProfileCritique period={period as "day" | "week" | "month" | "year" | "all_time"} />
                         </aside>
                     )
                 }

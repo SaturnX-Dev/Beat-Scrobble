@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
@@ -120,6 +121,7 @@ func GetAICritiqueHandler(store db.DB) http.HandlerFunc {
 		}
 
 		// 4. Call OpenRouter API
+		aiModel = strings.TrimSpace(aiModel)
 		systemPrompt := fmt.Sprintf("You are a music critic. %s", customPrompt)
 		userMessage := fmt.Sprintf("Critique the song '%s' by '%s' from the album '%s'.", req.TrackName, req.ArtistName, req.AlbumName)
 
@@ -163,10 +165,18 @@ func GetAICritiqueHandler(store db.DB) http.HandlerFunc {
 
 		if resp.StatusCode != http.StatusOK {
 			l.Error().Int("status", resp.StatusCode).Str("body", string(bodyBytes)).Msg("OpenRouter API error")
-			// Forward the status code and body
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(resp.StatusCode)
-			w.Write(bodyBytes)
+
+			// Try to parse as JSON to see if it's a structured error
+			var errResp map[string]interface{}
+			if jsonErr := json.Unmarshal(bodyBytes, &errResp); jsonErr == nil {
+				// It is JSON, forward it safely
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(resp.StatusCode)
+				w.Write(bodyBytes)
+			} else {
+				// It is NOT JSON (likely 502 HTML), return a safe JSON error
+				utils.WriteError(w, fmt.Sprintf("Upstream AI service error: %d", resp.StatusCode), http.StatusBadGateway)
+			}
 			return
 		}
 

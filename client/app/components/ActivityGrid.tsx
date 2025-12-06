@@ -149,30 +149,30 @@ export default function ActivityGrid({
     return Math.max(...data.map(item => item.listens), 1);
   }, [data]);
 
+  // Premium curve for better visualization of data
   const getColorForIntensity = (listens: number): string => {
     if (listens === 0) return "transparent";
 
-    const baseColor = themeName === "pearl" ? "#e5e7eb" : "#1a1a1a";
-    const targetColor = primaryColor;
-
-    // Normalización suave con curva logarítmica para mejor distribución visual
+    // Logarithmic scale for better distribution
     const normalized = Math.min(listens / maxListens, 1);
-    const curved = Math.pow(normalized, 0.6); // Curva suave
-
-    return colorUtils.interpolateColor(baseColor, targetColor, curved);
+    // Use css variables for dynamic theming
+    return `color-mix(in srgb, var(--color-primary) ${Math.round(normalized * 100)}%, var(--color-bg-tertiary))`;
   };
+
+  const getOpacity = (listens: number): number => {
+    if (listens === 0) return 0.1;
+    return 0.3 + (Math.min(listens / maxListens, 1) * 0.7);
+  }
 
   const gridStyle = useMemo(() => {
     if (!data?.length) return {};
-
     const totalItems = data.length;
 
     if (layoutConfig.horizontal) {
       return {
         display: "grid",
-        gridTemplateColumns: `repeat(${totalItems}, 1fr)`,
+        gridTemplateColumns: `repeat(${totalItems}, minmax(0, 1fr))`,
         gridTemplateRows: "1fr",
-        maxWidth: "100%",
       };
     }
 
@@ -182,139 +182,132 @@ export default function ActivityGrid({
       gridTemplateRows: "repeat(7, 1fr)",
       gridTemplateColumns: `repeat(${columns}, 1fr)`,
       gridAutoFlow: "column" as const,
-      maxWidth: "100%",
     };
   }, [data?.length, layoutConfig.horizontal]);
 
   if (isPending) {
     return (
-      <div className="w-full flex items-center justify-center py-12">
-        <div className="relative">
-          <div className="w-12 h-12 rounded-full border-4 border-[var(--color-bg-tertiary)] border-t-[var(--color-primary)] animate-spin" />
-        </div>
+      <div className="w-full h-32 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-[var(--color-primary)]/20 border-t-[var(--color-primary)] animate-spin" />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="w-full p-6 bg-[var(--color-bg-secondary)] rounded-2xl border border-[var(--color-error)]/20 backdrop-blur-sm">
-        <div className="flex items-start gap-3">
-          <div className="w-5 h-5 rounded-full bg-[var(--color-error)]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <span className="text-[var(--color-error)] text-xs">!</span>
-          </div>
-          <div>
-            <p className="text-[var(--color-error)] font-medium text-sm">Failed to load activity</p>
-            <p className="text-[var(--color-fg-secondary)] text-xs mt-1">{error.message}</p>
-          </div>
-        </div>
+      <div className="w-full p-4 bg-red-500/10 rounded-xl border border-red-500/20 flex flex-col items-center justify-center text-red-400 gap-1">
+        <span className="text-lg font-bold">!</span>
+        <span className="text-xs">Unable to load history</span>
       </div>
     );
   }
 
   if (!data?.length) {
     return (
-      <div className="w-full p-12 text-center bg-[var(--color-bg-secondary)]/50 rounded-2xl border border-[var(--color-bg-tertiary)] backdrop-blur-sm">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--color-bg-tertiary)] flex items-center justify-center">
-          <span className="text-2xl opacity-40">📊</span>
-        </div>
-        <p className="text-[var(--color-fg-secondary)] text-sm">No activity recorded yet</p>
+      <div className="w-full h-32 flex flex-col items-center justify-center text-[var(--color-fg-tertiary)] gap-2 border border-dashed border-[var(--color-bg-tertiary)] rounded-xl">
+        <span className="text-2xl opacity-50">📊</span>
+        <span className="text-xs font-medium">No activity data found</span>
       </div>
     );
   }
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full flex flex-col gap-4">
       {configurable && (
-        <ActivityOptsSelector
-          rangeSetter={setRange}
-          currentRange={rangeState}
-          stepSetter={setStep}
-          currentStep={stepState}
-        />
+        <div className="flex justify-end">
+          <ActivityOptsSelector
+            rangeSetter={setRange}
+            currentRange={rangeState}
+            stepSetter={setStep}
+            currentStep={stepState}
+          />
+        </div>
       )}
 
-      <div className={`w-full ${layoutConfig.containerHeight} overflow-x-auto`}>
-        <div
-          style={gridStyle}
-          className={`h-full ${layoutConfig.gap} w-fit mx-auto`}
-        >
-          {data.map((item, idx) => {
-            const cellColor = getColorForIntensity(item.listens);
-            const isEmpty = item.listens === 0;
+      {/* Main Grid Container with fade masks for scrolling */}
+      <div className="relative group/heat">
+        {/* Scroll Shadows */}
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[var(--color-bg)] to-transparent z-10 pointer-events-none opacity-0 transition-opacity" />
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[var(--color-bg)] to-transparent z-10 pointer-events-none" />
 
-            return (
-              <div
-                key={`${item.start_time}-${idx}`}
-                className="relative group"
-              >
-                <Popup
-                  position="top"
-                  space={12}
-                  extraClasses="left-1/2 -translate-x-1/2"
-                  inner={
-                    <div className="text-xs whitespace-nowrap">
-                      <div className="font-medium">{item.listens} plays</div>
-                      <div className="text-[var(--color-fg-secondary)] mt-0.5">
-                        {new Date(item.start_time).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: rangeState > 31 ? 'numeric' : undefined
-                        })}
-                      </div>
-                    </div>
-                  }
+        <div className={`w-full overflow-x-auto hide-scrollbar pb-3 pt-1 px-1`}>
+          <div
+            style={gridStyle}
+            className={`${layoutConfig.gap} w-fit mx-auto min-w-full sm:min-w-0 flex justify-center`}
+          >
+            {data.map((item, idx) => {
+              const intensity = item.listens / maxListens;
+              const isEmpty = item.listens === 0;
+
+              return (
+                <div
+                  key={`${item.start_time}-${idx}`}
+                  className="relative group flex items-center justify-center"
                 >
-                  <div
-                    style={{
-                      backgroundColor: cellColor,
-                    }}
-                    className={`
-                      ${layoutConfig.cellSize}
-                      ${layoutConfig.rounded}
-                      transition-all duration-300 ease-out
-                      ${isEmpty
-                        ? "border-2 border-[var(--color-bg-tertiary)] border-dashed"
-                        : "shadow-sm"
-                      }
-                      hover:scale-125 hover:z-20
-                      hover:shadow-xl hover:shadow-[var(--color-primary)]/20
-                      hover:ring-2 hover:ring-[var(--color-primary)]/40
-                      hover:brightness-110
-                      cursor-pointer
-                      relative
-                      overflow-hidden
-                    `}
-                    aria-label={`${item.listens} plays on ${new Date(item.start_time).toLocaleDateString()}`}
+                  <Popup
+                    position="top"
+                    space={8}
+                    extraClasses="z-50"
+                    inner={
+                      <div className="flex flex-col gap-0.5 min-w-[100px]">
+                        <span className="font-bold text-[var(--color-primary)] text-sm">
+                          {item.listens} {item.listens === 1 ? 'play' : 'plays'}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-[var(--color-fg-secondary)]">
+                          {new Date(item.start_time).toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                    }
                   >
-                    {/* Brillo sutil en hover */}
-                    {!isEmpty && (
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/0 group-hover:from-white/20 group-hover:to-transparent transition-all duration-300" />
-                    )}
-                  </div>
-                </Popup>
-              </div>
-            );
-          })}
+                    <div
+                      className={`
+                        ${layoutConfig.cellSize}
+                        ${layoutConfig.rounded}
+                        transition-all duration-300 ease-out
+                        relative
+                        cursor-help
+                        hover:z-20 hover:scale-150
+                        group-hover:shadow-[0_0_15px_var(--color-primary)]
+                        `}
+                      style={{
+                        backgroundColor: isEmpty
+                          ? 'var(--color-bg-tertiary)'
+                          : `color-mix(in srgb, var(--color-primary) ${Math.min(100, Math.max(20, intensity * 100))}%, transparent)`,
+                        opacity: isEmpty ? 0.15 : 1,
+                        boxShadow: !isEmpty && intensity > 0.5 ? '0 0 5px var(--color-primary)' : 'none'
+                      }}
+                    >
+                      {/* Inner detail for high activity */}
+                      {!isEmpty && intensity > 0.7 && (
+                        <div className="absolute inset-1 bg-white/20 rounded-sm blur-[1px]" />
+                      )}
+                    </div>
+                  </Popup>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Leyenda de intensidad */}
-      <div className="flex items-center justify-between text-xs text-[var(--color-fg-secondary)] px-2">
+      {/* Modern Legend */}
+      <div className="flex items-center justify-end gap-3 text-[10px] font-medium text-[var(--color-fg-tertiary)]">
         <span>Less</span>
-        <div className="flex items-center gap-1">
-          {[0, 0.25, 0.5, 0.75, 1].map((intensity) => (
+        <div className="flex items-center gap-1.5 p-1 bg-[var(--color-bg-tertiary)]/30 rounded-full border border-[var(--color-bg-tertiary)]/50 backdrop-blur-sm">
+          {[0.1, 0.3, 0.5, 0.7, 1].map((level, i) => (
             <div
-              key={intensity}
+              key={level}
+              className="w-2.5 h-2.5 rounded-sm transition-all hover:scale-125"
               style={{
-                backgroundColor: intensity === 0
-                  ? "transparent"
-                  : getColorForIntensity(Math.ceil(maxListens * intensity))
+                backgroundColor: i === 0
+                  ? 'var(--color-bg-tertiary)'
+                  : `color-mix(in srgb, var(--color-primary) ${level * 100}%, transparent)`,
+                opacity: i === 0 ? 0.3 : 1
               }}
-              className={`w-3 h-3 rounded-sm ${intensity === 0
-                ? "border-2 border-[var(--color-bg-tertiary)] border-dashed"
-                : ""
-                }`}
             />
           ))}
         </div>

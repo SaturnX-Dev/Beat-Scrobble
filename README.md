@@ -36,20 +36,25 @@
 #### 🎨 Premium UI & Customization
 - **Mobile-First Design** - Optimized bottom nav and responsive layouts
 - **Theme System** - Multiple themes with card aura effects (32+ aura styles)
+- **Auto Day/Night Mode** - Time-based automatic theme switching with configurable hours
 - **Custom Element Colors** - Personalize colors for 10 UI elements
 - **Custom Backgrounds** - Upload personalized images or looping videos
 - **Profile Images** - Upload and display your profile picture
 - **Glassmorphism** - Modern glass card aesthetics
+- **Collapsible Theme Editor** - Clean, organized custom theme configuration
 - **Dark Mode** - Full dark theme support
 
 #### 🎵 Spotify Integration
-- **Metadata Fetching** - Enriches your library with genres, popularity, and release              dates
+- **Metadata Fetching** - Enriches your library with genres, popularity, and release dates
+- **Track Audio Features** - BPM, Key, Energy, Danceability, Mood, Acoustic displayed on track pages
 - **Artist Metadata** - Genres, popularity scores, Spotify IDs
 - **Album Metadata** - Release dates, genres, popularity
 - **Image Search** - Search and replace album/artist images directly from Spotify
 - **Refresh Button** - One-click metadata refresh on Artist/Album pages
+- **Persistent Fetch Terminal** - Progress persists when closing the fetch modal
 - **Settings Panel** - Easy credential management in Settings → Spotify
 - **Token Management** - Securely handles Spotify tokens (Client Credentials)
+
 
 #### ☁️ Server-Side Storage
 All user preferences, themes, and customizations are stored server-side:
@@ -73,25 +78,6 @@ All user preferences, themes, and customizations are stored server-side:
 - **Manual Scrobble** - Add listens manually
 - **Card Aura Effects** - Dynamic visual effects behind cards
 
-### 🆚 Beat Scrobble vs Koito
-
-| Feature | Koito | Beat Scrobble |
-| :--- | :---: | :---: |
-| **Core Scrobbling** | ✅ | ✅ |
-| **Control Room Dashboard** | ❌ | ✅ |
-| **Spotify Integration** | ❌ | ✅ |
-| **ListenBrainz Sync** | ✅ | ✅ |
-| **AI Critiques** | ❌ | ✅ |
-| **AI Playlists** | ❌ | ✅ |
-| **Yearly Recap** | ❌ | ✅ |
-| **Mobile-First UI** | ❌ | ✅ |
-| **Themes & Glassmorphism** | ❌ | ✅ |
-| **Custom Element Colors** | ❌ | ✅ |
-| **Custom Backgrounds** | ❌ | ✅ |
-| **Profile Images** | ❌ | ✅ |
-| **Server-Side Storage** | ❌ | ✅ |
-| **Full Backup/Restore** | ❌ | ✅ |
-| **Profile Sharing** | ❌ | ✅ |
 
 ---
 
@@ -246,27 +232,104 @@ To import, go to **Settings → Backup** or place files in the `/etc/beat_scrobb
 
 ## 🛠️ API Endpoints
 
-### Public
-- `GET /apis/web/v1/public/profile/{username}` - Public profile with theme, preferences, and stats
-- `GET /apis/web/v1/profile-images/{filename}` - Profile images
+### Public (No Auth)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/apis/web/v1/config` | Server configuration |
+| `GET` | `/apis/web/v1/health` | Health check |
+| `GET` | `/apis/web/v1/public/profile/{username}` | Public profile with theme and stats |
+| `GET` | `/profile-images/{filename}` | Profile images |
+| `GET` | `/background-images/{filename}` | Background images |
+| `GET` | `/images/{size}/{filename}` | Album/artist images |
 
-### Authenticated
-- `POST /apis/web/v1/ai/critique` - Get track critique
-- `POST /apis/web/v1/ai/profile-critique` - Get profile analysis
-- `POST /apis/web/v1/ai/generate-playlist` - Generate AI playlist
-- `GET /apis/web/v1/yearly-recap?year=YYYY` - Yearly statistics
-- `GET /apis/web/v1/user/preferences` - Get user preferences
-- `POST /apis/web/v1/user/preferences` - Save user preferences
-- `GET /apis/web/v1/user/theme` - Get user theme
-- `POST /apis/web/v1/user/theme` - Save user theme
-- `POST /apis/web/v1/user/profile-image` - Upload profile image
-- `GET /apis/web/v1/spotify/configured` - Check if Spotify is configured
-- `GET /apis/web/v1/spotify/search` - Search Spotify for images
-- `POST /apis/web/v1/spotify/fetch-metadata` - Fetch metadata from Spotify
+### Auth (Session Required)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/apis/web/v1/login` | User login |
+| `POST` | `/apis/web/v1/logout` | User logout |
+| `GET` | `/apis/web/v1/user/me` | Current user info |
+| `PATCH` | `/apis/web/v1/user` | Update user |
+
+### Data Retrieval
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/apis/web/v1/artist` | Get artist details |
+| `GET` | `/apis/web/v1/artists` | Get artists for item |
+| `GET` | `/apis/web/v1/album` | Get album details |
+| `GET` | `/apis/web/v1/track` | Get track details |
+| `GET` | `/apis/web/v1/top-tracks` | Top tracks (paginated) |
+| `GET` | `/apis/web/v1/top-albums` | Top albums (paginated) |
+| `GET` | `/apis/web/v1/top-artists` | Top artists (paginated) |
+| `GET` | `/apis/web/v1/listens` | Recent listens |
+| `GET` | `/apis/web/v1/listen-activity` | Activity heatmap data |
+| `GET` | `/apis/web/v1/now-playing` | Currently playing track |
+| `GET` | `/apis/web/v1/stats` | User statistics |
+| `GET` | `/apis/web/v1/search` | Search artists/albums/tracks |
+| `GET` | `/apis/web/v1/aliases` | Get aliases for item |
+| `GET` | `/apis/web/v1/yearly-recap?year=YYYY` | Yearly statistics |
+
+### User Preferences & Theme
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/apis/web/v1/user/preferences` | Get preferences |
+| `POST` | `/apis/web/v1/user/preferences` | Save preferences |
+| `GET` | `/apis/web/v1/user/theme` | Get theme |
+| `POST` | `/apis/web/v1/user/theme` | Save theme |
+| `POST` | `/apis/web/v1/user/profile-image` | Upload profile image |
+| `POST` | `/apis/web/v1/user/background-image` | Upload background |
+
+### AI Features
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/apis/web/v1/ai/critique` | Track critique |
+| `POST` | `/apis/web/v1/ai/profile-critique` | Profile analysis |
+| `POST` | `/apis/web/v1/ai/generate-playlist` | Generate AI playlist |
+| `POST` | `/apis/web/v1/ai/clear-cache` | Clear AI cache |
+| `GET` | `/apis/web/v1/ai/cache/export` | Export AI cache |
+| `POST` | `/apis/web/v1/ai/cache/import` | Import AI cache |
+
+### Spotify Integration
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/apis/web/v1/spotify/configured` | Check credentials |
+| `GET` | `/apis/web/v1/spotify/search` | Search Spotify |
+| `POST` | `/apis/web/v1/spotify/fetch-metadata` | Fetch metadata |
+| `GET` | `/apis/web/v1/spotify/bulk-fetch-sse` | Bulk fetch (SSE) |
+
+### Data Management
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/apis/web/v1/export` | Export data |
+| `POST` | `/apis/web/v1/import` | Import data |
+| `POST` | `/apis/web/v1/replace-image` | Replace image |
+| `PATCH` | `/apis/web/v1/album` | Update album |
+| `DELETE` | `/apis/web/v1/artist` | Delete artist |
+| `DELETE` | `/apis/web/v1/album` | Delete album |
+| `DELETE` | `/apis/web/v1/track` | Delete track |
+| `POST` | `/apis/web/v1/merge/tracks` | Merge tracks |
+| `POST` | `/apis/web/v1/merge/albums` | Merge albums |
+| `POST` | `/apis/web/v1/merge/artists` | Merge artists |
+| `POST` | `/apis/web/v1/listen` | Submit listen |
+| `DELETE` | `/apis/web/v1/listen` | Delete listen |
+| `POST` | `/apis/web/v1/aliases` | Create alias |
+| `POST` | `/apis/web/v1/aliases/delete` | Delete alias |
+| `POST` | `/apis/web/v1/aliases/primary` | Set primary alias |
+| `POST` | `/apis/web/v1/artists/primary` | Set primary artist |
+
+### API Keys
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/apis/web/v1/user/apikeys` | List API keys |
+| `POST` | `/apis/web/v1/user/apikeys` | Generate API key |
+| `PATCH` | `/apis/web/v1/user/apikeys` | Update key label |
+| `DELETE` | `/apis/web/v1/user/apikeys` | Delete API key |
 
 ### ListenBrainz Compatible
-- `POST /apis/listenbrainz/1/submit-listens` - Submit scrobbles
-- `GET /apis/listenbrainz/1/validate-token` - Validate API key
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/apis/listenbrainz/1/submit-listens` | Submit scrobbles |
+| `GET` | `/apis/listenbrainz/1/validate-token` | Validate API key |
+
 
 ---
 

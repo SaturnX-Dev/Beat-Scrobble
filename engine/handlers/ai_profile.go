@@ -149,6 +149,7 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 		statsSummary := fmt.Sprintf("Listens: %d, Unique Artists: %d, Unique Albums: %d, Unique Tracks: %d", listens, artistCount, albumCount, trackCount)
 		topArtistsStr := strings.Join(topArtistsNames, ", ")
 
+		aiModel = strings.TrimSpace(aiModel)
 		systemPrompt, ok := prefs["profile_critique_prompt"].(string)
 		if !ok || systemPrompt == "" {
 			systemPrompt = "You are a music critic. Give a short, witty, and slightly judgmental assessment of this user's listening habits based on their stats and top artists. Keep it under 60 words."
@@ -194,10 +195,18 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		if resp.StatusCode != http.StatusOK {
 			l.Error().Int("status", resp.StatusCode).Str("body", string(bodyBytes)).Msg("OpenRouter API error")
-			// Forward the status code and body
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(resp.StatusCode)
-			w.Write(bodyBytes)
+
+			// Try to parse as JSON to see if it's a structured error
+			var errResp map[string]interface{}
+			if jsonErr := json.Unmarshal(bodyBytes, &errResp); jsonErr == nil {
+				// It is JSON, forward it safely
+				w.Header().Set("Content-Type", "application/json")
+				w.WriteHeader(resp.StatusCode)
+				w.Write(bodyBytes)
+			} else {
+				// It is NOT JSON (likely 502 HTML), return a safe JSON error
+				utils.WriteError(w, fmt.Sprintf("Upstream AI service error: %d", resp.StatusCode), http.StatusBadGateway)
+			}
 			return
 		}
 
