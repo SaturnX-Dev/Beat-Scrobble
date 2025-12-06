@@ -7,9 +7,7 @@ import { AsyncButton } from "./AsyncButton";
 import CardAura from "./CardAura";
 import { useState, useEffect } from "react";
 import { usePreferences } from "~/hooks/usePreferences";
-
-// Global cache to prevent re-fetching across component remounts
-const fetchedTracksCache = new Set<number>();
+import { aiCircuitBreaker } from "../utils/aiCircuitBreaker";
 
 export default function NowPlayingCard() {
     const { data: npData, isLoading } = useQuery({
@@ -31,9 +29,10 @@ export default function NowPlayingCard() {
         }
 
         const trackId = npData.track.id;
+        const lockKey = `track_${trackId}`;
 
-        // Prevent infinite loop using global cache
-        if (fetchedTracksCache.has(trackId)) {
+        // STRONG GUARD: Check Circuit Breaker
+        if (!aiCircuitBreaker.canFetch(lockKey)) {
             // Try to load from cache if available
             const cacheKey = `comet_ai_track_${trackId}`;
             const cached = getPreference(cacheKey, null);
@@ -46,7 +45,7 @@ export default function NowPlayingCard() {
         const cached = getPreference(cacheKey, null);
         if (cached) {
             setCritique(cached);
-            fetchedTracksCache.add(trackId);
+            aiCircuitBreaker.markFetched(lockKey);
             return;
         }
 
@@ -56,7 +55,7 @@ export default function NowPlayingCard() {
             return;
         }
 
-        fetchedTracksCache.add(trackId); // Lock immediately
+        aiCircuitBreaker.markFetched(lockKey); // Lock immediately
         setIsCritiqueLoading(true);
         setCritique(null);
 
@@ -70,6 +69,10 @@ export default function NowPlayingCard() {
             })
         })
             .then(res => {
+                if (res.status === 429) {
+                    aiCircuitBreaker.triggerCooldown(60); // Apply global cooldown
+                    throw new Error('Too many requests. Please wait.');
+                }
                 if (res.ok) return res.json();
                 throw new Error('Failed to fetch critique');
             })

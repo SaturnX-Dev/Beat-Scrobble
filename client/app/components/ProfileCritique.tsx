@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { usePreferences } from "~/hooks/usePreferences";
+import { aiCircuitBreaker } from "../utils/aiCircuitBreaker";
 
 interface Props {
     period: "day" | "week" | "month" | "year" | "all_time";
@@ -26,27 +27,29 @@ export default function ProfileCritique({ period }: Props) {
             return;
         }
 
-        // Prevent infinite loop using global cache
-        if (fetchedPeriodsCache.has(period)) {
-            // If we have it in memory/cache preference, use it, otherwise stop.
+        const lockKey = `profile_${period}`;
+
+        // STRONG GUARD: Check Circuit Breaker
+        if (!aiCircuitBreaker.canFetch(lockKey)) {
+            // Check if we have a cached value to show even if blocked
             const cacheKey = `comet_ai_profile_${period}`;
             const cached = getPreference(cacheKey, null);
             if (cached) setCritique(cached);
             return;
         }
 
-        // Check server-side cache first
+        // Check server-side cache (Preference)
         const cacheKey = `comet_ai_profile_${period}`;
         const cached = getPreference(cacheKey, null);
         if (cached) {
             setCritique(cached);
-            fetchedPeriodsCache.add(period); // Mark as handled
+            aiCircuitBreaker.markFetched(lockKey); // Mark as complete
             return;
         }
 
         setLoading(true);
         setError(null);
-        fetchedPeriodsCache.add(period); // Mark as fetched immediately
+        aiCircuitBreaker.markFetched(lockKey); // Optimistic lock
 
         fetch('/apis/web/v1/ai/profile-critique', {
             method: 'POST',
@@ -54,17 +57,20 @@ export default function ProfileCritique({ period }: Props) {
             body: JSON.stringify({ period })
         })
             .then(res => {
+                if (res.status === 429) {
+                    aiCircuitBreaker.triggerCooldown(60); // Pause all AI for 60s
+                    throw new Error('Too many requests. Please wait.');
+                }
                 if (res.ok) return res.json();
                 throw new Error('Failed to fetch critique');
             })
             .then(data => {
                 setCritique(data.critique);
-                // Save to server-side preferences for caching
                 savePreference(cacheKey, data.critique);
             })
             .catch(err => {
                 console.error(err);
-                setError("Could not generate critique.");
+                setError(err.message || "Could not generate critique.");
             })
             .finally(() => {
                 setLoading(false);
