@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
@@ -125,11 +126,13 @@ func GetAICritiqueHandler(store db.DB) http.HandlerFunc {
 		apiReq.Header.Set("HTTP-Referer", "https://beatscrobble.app") // Required by OpenRouter
 		apiReq.Header.Set("X-Title", "Beat Scrobble Music Analytics")
 
-		client := &http.Client{}
+		client := &http.Client{
+			Timeout: 30 * time.Second,
+		}
 		resp, err := client.Do(apiReq)
 		if err != nil {
 			l.Error().Err(err).Msg("OpenRouter API call failed")
-			utils.WriteError(w, "failed to call AI service", http.StatusBadGateway)
+			utils.WriteError(w, fmt.Sprintf("failed to call AI service: %v", err), http.StatusBadGateway)
 			return
 		}
 		defer resp.Body.Close()
@@ -138,7 +141,10 @@ func GetAICritiqueHandler(store db.DB) http.HandlerFunc {
 
 		if resp.StatusCode != http.StatusOK {
 			l.Error().Int("status", resp.StatusCode).Str("body", string(bodyBytes)).Msg("OpenRouter API error")
-			utils.WriteError(w, "AI service returned error", http.StatusBadGateway)
+			// Forward the status code and body
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(resp.StatusCode)
+			w.Write(bodyBytes)
 			return
 		}
 
