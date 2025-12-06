@@ -97,7 +97,28 @@ func GetAICritiqueHandler(store db.DB) http.HandlerFunc {
 			aiModel = "google/gemini-flash-1.5"
 		}
 
-		// 3. Call OpenRouter API
+		// 3. Check Cache
+		// Create a unique key for the track: "Artist - Track (Album)"
+		cacheKey := fmt.Sprintf("%s - %s (%s)", req.ArtistName, req.TrackName, req.AlbumName)
+
+		var cache map[string]string
+		if cacheInterface, ok := prefs["track_critiques"]; ok {
+			cacheBytes, _ := json.Marshal(cacheInterface)
+			json.Unmarshal(cacheBytes, &cache)
+		}
+		if cache == nil {
+			cache = make(map[string]string)
+		}
+
+		if critique, ok := cache[cacheKey]; ok && critique != "" {
+			l.Debug().Str("key", cacheKey).Msg("Returning cached track critique")
+			utils.WriteJSON(w, http.StatusOK, map[string]string{
+				"critique": critique,
+			})
+			return
+		}
+
+		// 4. Call OpenRouter API
 		systemPrompt := fmt.Sprintf("You are a music critic. %s", customPrompt)
 		userMessage := fmt.Sprintf("Critique the song '%s' by '%s' from the album '%s'.", req.TrackName, req.ArtistName, req.AlbumName)
 
@@ -160,9 +181,24 @@ func GetAICritiqueHandler(store db.DB) http.HandlerFunc {
 			return
 		}
 
-		// 4. Return Result
+		critiqueText := openRouterResp.Choices[0].Message.Content
+
+		// 5. Update Cache & Save Preferences
+		cache[cacheKey] = critiqueText
+		prefs["track_critiques"] = cache
+
+		newPrefBytes, err := json.Marshal(prefs)
+		if err != nil {
+			l.Error().Err(err).Msg("Failed to marshal updated preferences")
+		} else {
+			if err := store.SaveUserPreferences(ctx, user.ID, newPrefBytes); err != nil {
+				l.Error().Err(err).Msg("Failed to save updated preferences")
+			}
+		}
+
+		// 6. Return Result
 		utils.WriteJSON(w, http.StatusOK, map[string]string{
-			"critique": openRouterResp.Choices[0].Message.Content,
+			"critique": critiqueText,
 		})
 	}
 }

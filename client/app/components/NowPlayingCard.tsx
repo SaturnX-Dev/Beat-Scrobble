@@ -70,25 +70,25 @@ export default function NowPlayingCard() {
         })
             .then(async res => {
                 if (res.status === 429) {
-                    aiCircuitBreaker.triggerCooldown(60); // Apply global cooldown
-                    // Try to parse the specific error from OpenRouter/Backend
+                    aiCircuitBreaker.triggerCooldown(60);
+                    const text = await res.text();
                     try {
-                        const errData = await res.json();
-                        // OpenRouter error format usually: { error: { message: "..." } }
+                        const errData = JSON.parse(text);
                         const msg = errData.error?.message || errData.message || JSON.stringify(errData);
-                        throw new Error(`Provider Error: ${msg}`);
+                        throw new Error(`Provider: ${msg}`);
                     } catch (e) {
-                        throw new Error('Limit reached. Check OpenRouter credits.');
+                        throw new Error(`Provider: ${text.slice(0, 100)}`);
                     }
                 }
                 if (res.ok) return res.json();
 
+                const text = await res.text();
                 try {
-                    const errData = await res.json();
+                    const errData = JSON.parse(text);
                     const msg = errData.error?.message || errData.message || JSON.stringify(errData);
                     throw new Error(msg);
                 } catch (e) {
-                    throw new Error('Failed to fetch critique');
+                    throw new Error(`Error: ${text.slice(0, 100)}` || 'Failed to fetch critique');
                 }
             })
             .then(data => {
