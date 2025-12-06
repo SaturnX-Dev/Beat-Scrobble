@@ -5,8 +5,11 @@ import ArtistLinks from "./ArtistLinks";
 import { Pause, Play, SkipForward, Sparkles } from "lucide-react";
 import { AsyncButton } from "./AsyncButton";
 import CardAura from "./CardAura";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { usePreferences } from "~/hooks/usePreferences";
+
+// Global cache to prevent re-fetching across component remounts
+const fetchedTracksCache = new Set<number>();
 
 export default function NowPlayingCard() {
     const { data: npData, isLoading } = useQuery({
@@ -18,7 +21,7 @@ export default function NowPlayingCard() {
     const { getPreference, savePreference } = usePreferences();
     const [critique, setCritique] = useState<string | null>(null);
     const [isCritiqueLoading, setIsCritiqueLoading] = useState(false);
-    const lastTrackIdRef = useRef<number | null>(null);
+    // Removed lastTrackIdRef
     const aiEnabled = getPreference('ai_critique_enabled', false);
 
     useEffect(() => {
@@ -29,8 +32,12 @@ export default function NowPlayingCard() {
 
         const trackId = npData.track.id;
 
-        // Only fetch if track changed
-        if (trackId === lastTrackIdRef.current) {
+        // Prevent infinite loop using global cache
+        if (fetchedTracksCache.has(trackId)) {
+            // Try to load from cache if available
+            const cacheKey = `comet_ai_track_${trackId}`;
+            const cached = getPreference(cacheKey, null);
+            if (cached) setCritique(cached);
             return;
         }
 
@@ -39,7 +46,7 @@ export default function NowPlayingCard() {
         const cached = getPreference(cacheKey, null);
         if (cached) {
             setCritique(cached);
-            lastTrackIdRef.current = trackId;
+            fetchedTracksCache.add(trackId);
             return;
         }
 
@@ -49,7 +56,7 @@ export default function NowPlayingCard() {
             return;
         }
 
-        lastTrackIdRef.current = trackId;
+        fetchedTracksCache.add(trackId); // Lock immediately
         setIsCritiqueLoading(true);
         setCritique(null);
 
