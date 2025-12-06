@@ -334,7 +334,6 @@ export default function ApiKeysModal() {
                                 onChange={setAiPrompt}
                                 onSave={(newVal) => {
                                     savePreference('ai_critique_prompt', newVal);
-                                    handleClearAICache();
                                 }}
                                 placeholder="Enter instructions for the AI critic..."
                                 description="Instructions for the AI when critiquing your currently playing track."
@@ -372,7 +371,6 @@ export default function ApiKeysModal() {
                                 onChange={setProfilePrompt}
                                 onSave={(newVal) => {
                                     savePreference('profile_critique_prompt', newVal);
-                                    handleClearAICache();
                                 }}
                                 placeholder="Enter instructions for the AI critic..."
                                 description="Instructions for the AI when critiquing your overall profile."

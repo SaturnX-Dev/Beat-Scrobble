@@ -160,10 +160,10 @@ export default function Profile() {
         <>
             <YearlyRecapModal open={recapOpen} setOpen={setRecapOpen} />
 
-            <div className="flex min-h-screen w-full">
-                {/* Main Content */}
-                <main className={`flex-1 min-h-screen w-full bg-transparent px-4 py-6 md:py-10 pb-24 ${aiEnabled ? 'lg:mr-80' : ''}`}>
-                    <div className={`max-w-7xl mx-auto ${aiEnabled ? 'lg:mr-0' : ''}`}>
+            <div className="flex w-full h-screen overflow-hidden">
+                {/* Main Content - Scrollable */}
+                <main className="flex-1 overflow-y-auto bg-transparent px-4 py-6 md:py-10 pb-24">
+                    <div className="max-w-7xl mx-auto">
                         {/* Header with Banner */}
                         <div className="relative mb-8 rounded-2xl overflow-hidden bg-[var(--color-bg-secondary)]/60 backdrop-blur-md border border-[var(--color-bg-tertiary)]">
                             {/* Banner Image */}
@@ -503,8 +503,8 @@ export default function Profile() {
 
                 {/* Fixed AI Sidebar for Desktop */}
                 {aiEnabled && (
-                    <aside className="hidden lg:block w-80 flex-shrink-0 p-4 pt-6">
-                        <div className="sticky top-6 glass-card rounded-xl p-4 border border-[var(--color-bg-tertiary)] backdrop-blur-md bg-[var(--color-bg-secondary)]/80 max-h-[calc(100vh-3rem)] overflow-y-auto custom-scrollbar">
+                    <aside className="hidden lg:block w-96 flex-shrink-0 overflow-y-auto bg-transparent p-4 py-6 md:py-10">
+                        <div className="glass-card rounded-xl p-4 border border-[var(--color-bg-tertiary)] backdrop-blur-md bg-[var(--color-bg-secondary)]/80">
                             <ProfileCritique period={period as "day" | "week" | "month" | "year" | "all_time"} />
                         </div>
                     </aside>

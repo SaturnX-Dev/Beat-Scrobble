@@ -110,7 +110,8 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 		}
 
 		if cached, ok := cache[periodStr]; ok {
-			if time.Since(cached.Timestamp) < 7*24*time.Hour {
+			// Always refresh "day" period as stats change rapidly
+			if periodStr != "day" && time.Since(cached.Timestamp) < 7*24*time.Hour {
 				l.Debug().Msg("Returning cached profile critique")
 				utils.WriteJSON(w, http.StatusOK, map[string]string{
 					"critique": cached.Critique,
