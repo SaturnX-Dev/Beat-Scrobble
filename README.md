@@ -168,6 +168,23 @@ cd client && npm install && npm run build
 3. Enter your OpenRouter key
 4. Enable features: AI Critique, Profile Critique, AI Playlists
 
+### 🧠 AI Caching Logic & Token Savings
+
+Beat Scrobble implements smart server-side caching to minimize API usage and save tokens:
+
+- **Track Critiques (Now Playing)**:
+  - **Behavior**: Critiques are generated once per track and **stored indefinitely** on the server.
+  - **Persistence**: They persist across restarts until manually cleared via the "Clear Cache" button or by changing the AI prompt.
+  - **Benefit**: Zero token usage for re-listening to tracks.
+
+- **Profile Critiques (Stats)**:
+  - **Day View**: Cached for **1 hour**. (Allows refreshing stats during a listening session without spamming AI).
+  - **Week/Month/Year/All Time**: Cached for **7 days**.
+  - **Persistence**: Auto-refreshes when cache expires. Can be forced to refresh by changing the prompt.
+
+- **AI Playlists**:
+  - Generated on-demand and not cached (as users typically want fresh recommendations).
+
 ---
 
 ## 🎵 Spotify Setup
