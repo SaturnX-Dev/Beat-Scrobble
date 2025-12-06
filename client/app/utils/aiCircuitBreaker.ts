@@ -18,7 +18,12 @@ export const aiCircuitBreaker = {
         if (cooldownStr) {
             const cooldownUntil = parseInt(cooldownStr, 10);
             if (Date.now() < cooldownUntil) {
-                console.warn(`[AI Guard] Global cooldown active until ${new Date(cooldownUntil).toLocaleTimeString()}`);
+                // Throttle logs to once every 5 seconds to prevent spam
+                const lastLog = parseInt(sessionStorage.getItem(STORAGE_PREFIX + 'last_log') || '0', 10);
+                if (Date.now() - lastLog > 5000) {
+                    console.warn(`[AI Guard] Global cooldown active until ${new Date(cooldownUntil).toLocaleTimeString()}`);
+                    sessionStorage.setItem(STORAGE_PREFIX + 'last_log', Date.now().toString());
+                }
                 return false;
             } else {
                 // Cooldown expired, cleanup

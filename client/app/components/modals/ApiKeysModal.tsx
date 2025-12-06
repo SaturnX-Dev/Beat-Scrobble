@@ -33,7 +33,7 @@ export default function ApiKeysModal() {
 
     useEffect(() => {
         setOpenRouterKey(getPreference('openrouter_api_key', ''));
-        setAiModel(getPreference('ai_model', 'google/gemini-2.0-flash-001'));
+        setAiModel(getPreference('ai_model', 'google/gemini-flash-1.5'));
         setAiPrompt(getPreference('ai_critique_prompt', 'Give a short, witty, and slightly pretentious music critique of this song. Keep it under 50 words.'));
         setAiEnabled(getPreference('ai_critique_enabled', false));
         setProfileCritiqueEnabled(getPreference('profile_critique_enabled', false));
@@ -292,14 +292,14 @@ export default function ApiKeysModal() {
                             <label className="text-sm font-medium">AI Model</label>
                             <input
                                 type="text"
-                                placeholder="google/gemini-2.0-flash-001"
+                                placeholder="google/gemini-flash-1.5"
                                 className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-md p-2 text-sm"
                                 value={aiModel}
                                 onChange={(e) => setAiModel(e.target.value)}
                                 onBlur={handleSaveAIConfig}
                             />
                             <p className="text-xs text-[var(--color-fg-secondary)]">
-                                Specify the OpenRouter model ID to use (default: google/gemini-2.0-flash-001)
+                                Specify the OpenRouter model ID to use (default: google/gemini-flash-1.5)
                             </p>
                         </div>
 

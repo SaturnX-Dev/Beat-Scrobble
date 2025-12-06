@@ -68,13 +68,28 @@ export default function NowPlayingCard() {
                 album_name: (npData.track.album as any)?.title || npData.track.album || "Unknown Album"
             })
         })
-            .then(res => {
+            .then(async res => {
                 if (res.status === 429) {
                     aiCircuitBreaker.triggerCooldown(60); // Apply global cooldown
-                    throw new Error('Too many requests. Please wait.');
+                    // Try to parse the specific error from OpenRouter/Backend
+                    try {
+                        const errData = await res.json();
+                        // OpenRouter error format usually: { error: { message: "..." } }
+                        const msg = errData.error?.message || errData.message || JSON.stringify(errData);
+                        throw new Error(`Provider Error: ${msg}`);
+                    } catch (e) {
+                        throw new Error('Limit reached. Check OpenRouter credits.');
+                    }
                 }
                 if (res.ok) return res.json();
-                throw new Error('Failed to fetch critique');
+
+                try {
+                    const errData = await res.json();
+                    const msg = errData.error?.message || errData.message || JSON.stringify(errData);
+                    throw new Error(msg);
+                } catch (e) {
+                    throw new Error('Failed to fetch critique');
+                }
             })
             .then(data => {
                 setCritique(data.critique);

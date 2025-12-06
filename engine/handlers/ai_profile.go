@@ -96,7 +96,7 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 		}
 
 		if aiModel == "" {
-			aiModel = "google/gemini-2.0-flash-001"
+			aiModel = "google/gemini-flash-1.5"
 		}
 
 		// 3. Check Cache

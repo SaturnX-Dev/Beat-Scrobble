@@ -56,13 +56,30 @@ export default function ProfileCritique({ period }: Props) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ period })
         })
-            .then(res => {
+            .then(async res => {
                 if (res.status === 429) {
                     aiCircuitBreaker.triggerCooldown(60); // Pause all AI for 60s
-                    throw new Error('Too many requests. Please wait.');
+                    // Try to parse the specific error from OpenRouter/Backend
+                    try {
+                        const errData = await res.json();
+                        // OpenRouter error format: { error: { message: "..." } }
+                        const msg = errData.error?.message || errData.message || JSON.stringify(errData);
+                        throw new Error(`Provider Error: ${msg}`);
+                    } catch (e) {
+                        // If JSON parse fails, throw generic
+                        throw new Error('Limit reached. Check OpenRouter credits.');
+                    }
                 }
                 if (res.ok) return res.json();
-                throw new Error('Failed to fetch critique');
+
+                // Handle 500s or other errors
+                try {
+                    const errData = await res.json();
+                    const msg = errData.error?.message || errData.message || JSON.stringify(errData);
+                    throw new Error(msg);
+                } catch (e) {
+                    throw new Error('Failed to fetch critique');
+                }
             })
             .then(data => {
                 setCritique(data.critique);
