@@ -138,7 +138,7 @@ func GenerateAIPlaylistHandler(store db.DB) http.HandlerFunc {
 		}
 
 		if aiModel == "" {
-			aiModel = "google/gemini-flash-1.5"
+			aiModel = "google/gemini-2.0-flash-exp:free"
 		}
 
 		// Get user's listening context using paginated methods
