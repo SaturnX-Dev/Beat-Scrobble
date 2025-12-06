@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
@@ -140,6 +141,18 @@ func SaveUserPreferencesHandler(store db.DB) http.HandlerFunc {
 				delete(finalPrefs, "profile_critiques")
 				clearedCount++
 				l.Info().Msg("Invalidated profile critiques cache due to prompt update")
+			}
+
+			// Also clear frontend-cached profile critiques
+			keysToDelete := []string{}
+			for key := range finalPrefs {
+				if strings.HasPrefix(key, "comet_ai_profile_") {
+					keysToDelete = append(keysToDelete, key)
+				}
+			}
+			for _, key := range keysToDelete {
+				delete(finalPrefs, key)
+				clearedCount++
 			}
 		}
 

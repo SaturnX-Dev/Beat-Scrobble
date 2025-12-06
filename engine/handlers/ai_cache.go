@@ -54,7 +54,7 @@ func ClearAICacheHandler(store db.DB) http.HandlerFunc {
 		// Keys are in format: comet_ai_track_{trackId}
 		keysToDelete := []string{}
 		for key := range prefs {
-			if strings.HasPrefix(key, "comet_ai_track_") {
+			if strings.HasPrefix(key, "comet_ai_track_") || strings.HasPrefix(key, "comet_ai_profile_") {
 				keysToDelete = append(keysToDelete, key)
 			}
 		}
@@ -134,6 +134,8 @@ func ExportAICacheHandler(store db.DB) http.HandlerFunc {
 				isCache = true
 			} else if len(k) >= 15 && k[:15] == "comet_ai_track_" {
 				isCache = true
+			} else if strings.HasPrefix(k, "comet_ai_profile_") {
+				isCache = true
 			}
 
 			if isCache {
@@ -196,6 +198,8 @@ func ImportAICacheHandler(store db.DB) http.HandlerFunc {
 			} else if k == "ai_playlists_cache" {
 				isCache = true
 			} else if len(k) >= 15 && k[:15] == "comet_ai_track_" {
+				isCache = true
+			} else if strings.HasPrefix(k, "comet_ai_profile_") {
 				isCache = true
 			}
 

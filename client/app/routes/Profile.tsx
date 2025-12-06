@@ -162,7 +162,7 @@ export default function Profile() {
 
             <div className="flex w-full h-screen overflow-hidden">
                 {/* Main Content - Scrollable */}
-                <main className="flex-1 overflow-y-auto bg-transparent px-4 py-6 md:py-10 pb-24">
+                <main className="flex-1 overflow-y-auto bg-transparent px-4 py-6 md:py-10 pb-24 hide-scrollbar">
                     <div className="max-w-7xl mx-auto">
                         {/* Header with Banner */}
                         <div className="relative mb-8 rounded-2xl overflow-hidden bg-[var(--color-bg-secondary)]/60 backdrop-blur-md border border-[var(--color-bg-tertiary)]">
@@ -503,7 +503,7 @@ export default function Profile() {
 
                 {/* Fixed AI Sidebar for Desktop */}
                 {aiEnabled && (
-                    <aside className="hidden lg:block w-96 flex-shrink-0 overflow-y-auto bg-transparent p-4 py-6 md:py-10">
+                    <aside className="hidden lg:block w-96 flex-shrink-0 overflow-y-auto bg-transparent p-4 py-6 md:py-10 hide-scrollbar">
                         <div className="glass-card rounded-xl p-4 border border-[var(--color-bg-tertiary)] backdrop-blur-md bg-[var(--color-bg-secondary)]/80">
                             <ProfileCritique period={period as "day" | "week" | "month" | "year" | "all_time"} />
                         </div>
