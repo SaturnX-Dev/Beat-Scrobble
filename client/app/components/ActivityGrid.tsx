@@ -10,7 +10,6 @@ import { useTheme } from "~/hooks/useTheme";
 import ActivityOptsSelector from "./ActivityOptsSelector";
 import type { Theme } from "~/styles/themes.css";
 
-// Color utilities separadas - más fácil de testear
 const colorUtils = {
   getPrimaryColor(theme: Theme): string {
     const value = theme.primary;
@@ -25,54 +24,65 @@ const colorUtils = {
     return value;
   },
 
-  adjustLuminosity(hex: string, lum: number): string {
-    hex = String(hex).replace(/[^0-9a-f]/gi, "");
-    if (hex.length < 6) {
-      hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
-    }
+  hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+      ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+      : null;
+  },
 
-    lum = lum || 0;
-    let rgb = "#";
+  rgbToHex(r: number, g: number, b: number): string {
+    return "#" + [r, g, b].map((x) => {
+      const hex = Math.round(x).toString(16);
+      return hex.length === 1 ? "0" + hex : hex;
+    }).join("");
+  },
 
-    for (let i = 0; i < 3; i++) {
-      let c = parseInt(hex.substring(i * 2, i * 2 + 2), 16);
-      c = Math.round(Math.min(Math.max(0, c + c * lum), 255));
-      rgb += ("00" + c.toString(16)).slice(-2);
-    }
+  interpolateColor(color1: string, color2: string, factor: number): string {
+    const c1 = this.hexToRgb(color1);
+    const c2 = this.hexToRgb(color2);
 
-    return rgb;
+    if (!c1 || !c2) return color1;
+
+    const r = c1.r + factor * (c2.r - c1.r);
+    const g = c1.g + factor * (c2.g - c1.g);
+    const b = c1.b + factor * (c2.b - c1.b);
+
+    return this.rgbToHex(r, g, b);
   }
 };
 
-// Configuración de layout por rango - más declarativo
 const LAYOUT_CONFIG = {
   week: {
     maxRange: 14,
-    cellSize: "w-[30px] h-[30px] sm:w-[36px] sm:h-[36px]",
-    rounded: "rounded-[6px]",
-    gap: "gap-[6px]",
-    containerHeight: "h-24 sm:h-32",
+    cellSize: "w-8 h-8 sm:w-10 sm:h-10",
+    rounded: "rounded-lg",
+    gap: "gap-2",
+    containerHeight: "h-auto",
     horizontal: true
   },
   month: {
     maxRange: 31,
-    cellSize: "w-[20px] h-[20px] sm:w-[24px] sm:h-[24px]",
-    rounded: "rounded-[4px]",
-    gap: "gap-[4px]",
-    containerHeight: "h-32 sm:h-40",
+    cellSize: "w-6 h-6 sm:w-7 sm:h-7",
+    rounded: "rounded-md",
+    gap: "gap-1.5",
+    containerHeight: "h-auto",
     horizontal: false
   },
   year: {
     maxRange: Infinity,
-    cellSize: "w-[10px] h-[10px] sm:w-[12px] sm:h-[12px] md:w-[14px] md:h-[14px]",
-    rounded: "rounded-[2px] md:rounded-[3px]",
-    gap: "gap-[3px] md:gap-[5px]",
-    containerHeight: "h-32 sm:h-40 md:h-48",
+    cellSize: "w-3 h-3 sm:w-3.5 sm:h-3.5",
+    rounded: "rounded-sm",
+    gap: "gap-1",
+    containerHeight: "h-auto",
     horizontal: false
   }
 };
 
-// Targets de intensidad por step - constantes claras
 const INTENSITY_TARGETS = {
   day: { base: 10, specific: 1 },
   week: { base: 20, specific: 1 },
@@ -127,28 +137,31 @@ export default function ActivityGrid({
   const { theme, themeName } = useTheme();
   const primaryColor = useMemo(() => colorUtils.getPrimaryColor(theme), [theme]);
 
-  // Layout config basado en range - memoizado
   const layoutConfig = useMemo(() => {
     if (rangeState <= LAYOUT_CONFIG.week.maxRange) return LAYOUT_CONFIG.week;
     if (rangeState <= LAYOUT_CONFIG.month.maxRange) return LAYOUT_CONFIG.month;
     return LAYOUT_CONFIG.year;
   }, [rangeState]);
 
-  // Cálculo de intensidad - más robusto
-  const getIntensityFactor = (listens: number): number => {
-    const isGlobalView = artistId === 0 && albumId === 0 && trackId === 0;
-    const targets = INTENSITY_TARGETS[stepState as keyof typeof INTENSITY_TARGETS] || INTENSITY_TARGETS.day;
-    const targetValue = isGlobalView ? targets.base : targets.specific;
+  // Calcula el máximo de listens para normalización suave
+  const maxListens = useMemo(() => {
+    if (!data?.length) return 1;
+    return Math.max(...data.map(item => item.listens), 1);
+  }, [data]);
 
-    const normalizedValue = Math.min(listens, targetValue);
+  const getColorForIntensity = (listens: number): string => {
+    if (listens === 0) return "transparent";
 
-    if (themeName === "pearl") {
-      return (targetValue - normalizedValue) / targetValue;
-    }
-    return ((normalizedValue - targetValue) / targetValue) * 0.8;
+    const baseColor = themeName === "pearl" ? "#e5e7eb" : "#1a1a1a";
+    const targetColor = primaryColor;
+
+    // Normalización suave con curva logarítmica para mejor distribución visual
+    const normalized = Math.min(listens / maxListens, 1);
+    const curved = Math.pow(normalized, 0.6); // Curva suave
+
+    return colorUtils.interpolateColor(baseColor, targetColor, curved);
   };
 
-  // Grid style - más robusto con fallbacks
   const gridStyle = useMemo(() => {
     if (!data?.length) return {};
 
@@ -159,7 +172,7 @@ export default function ActivityGrid({
         display: "grid",
         gridTemplateColumns: `repeat(${totalItems}, 1fr)`,
         gridTemplateRows: "1fr",
-        width: "100%",
+        maxWidth: "100%",
       };
     }
 
@@ -169,42 +182,49 @@ export default function ActivityGrid({
       gridTemplateRows: "repeat(7, 1fr)",
       gridTemplateColumns: `repeat(${columns}, 1fr)`,
       gridAutoFlow: "column" as const,
-      width: "100%",
+      maxWidth: "100%",
     };
   }, [data?.length, layoutConfig.horizontal]);
 
   if (isPending) {
     return (
-      <div className="w-full h-32 flex items-center justify-center">
-        <p className="text-[var(--color-fg-secondary)] animate-pulse">
-          Loading activity...
-        </p>
+      <div className="w-full flex items-center justify-center py-12">
+        <div className="relative">
+          <div className="w-12 h-12 rounded-full border-4 border-[var(--color-bg-tertiary)] border-t-[var(--color-primary)] animate-spin" />
+        </div>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="w-full p-4 bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-error)]/20">
-        <p className="text-[var(--color-error)] text-sm">
-          Error: {error.message}
-        </p>
+      <div className="w-full p-6 bg-[var(--color-bg-secondary)] rounded-2xl border border-[var(--color-error)]/20 backdrop-blur-sm">
+        <div className="flex items-start gap-3">
+          <div className="w-5 h-5 rounded-full bg-[var(--color-error)]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+            <span className="text-[var(--color-error)] text-xs">!</span>
+          </div>
+          <div>
+            <p className="text-[var(--color-error)] font-medium text-sm">Failed to load activity</p>
+            <p className="text-[var(--color-fg-secondary)] text-xs mt-1">{error.message}</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!data?.length) {
     return (
-      <div className="w-full p-8 text-center">
-        <p className="text-[var(--color-fg-secondary)] text-sm">
-          No activity data available
-        </p>
+      <div className="w-full p-12 text-center bg-[var(--color-bg-secondary)]/50 rounded-2xl border border-[var(--color-bg-tertiary)] backdrop-blur-sm">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[var(--color-bg-tertiary)] flex items-center justify-center">
+          <span className="text-2xl opacity-40">📊</span>
+        </div>
+        <p className="text-[var(--color-fg-secondary)] text-sm">No activity recorded yet</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-4">
       {configurable && (
         <ActivityOptsSelector
           rangeSetter={setRange}
@@ -214,47 +234,91 @@ export default function ActivityGrid({
         />
       )}
 
-      <div className={`w-full ${layoutConfig.containerHeight}`}>
+      <div className={`w-full ${layoutConfig.containerHeight} overflow-x-auto`}>
         <div
           style={gridStyle}
-          className={`h-full ${layoutConfig.gap}`}
+          className={`h-full ${layoutConfig.gap} w-fit mx-auto`}
         >
-          {data.map((item) => {
-            const cellColor = item.listens > 0
-              ? colorUtils.adjustLuminosity(
-                primaryColor,
-                getIntensityFactor(item.listens)
-              )
-              : "var(--color-bg-secondary)";
+          {data.map((item, idx) => {
+            const cellColor = getColorForIntensity(item.listens);
+            const isEmpty = item.listens === 0;
 
             return (
               <div
-                key={`${item.start_time}-${item.listens}`}
-                className="w-full h-full min-w-0 min-h-0"
+                key={`${item.start_time}-${idx}`}
+                className="relative group"
               >
                 <Popup
                   position="top"
                   space={12}
-                  extraClasses="left-2"
-                  inner={`${new Date(item.start_time).toLocaleDateString()} - ${item.listens} plays`}
-                  className="w-full h-full"
+                  extraClasses="left-1/2 -translate-x-1/2"
+                  inner={
+                    <div className="text-xs whitespace-nowrap">
+                      <div className="font-medium">{item.listens} plays</div>
+                      <div className="text-[var(--color-fg-secondary)] mt-0.5">
+                        {new Date(item.start_time).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: rangeState > 31 ? 'numeric' : undefined
+                        })}
+                      </div>
+                    </div>
+                  }
                 >
                   <div
-                    style={{ backgroundColor: cellColor }}
+                    style={{
+                      backgroundColor: cellColor,
+                    }}
                     className={`
-                      w-full h-full
+                      ${layoutConfig.cellSize}
                       ${layoutConfig.rounded}
-                      transition-all duration-200
-                      hover:ring-2 hover:ring-[var(--color-fg)] hover:z-10 hover:scale-110
-                      ${item.listens === 0 ? "border border-[var(--color-bg-tertiary)]" : ""}
+                      transition-all duration-300 ease-out
+                      ${isEmpty
+                        ? "border-2 border-[var(--color-bg-tertiary)] border-dashed"
+                        : "shadow-sm"
+                      }
+                      hover:scale-125 hover:z-20
+                      hover:shadow-xl hover:shadow-[var(--color-primary)]/20
+                      hover:ring-2 hover:ring-[var(--color-primary)]/40
+                      hover:brightness-110
+                      cursor-pointer
+                      relative
+                      overflow-hidden
                     `}
                     aria-label={`${item.listens} plays on ${new Date(item.start_time).toLocaleDateString()}`}
-                  />
+                  >
+                    {/* Brillo sutil en hover */}
+                    {!isEmpty && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/0 group-hover:from-white/20 group-hover:to-transparent transition-all duration-300" />
+                    )}
+                  </div>
                 </Popup>
               </div>
             );
           })}
         </div>
+      </div>
+
+      {/* Leyenda de intensidad */}
+      <div className="flex items-center justify-between text-xs text-[var(--color-fg-secondary)] px-2">
+        <span>Less</span>
+        <div className="flex items-center gap-1">
+          {[0, 0.25, 0.5, 0.75, 1].map((intensity) => (
+            <div
+              key={intensity}
+              style={{
+                backgroundColor: intensity === 0
+                  ? "transparent"
+                  : getColorForIntensity(Math.ceil(maxListens * intensity))
+              }}
+              className={`w-3 h-3 rounded-sm ${intensity === 0
+                ? "border-2 border-[var(--color-bg-tertiary)] border-dashed"
+                : ""
+                }`}
+            />
+          ))}
+        </div>
+        <span>More</span>
       </div>
     </div>
   );
