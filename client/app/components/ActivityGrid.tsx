@@ -145,6 +145,26 @@ export default function ActivityGrid({
     }
   };
 
+  const getSizeClasses = () => {
+    if (rangeState <= 14) { // Week or less
+      return "w-[30px] h-[30px] rounded-[6px]";
+    }
+    if (rangeState <= 31) { // Month
+      return "w-[20px] h-[20px] rounded-[4px]";
+    }
+    // Default (Year/All Time)
+    return "w-[10px] sm:w-[12px] h-[10px] sm:h-[12px] rounded-[2px] md:rounded-[3px]";
+  };
+  const sizeClass = getSizeClasses();
+
+  const getGapClass = () => {
+    if (rangeState <= 14) return "gap-[6px]";
+    if (rangeState <= 31) return "gap-[4px]";
+    return "gap-[3px] md:gap-[5px]";
+  }
+  const gapClass = getGapClass();
+
+
   const CHUNK_SIZE = 26 * 7;
   const chunks = [];
 
@@ -167,12 +187,12 @@ export default function ActivityGrid({
         {chunks.map((chunk, index) => (
           <div
             key={index}
-            className="inline-grid grid-flow-col grid-rows-7 gap-[3px] md:gap-[5px] mb-4 min-w-min"
+            className={`inline-grid grid-flow-col grid-rows-7 ${gapClass} mb-4 min-w-min`}
           >
             {chunk.map((item) => (
               <div
                 key={new Date(item.start_time).toString()}
-                className="w-[10px] sm:w-[12px] h-[10px] sm:h-[12px]"
+                className={sizeClass}
               >
                 <Popup
                   position="top"
@@ -192,7 +212,7 @@ export default function ActivityGrid({
                           )
                           : "var(--color-bg-secondary)",
                     }}
-                    className={`w-[10px] sm:w-[12px] h-[10px] sm:h-[12px] rounded-[2px] md:rounded-[3px] ${item.listens > 0
+                    className={`${sizeClass} ${item.listens > 0
                       ? ""
                       : "border-[0.5px] border-(--color-bg-tertiary)"
                       }`}
