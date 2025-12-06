@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Sparkles, RefreshCw } from "lucide-react";
 import { usePreferences } from "~/hooks/usePreferences";
 
@@ -12,6 +12,7 @@ export default function ProfileCritique({ period }: Props) {
     const [critique, setCritique] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const lastFetchedPeriod = useRef<string | null>(null);
 
     useEffect(() => {
         setEnabled(getPreference('profile_critique_enabled', false));
@@ -23,16 +24,23 @@ export default function ProfileCritique({ period }: Props) {
             return;
         }
 
+        // Prevent infinite loop if we already fetched/checked for this period
+        if (period === lastFetchedPeriod.current) {
+            return;
+        }
+
         // Check server-side cache first
         const cacheKey = `comet_ai_profile_${period}`;
         const cached = getPreference(cacheKey, null);
         if (cached) {
             setCritique(cached);
+            lastFetchedPeriod.current = period;
             return;
         }
 
         setLoading(true);
         setError(null);
+        lastFetchedPeriod.current = period; // Mark as fetched to prevent loop
 
         fetch('/apis/web/v1/ai/profile-critique', {
             method: 'POST',
@@ -51,6 +59,8 @@ export default function ProfileCritique({ period }: Props) {
             .catch(err => {
                 console.error(err);
                 setError("Could not generate critique.");
+                // Allow retrying on error if needed, but for safety keep it blocked for this mount
+                // lastFetchedPeriod.current = null; 
             })
             .finally(() => {
                 setLoading(false);
