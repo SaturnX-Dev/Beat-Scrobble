@@ -66,7 +66,7 @@ export function Modal({
     >
       <div
         ref={modalRef}
-        className={`glass-card rounded-2xl shadow-2xl p-6 w-full relative max-h-3/4 overflow-y-auto transition-all duration-100 border border-[var(--color-bg-tertiary)]/50 ${isClosing ? 'animate-fade-out-scale' : 'animate-fade-in-scale'
+        className={`glass-card rounded-2xl shadow-2xl p-6 w-full relative max-h-3/4 overflow-y-auto transition-all duration-100 border border-[var(--color-bg-tertiary)]/50 hide-scrollbar ${isClosing ? 'animate-fade-out-scale' : 'animate-fade-in-scale'
           } ${className || ''}`}
         style={{ maxWidth: maxW ?? 600, height: h ?? '' }}
       >

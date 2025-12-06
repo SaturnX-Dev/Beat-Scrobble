@@ -198,7 +198,7 @@ export default function Profile() {
                                     </div>
                                 </div>
 
-                                <h1 className="text-3xl sm:text-4xl font-bold text-[var(--color-fg)] mb-2">Your Profile</h1>
+                                <h1 className="text-3xl sm:text-4xl font-bold text-[var(--color-fg)] mb-2">{user?.username}</h1>
                                 <p className="text-[var(--color-fg-secondary)] text-sm md:text-base max-w-lg mx-auto mb-4">
                                     Complete statistics, trends, and insights about your listening habits
                                 </p>
