@@ -33,7 +33,7 @@ export default function ApiKeysModal() {
 
     useEffect(() => {
         setOpenRouterKey(getPreference('openrouter_api_key', ''));
-        setAiModel(getPreference('ai_model', 'google/gemini-2.0-flash-exp:free'));
+        setAiModel(getPreference('ai_model', ''));
         setAiPrompt(getPreference('ai_critique_prompt', 'Give a short, witty, and slightly pretentious music critique of this song. Keep it under 50 words.'));
         setAiEnabled(getPreference('ai_critique_enabled', false));
         setProfileCritiqueEnabled(getPreference('profile_critique_enabled', false));

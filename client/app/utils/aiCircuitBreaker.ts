@@ -1,11 +1,13 @@
 /**
  * AI Circuit Breaker
- * Prevents API spam by using sessionStorage to track requests across component lifecycles.
- * This survives component unmounts/remounts and module reloads.
+ * Prevents API spam by tracking requests in memory.
+ * Resets on page reload.
  */
 
-const STORAGE_PREFIX = 'comet_ai_guard_';
+// In-memory storage instead of sessionStorage
+const memoryStore = new Map<string, string>();
 const GLOBAL_COOLDOWN_KEY = 'comet_ai_global_cooldown';
+const STORAGE_PREFIX = 'comet_ai_guard_';
 
 export const aiCircuitBreaker = {
     /**
@@ -14,25 +16,25 @@ export const aiCircuitBreaker = {
      */
     canFetch: (key: string): boolean => {
         // 1. Check Global Cooldown (triggered by 429s)
-        const cooldownStr = sessionStorage.getItem(GLOBAL_COOLDOWN_KEY);
+        const cooldownStr = memoryStore.get(GLOBAL_COOLDOWN_KEY);
         if (cooldownStr) {
             const cooldownUntil = parseInt(cooldownStr, 10);
             if (Date.now() < cooldownUntil) {
                 // Throttle logs to once every 5 seconds to prevent spam
-                const lastLog = parseInt(sessionStorage.getItem(STORAGE_PREFIX + 'last_log') || '0', 10);
+                const lastLog = parseInt(memoryStore.get(STORAGE_PREFIX + 'last_log') || '0', 10);
                 if (Date.now() - lastLog > 5000) {
                     console.warn(`[AI Guard] Global cooldown active until ${new Date(cooldownUntil).toLocaleTimeString()}`);
-                    sessionStorage.setItem(STORAGE_PREFIX + 'last_log', Date.now().toString());
+                    memoryStore.set(STORAGE_PREFIX + 'last_log', Date.now().toString());
                 }
                 return false;
             } else {
                 // Cooldown expired, cleanup
-                sessionStorage.removeItem(GLOBAL_COOLDOWN_KEY);
+                memoryStore.delete(GLOBAL_COOLDOWN_KEY);
             }
         }
 
         // 2. Check specific key
-        if (sessionStorage.getItem(STORAGE_PREFIX + key)) {
+        if (memoryStore.get(STORAGE_PREFIX + key)) {
             // Already fetched this session
             return false;
         }
@@ -44,7 +46,7 @@ export const aiCircuitBreaker = {
      * Marks a key as fetched.
      */
     markFetched: (key: string) => {
-        sessionStorage.setItem(STORAGE_PREFIX + key, 'true');
+        memoryStore.set(STORAGE_PREFIX + key, 'true');
     },
 
     /**
@@ -54,7 +56,7 @@ export const aiCircuitBreaker = {
      */
     triggerCooldown: (seconds: number = 60) => {
         const cooldownUntil = Date.now() + (seconds * 1000);
-        sessionStorage.setItem(GLOBAL_COOLDOWN_KEY, cooldownUntil.toString());
+        memoryStore.set(GLOBAL_COOLDOWN_KEY, cooldownUntil.toString());
         console.error(`[AI Guard] 429 received. AI features paused for ${seconds}s.`);
     },
 
@@ -62,10 +64,6 @@ export const aiCircuitBreaker = {
      * Clears locks (useful for debugging)
      */
     reset: () => {
-        Object.keys(sessionStorage).forEach(key => {
-            if (key.startsWith(STORAGE_PREFIX) || key === GLOBAL_COOLDOWN_KEY) {
-                sessionStorage.removeItem(key);
-            }
-        });
+        memoryStore.clear();
     }
 };

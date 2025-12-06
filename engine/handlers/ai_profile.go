@@ -96,7 +96,8 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 		}
 
 		if aiModel == "" {
-			aiModel = "google/gemini-2.0-flash-exp:free"
+			utils.WriteError(w, "AI Model not configured in Settings", http.StatusBadRequest)
+			return
 		}
 
 		// 3. Check Cache
