@@ -332,8 +332,8 @@ export default function ApiKeysModal() {
                                 label="Now Playing Prompt"
                                 value={aiPrompt}
                                 onChange={setAiPrompt}
-                                onSave={() => {
-                                    savePreference('ai_critique_prompt', aiPrompt);
+                                onSave={(newVal) => {
+                                    savePreference('ai_critique_prompt', newVal);
                                     handleClearAICache();
                                 }}
                                 placeholder="Enter instructions for the AI critic..."
@@ -370,8 +370,8 @@ export default function ApiKeysModal() {
                                 label="Profile Prompt"
                                 value={profilePrompt}
                                 onChange={setProfilePrompt}
-                                onSave={() => {
-                                    savePreference('profile_critique_prompt', profilePrompt);
+                                onSave={(newVal) => {
+                                    savePreference('profile_critique_prompt', newVal);
                                     handleClearAICache();
                                 }}
                                 placeholder="Enter instructions for the AI critic..."
@@ -408,10 +408,8 @@ export default function ApiKeysModal() {
                                 label="Playlist Generation Prompt"
                                 value={getPreference('ai_playlists_prompt', '')}
                                 onChange={(val) => savePreference('ai_playlists_prompt', val)} // Direct save for now or manage state if needed
-                                onSave={() => {
-                                    // Already saved via onChange wrapper above, but we can trigger cache clear if needed
-                                    // For playlists, maybe we don't clear cache immediately or we do?
-                                    // Let's just save.
+                                onSave={(newVal) => {
+                                    savePreference('ai_playlists_prompt', newVal);
                                 }}
                                 placeholder="Instructions for AI playlist generation..."
                                 description="Playlists are regenerated every 7 days automatically."
@@ -513,7 +511,7 @@ export default function ApiKeysModal() {
     )
 }
 
-function PromptEditor({ label, value, onChange, onSave, placeholder, description }: { label: string, value: string, onChange: (val: string) => void, onSave: () => void, placeholder: string, description?: string }) {
+function PromptEditor({ label, value, onChange, onSave, placeholder, description }: { label: string, value: string, onChange: (val: string) => void, onSave: (val: string) => void, placeholder: string, description?: string }) {
     const [expanded, setExpanded] = useState(false);
     const [localValue, setLocalValue] = useState(value);
     const [saved, setSaved] = useState(false);
@@ -524,7 +522,7 @@ function PromptEditor({ label, value, onChange, onSave, placeholder, description
 
     const handleSave = () => {
         onChange(localValue);
-        onSave();
+        onSave(localValue);
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
     };
@@ -557,8 +555,8 @@ function PromptEditor({ label, value, onChange, onSave, placeholder, description
                         <button
                             onClick={handleSave}
                             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${saved
-                                    ? 'bg-green-500/20 text-green-400'
-                                    : 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dim)]'
+                                ? 'bg-green-500/20 text-green-400'
+                                : 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dim)]'
                                 }`}
                         >
                             {saved ? 'Saved & Cache Cleared!' : 'Save Prompt'}
