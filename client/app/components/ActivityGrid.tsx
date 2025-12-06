@@ -165,12 +165,30 @@ export default function ActivityGrid({
   const gapClass = getGapClass();
 
 
-  const CHUNK_SIZE = 26 * 7;
-  const chunks = [];
+  // Calculate grid dimensions
+  const totalItems = data.length;
+  // If range is small (e.g. week/2weeks), use a horizontal strip (1 row).
+  // Otherwise use the standard 7-row calendar layout.
+  const isHorizontalStrip = rangeState <= 14;
 
-  for (let i = 0; i < data.length; i += CHUNK_SIZE) {
-    chunks.push(data.slice(i, i + CHUNK_SIZE));
-  }
+  const gridStyle = isHorizontalStrip
+    ? {
+      display: "grid",
+      gridTemplateColumns: `repeat(${totalItems}, 1fr)`,
+      gridTemplateRows: "1fr",
+      width: "100%",
+      gap: "6px",
+    }
+    : {
+      display: "grid",
+      gridTemplateRows: "repeat(7, 1fr)",
+      gridTemplateColumns: `repeat(${Math.ceil(totalItems / 7)}, 1fr)`,
+      gridAutoFlow: "column",
+      width: "100%",
+      gap: "4px",
+    };
+
+  const containerHeightClass = isHorizontalStrip ? "h-24 sm:h-32" : "h-32 sm:h-40";
 
   return (
     <div className="w-full">
@@ -183,45 +201,39 @@ export default function ActivityGrid({
         />
       ) : null}
 
-      <div className="w-full overflow-x-auto custom-scrollbar pb-2">
-        {chunks.map((chunk, index) => (
-          <div
-            key={index}
-            className={`inline-grid grid-flow-col grid-rows-7 ${gapClass} mb-4 min-w-min`}
-          >
-            {chunk.map((item) => (
-              <div
-                key={new Date(item.start_time).toString()}
-                className={sizeClass}
+      <div className={`w-full ${containerHeightClass}`}>
+        <div style={gridStyle} className="h-full">
+          {data.map((item) => (
+            <div
+              key={new Date(item.start_time).toString()}
+              className="w-full h-full min-w-0 min-h-0"
+            >
+              <Popup
+                position="top"
+                space={12}
+                extraClasses="left-2"
+                inner={`${new Date(item.start_time).toLocaleDateString()} ${item.listens
+                  } plays`}
               >
-                <Popup
-                  position="top"
-                  space={12}
-                  extraClasses="left-2"
-                  inner={`${new Date(item.start_time).toLocaleDateString()} ${item.listens
-                    } plays`}
-                >
-                  <div
-                    style={{
-                      display: "inline-block",
-                      background:
-                        item.listens > 0
-                          ? LightenDarkenColor(
-                            color,
-                            getDarkenAmount(item.listens, 100)
-                          )
-                          : "var(--color-bg-secondary)",
-                    }}
-                    className={`${sizeClass} ${item.listens > 0
+                <div
+                  style={{
+                    backgroundColor:
+                      item.listens > 0
+                        ? LightenDarkenColor(
+                          color,
+                          getDarkenAmount(item.listens, 100)
+                        )
+                        : "var(--color-bg-secondary)",
+                  }}
+                  className={`w-full h-full rounded-[4px] sm:rounded-[6px] transition-all hover:ring-2 hover:ring-[var(--color-fg)] hover:z-10 ${item.listens > 0
                       ? ""
-                      : "border-[0.5px] border-(--color-bg-tertiary)"
-                      }`}
-                  ></div>
-                </Popup>
-              </div>
-            ))}
-          </div>
-        ))}
+                      : "border border-[var(--color-bg-tertiary)]"
+                    }`}
+                ></div>
+              </Popup>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -167,7 +167,7 @@ export default function Profile() {
                         {/* Header with Banner */}
                         <div className="relative mb-8 rounded-2xl overflow-hidden bg-[var(--color-bg-secondary)]/60 backdrop-blur-md border border-[var(--color-bg-tertiary)]">
                             {/* Banner Image */}
-                            <div className="h-56 sm:h-72 w-full bg-[var(--color-bg-tertiary)] relative">
+                            <div className="w-full aspect-[3/1] max-h-[400px] bg-[var(--color-bg-tertiary)] relative">
                                 {backgroundImage ? (
                                     <img
                                         src={backgroundImage}

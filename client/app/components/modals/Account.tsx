@@ -84,6 +84,7 @@ export default function Account() {
                     if (res.ok) {
                         const data = await res.json()
                         setProfileImage(data.path)
+                        savePreference('profile_image', data.path)
                         setSuccess('Profile image updated!')
                     } else {
                         const err = await res.json()
@@ -139,6 +140,7 @@ export default function Account() {
                     if (res.ok) {
                         const data = await res.json()
                         setBackgroundImage(data.path)
+                        savePreference('background_image', data.path)
                         setSuccess('Background image updated!')
                     } else {
                         const err = await res.json()
