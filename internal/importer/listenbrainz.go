@@ -12,12 +12,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/SaturnX-Dev/Beat-Scrobble/engine/handlers"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/catalog"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/mbz"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 	"github.com/google/uuid"
 )
@@ -72,7 +72,7 @@ func ImportListenBrainzFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrai
 	count := 0
 	for scanner.Scan() {
 		line := scanner.Bytes()
-		payload := new(handlers.LbzSubmitListenPayload)
+		payload := new(models.LbzSubmitListenPayload)
 		err := json.Unmarshal(line, payload)
 		if err != nil {
 			fmt.Println("Error unmarshaling JSON:", err)

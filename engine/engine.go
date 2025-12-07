@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/worker"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/catalog"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
@@ -163,6 +164,10 @@ func Run(
 		l.Warn().Msg("You have enabled ListenBrainz relay, but either the URL or token is missing. Double check your configuration to make sure it is correct!")
 	}
 
+	l.Debug().Msg("Engine: Initializing background worker")
+	bgWorker := worker.New(store, mbzC, l)
+	bgWorker.Start()
+
 	l.Debug().Msg("Engine: Setting up HTTP server")
 	var ready atomic.Bool
 	mux := chi.NewRouter()
@@ -171,7 +176,7 @@ func Run(
 	mux.Use(chimiddleware.Recoverer)
 	mux.Use(chimiddleware.RealIP)
 	mux.Use(middleware.AllowedHosts)
-	bindRoutes(mux, &ready, store, mbzC)
+	bindRoutes(mux, &ready, store, mbzC, bgWorker)
 
 	httpServer := &http.Server{
 		Addr:    cfg.ListenAddr(),
@@ -213,6 +218,7 @@ func Run(
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 	l.Info().Msg("Engine: Waiting for all processes to finish")
+	bgWorker.Stop() // Stop the background worker
 	mbzC.Shutdown()
 	if err := httpServer.Shutdown(ctx); err != nil {
 		l.Fatal().Err(err).Msg("Engine: Error during server shutdown")

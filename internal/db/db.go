@@ -59,18 +59,18 @@ type DB interface {
 	DeleteArtist(ctx context.Context, id int32) error
 	DeleteAlbum(ctx context.Context, id int32) error
 	DeleteTrack(ctx context.Context, id int32) error
-	DeleteListen(ctx context.Context, trackId int32, listenedAt time.Time) error
+	DeleteListen(ctx context.Context, trackId int32, listenedAt time.Time, userId int32) error
 	DeleteArtistAlias(ctx context.Context, id int32, alias string) error
 	DeleteAlbumAlias(ctx context.Context, id int32, alias string) error
 	DeleteTrackAlias(ctx context.Context, id int32, alias string) error
 	DeleteSession(ctx context.Context, sessionId uuid.UUID) error
 	DeleteApiKey(ctx context.Context, id int32) error
 	// Count
-	CountListens(ctx context.Context, period Period) (int64, error)
-	CountTracks(ctx context.Context, period Period) (int64, error)
-	CountAlbums(ctx context.Context, period Period) (int64, error)
-	CountArtists(ctx context.Context, period Period) (int64, error)
-	CountTimeListened(ctx context.Context, period Period) (int64, error)
+	CountListens(ctx context.Context, userID int32, period Period) (int64, error)
+	CountTracks(ctx context.Context, userID int32, period Period) (int64, error)
+	CountAlbums(ctx context.Context, userID int32, period Period) (int64, error)
+	CountArtists(ctx context.Context, userID int32, period Period) (int64, error)
+	CountTimeListened(ctx context.Context, userID int32, period Period) (int64, error)
 	CountTimeListenedToItem(ctx context.Context, opts TimeListenedOpts) (int64, error)
 	CountUsers(ctx context.Context) (int64, error)
 	// Search

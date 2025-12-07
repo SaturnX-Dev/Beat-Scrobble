@@ -127,12 +127,13 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 		}
 
 		// 4. Fetch Stats & Top Artists
-		listens, _ := store.CountListens(ctx, period)
-		artistCount, _ := store.CountArtists(ctx, period)
-		albumCount, _ := store.CountAlbums(ctx, period)
-		trackCount, _ := store.CountTracks(ctx, period)
+		listens, _ := store.CountListens(ctx, int32(user.ID), period)
+		artistCount, _ := store.CountArtists(ctx, int32(user.ID), period)
+		albumCount, _ := store.CountAlbums(ctx, int32(user.ID), period)
+		trackCount, _ := store.CountTracks(ctx, int32(user.ID), period)
 
 		topArtistsResp, err := store.GetTopArtistsPaginated(ctx, db.GetItemsOpts{
+			UserID: int(user.ID),
 			Limit:  5,
 			Page:   1,
 			Period: period,

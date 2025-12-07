@@ -14,7 +14,7 @@ func TestGetTopAlbumsPaginated(t *testing.T) {
 	ctx := context.Background()
 
 	// Test valid
-	resp, err := store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Period: db.PeriodAllTime})
+	resp, err := store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Period: db.PeriodAllTime, UserID: 1})
 	require.NoError(t, err)
 	require.Len(t, resp.Items, 4)
 	assert.Equal(t, int64(4), resp.TotalCount)
@@ -24,49 +24,49 @@ func TestGetTopAlbumsPaginated(t *testing.T) {
 	assert.Equal(t, "Release Four", resp.Items[3].Title)
 
 	// Test pagination
-	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Limit: 1, Page: 2, Period: db.PeriodAllTime})
+	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Limit: 1, Page: 2, Period: db.PeriodAllTime, UserID: 1})
 	require.NoError(t, err)
 	require.Len(t, resp.Items, 1)
 	assert.Equal(t, "Release Two", resp.Items[0].Title)
 
 	// Test page out of range
-	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Limit: 1, Page: 10, Period: db.PeriodAllTime})
+	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Limit: 1, Page: 10, Period: db.PeriodAllTime, UserID: 1})
 	require.NoError(t, err)
 	require.Empty(t, resp.Items)
 	assert.False(t, resp.HasNextPage)
 
 	// Test invalid inputs
-	_, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Limit: -1, Page: 0})
+	_, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Limit: -1, Page: 0, UserID: 1})
 	assert.Error(t, err)
 
-	_, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Limit: 1, Page: -1})
+	_, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Limit: 1, Page: -1, UserID: 1})
 	assert.Error(t, err)
 
 	// Test specify period
-	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Period: db.PeriodDay})
+	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Period: db.PeriodDay, UserID: 1})
 	require.NoError(t, err)
 	require.Len(t, resp.Items, 0) // empty
 	assert.Equal(t, int64(0), resp.TotalCount)
 	// should default to PeriodDay
-	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{})
+	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{UserID: 1})
 	require.NoError(t, err)
 	require.Len(t, resp.Items, 0) // empty
 	assert.Equal(t, int64(0), resp.TotalCount)
 
-	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Period: db.PeriodWeek})
+	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Period: db.PeriodWeek, UserID: 1})
 	require.NoError(t, err)
 	require.Len(t, resp.Items, 1)
 	assert.Equal(t, int64(1), resp.TotalCount)
 	assert.Equal(t, "Release Four", resp.Items[0].Title)
 
-	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Period: db.PeriodMonth})
+	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Period: db.PeriodMonth, UserID: 1})
 	require.NoError(t, err)
 	require.Len(t, resp.Items, 2)
 	assert.Equal(t, int64(2), resp.TotalCount)
 	assert.Equal(t, "Release Three", resp.Items[0].Title)
 	assert.Equal(t, "Release Four", resp.Items[1].Title)
 
-	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Period: db.PeriodYear})
+	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Period: db.PeriodYear, UserID: 1})
 	require.NoError(t, err)
 	require.Len(t, resp.Items, 3)
 	assert.Equal(t, int64(3), resp.TotalCount)
@@ -75,7 +75,7 @@ func TestGetTopAlbumsPaginated(t *testing.T) {
 	assert.Equal(t, "Release Four", resp.Items[2].Title)
 
 	// test specific artist
-	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Period: db.PeriodYear, ArtistID: 2})
+	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Period: db.PeriodYear, ArtistID: 2, UserID: 1})
 	require.NoError(t, err)
 	require.Len(t, resp.Items, 1)
 	assert.Equal(t, int64(1), resp.TotalCount)
@@ -85,19 +85,19 @@ func TestGetTopAlbumsPaginated(t *testing.T) {
 
 	testDataAbsoluteListenTimes(t)
 
-	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Year: 2023})
+	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Year: 2023, UserID: 1})
 	require.NoError(t, err)
 	require.Len(t, resp.Items, 1)
 	assert.Equal(t, int64(1), resp.TotalCount)
 	assert.Equal(t, "Release One", resp.Items[0].Title)
 
-	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Month: 6, Year: 2024})
+	resp, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Month: 6, Year: 2024, UserID: 1})
 	require.NoError(t, err)
 	require.Len(t, resp.Items, 1)
 	assert.Equal(t, int64(1), resp.TotalCount)
 	assert.Equal(t, "Release Two", resp.Items[0].Title)
 
 	// invalid, year required with month
-	_, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Month: 10})
+	_, err = store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{Month: 10, UserID: 1})
 	require.Error(t, err)
 }

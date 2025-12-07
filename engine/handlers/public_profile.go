@@ -130,14 +130,15 @@ func PublicProfileHandler(store db.DB) http.HandlerFunc {
 		}
 
 		// Fetch public stats (all time)
-		listens, _ := store.CountListens(ctx, db.PeriodAllTime)
-		tracks, _ := store.CountTracks(ctx, db.PeriodAllTime)
-		albums, _ := store.CountAlbums(ctx, db.PeriodAllTime)
-		artists, _ := store.CountArtists(ctx, db.PeriodAllTime)
-		timeListened, _ := store.CountTimeListened(ctx, db.PeriodAllTime)
+		listens, _ := store.CountListens(ctx, int32(user.ID), db.PeriodAllTime)
+		tracks, _ := store.CountTracks(ctx, int32(user.ID), db.PeriodAllTime)
+		albums, _ := store.CountAlbums(ctx, int32(user.ID), db.PeriodAllTime)
+		artists, _ := store.CountArtists(ctx, int32(user.ID), db.PeriodAllTime)
+		timeListened, _ := store.CountTimeListened(ctx, int32(user.ID), db.PeriodAllTime)
 
 		// Fetch top artists using paginated method
 		topArtistsResp, _ := store.GetTopArtistsPaginated(ctx, db.GetItemsOpts{
+			UserID: int(user.ID),
 			Limit:  5,
 			Page:   1,
 			Period: db.PeriodAllTime,
@@ -156,6 +157,7 @@ func PublicProfileHandler(store db.DB) http.HandlerFunc {
 
 		// Fetch top albums using paginated method
 		topAlbumsResp, _ := store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{
+			UserID: int(user.ID),
 			Limit:  5,
 			Page:   1,
 			Period: db.PeriodAllTime,

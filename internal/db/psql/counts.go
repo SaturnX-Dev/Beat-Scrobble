@@ -10,10 +10,11 @@ import (
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/repository"
 )
 
-func (p *Psql) CountListens(ctx context.Context, period db.Period) (int64, error) {
+func (p *Psql) CountListens(ctx context.Context, userID int32, period db.Period) (int64, error) {
 	t2 := time.Now()
 	t1 := db.StartTimeFromPeriod(period)
 	count, err := p.q.CountListens(ctx, repository.CountListensParams{
+		UserID:       userID,
 		ListenedAt:   t1,
 		ListenedAt_2: t2,
 	})
@@ -23,10 +24,11 @@ func (p *Psql) CountListens(ctx context.Context, period db.Period) (int64, error
 	return count, nil
 }
 
-func (p *Psql) CountTracks(ctx context.Context, period db.Period) (int64, error) {
+func (p *Psql) CountTracks(ctx context.Context, userID int32, period db.Period) (int64, error) {
 	t2 := time.Now()
 	t1 := db.StartTimeFromPeriod(period)
 	count, err := p.q.CountTopTracks(ctx, repository.CountTopTracksParams{
+		UserID:       userID,
 		ListenedAt:   t1,
 		ListenedAt_2: t2,
 	})
@@ -36,10 +38,11 @@ func (p *Psql) CountTracks(ctx context.Context, period db.Period) (int64, error)
 	return count, nil
 }
 
-func (p *Psql) CountAlbums(ctx context.Context, period db.Period) (int64, error) {
+func (p *Psql) CountAlbums(ctx context.Context, userID int32, period db.Period) (int64, error) {
 	t2 := time.Now()
 	t1 := db.StartTimeFromPeriod(period)
 	count, err := p.q.CountTopReleases(ctx, repository.CountTopReleasesParams{
+		UserID:       userID,
 		ListenedAt:   t1,
 		ListenedAt_2: t2,
 	})
@@ -49,10 +52,11 @@ func (p *Psql) CountAlbums(ctx context.Context, period db.Period) (int64, error)
 	return count, nil
 }
 
-func (p *Psql) CountArtists(ctx context.Context, period db.Period) (int64, error) {
+func (p *Psql) CountArtists(ctx context.Context, userID int32, period db.Period) (int64, error) {
 	t2 := time.Now()
 	t1 := db.StartTimeFromPeriod(period)
 	count, err := p.q.CountTopArtists(ctx, repository.CountTopArtistsParams{
+		UserID:       userID,
 		ListenedAt:   t1,
 		ListenedAt_2: t2,
 	})
@@ -62,10 +66,11 @@ func (p *Psql) CountArtists(ctx context.Context, period db.Period) (int64, error
 	return count, nil
 }
 
-func (p *Psql) CountTimeListened(ctx context.Context, period db.Period) (int64, error) {
+func (p *Psql) CountTimeListened(ctx context.Context, userID int32, period db.Period) (int64, error) {
 	t2 := time.Now()
 	t1 := db.StartTimeFromPeriod(period)
 	count, err := p.q.CountTimeListened(ctx, repository.CountTimeListenedParams{
+		UserID:       userID,
 		ListenedAt:   t1,
 		ListenedAt_2: t2,
 	})
@@ -81,6 +86,7 @@ func (p *Psql) CountTimeListenedToItem(ctx context.Context, opts db.TimeListened
 
 	if opts.ArtistID > 0 {
 		count, err := p.q.CountTimeListenedToArtist(ctx, repository.CountTimeListenedToArtistParams{
+			UserID:       opts.UserID,
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			ArtistID:     opts.ArtistID,
@@ -91,6 +97,7 @@ func (p *Psql) CountTimeListenedToItem(ctx context.Context, opts db.TimeListened
 		return count, nil
 	} else if opts.AlbumID > 0 {
 		count, err := p.q.CountTimeListenedToRelease(ctx, repository.CountTimeListenedToReleaseParams{
+			UserID:       opts.UserID,
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			ReleaseID:    opts.AlbumID,
@@ -101,6 +108,7 @@ func (p *Psql) CountTimeListenedToItem(ctx context.Context, opts db.TimeListened
 		return count, nil
 	} else if opts.TrackID > 0 {
 		count, err := p.q.CountTimeListenedToTrack(ctx, repository.CountTimeListenedToTrackParams{
+			UserID:       opts.UserID,
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			ID:           opts.TrackID,

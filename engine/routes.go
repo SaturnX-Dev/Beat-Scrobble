@@ -10,6 +10,7 @@ import (
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/handlers"
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/worker"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	mbz "github.com/SaturnX-Dev/Beat-Scrobble/internal/mbz"
@@ -24,6 +25,7 @@ func bindRoutes(
 	ready *atomic.Bool,
 	db db.DB,
 	mbz mbz.MusicBrainzCaller,
+	w *worker.Worker,
 ) {
 	if !(len(cfg.AllowedOrigins()) == 0) && !(cfg.AllowedOrigins()[0] == "") {
 		r.Use(cors.Handler(cors.Options{
@@ -33,6 +35,9 @@ func bindRoutes(
 	}
 	r.With(chimiddleware.RequestSize(5<<20)).
 		Get("/images/{size}/{filename}", handlers.ImageHandler(db))
+
+	// Enable Gzip compression with compression level 5 (balanced)
+	r.Use(chimiddleware.Compress(5))
 
 	r.Route("/apis/web/v1", func(r chi.Router) {
 		r.Get("/config", handlers.GetCfgHandler())
@@ -117,7 +122,10 @@ func bindRoutes(
 			// Yearly Recap
 			r.Get("/yearly-recap", handlers.YearlyRecapHandler(db))
 			// Import/Backup
-			r.Post("/import", handlers.ImportHandler(db))
+			r.Get("/yearly-recap", handlers.YearlyRecapHandler(db))
+			// Import/Backup
+			r.Post("/import", handlers.ImportHandler(db, w))
+			// Profile Image
 			// Profile Image
 			r.Post("/user/profile-image", handlers.UploadProfileImageBase64Handler(db))
 			// Background Image
@@ -135,10 +143,11 @@ func bindRoutes(
 	})
 
 	// Profile images (public, no auth required)
-	r.Get("/profile-images/{filename}", handlers.GetProfileImageHandler())
+	// Cache for 1 day
+	r.With(middleware.CacheControl(24*time.Hour)).Get("/profile-images/{filename}", handlers.GetProfileImageHandler())
 
 	// Background images (public, no auth required)
-	r.Get("/background-images/{filename}", handlers.GetBackgroundImageHandler())
+	r.With(middleware.CacheControl(24*time.Hour)).Get("/background-images/{filename}", handlers.GetBackgroundImageHandler())
 
 	r.Route("/apis/listenbrainz/1", func(r chi.Router) {
 		r.Use(cors.Handler(cors.Options{

@@ -36,6 +36,11 @@ func New() (*Psql, error) {
 		return nil, fmt.Errorf("psql.New: failed to parse pgx config: %w", err)
 	}
 
+	// Optimization: Connection Pooling
+	config.MaxConns = 25
+	config.MinConns = 2
+	config.MaxConnLifetime = 1 * time.Hour
+	config.MaxConnIdleTime = 30 * time.Minute
 	config.ConnConfig.ConnectTimeout = 15 * time.Second
 
 	pool, err := pgxpool.NewWithConfig(ctx, config)

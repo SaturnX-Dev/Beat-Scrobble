@@ -30,6 +30,7 @@ func (d *Psql) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.Ar
 			ListenedAt:   time.Unix(0, 0),
 			ListenedAt_2: time.Now(),
 			ArtistID:     row.ID,
+			UserID:       opts.UserID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("GetArtist: CountListensFromArtist: %w", err)
@@ -37,11 +38,15 @@ func (d *Psql) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.Ar
 		seconds, err := d.CountTimeListenedToItem(ctx, db.TimeListenedOpts{
 			Period:   db.PeriodAllTime,
 			ArtistID: row.ID,
+			UserID:   opts.UserID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("GetArtist: CountTimeListenedToItem: %w", err)
 		}
-		firstListen, err := d.q.GetFirstListenFromArtist(ctx, row.ID)
+		firstListen, err := d.q.GetFirstListenFromArtist(ctx, repository.GetFirstListenFromArtistParams{
+			ArtistID: row.ID,
+			UserID:   opts.UserID,
+		})
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("GetAlbum: GetFirstListenFromArtist: %w", err)
 		}
@@ -69,6 +74,7 @@ func (d *Psql) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.Ar
 			ListenedAt:   time.Unix(0, 0),
 			ListenedAt_2: time.Now(),
 			ArtistID:     row.ID,
+			UserID:       opts.UserID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("GetArtist: CountListensFromArtist: %w", err)
@@ -76,11 +82,15 @@ func (d *Psql) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.Ar
 		seconds, err := d.CountTimeListenedToItem(ctx, db.TimeListenedOpts{
 			Period:   db.PeriodAllTime,
 			ArtistID: row.ID,
+			UserID:   opts.UserID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("GetArtist: CountTimeListenedToItem: %w", err)
 		}
-		firstListen, err := d.q.GetFirstListenFromArtist(ctx, row.ID)
+		firstListen, err := d.q.GetFirstListenFromArtist(ctx, repository.GetFirstListenFromArtistParams{
+			ArtistID: row.ID,
+			UserID:   opts.UserID,
+		})
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("GetAlbum: GetFirstListenFromArtist: %w", err)
 		}
@@ -108,6 +118,7 @@ func (d *Psql) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.Ar
 			ListenedAt:   time.Unix(0, 0),
 			ListenedAt_2: time.Now(),
 			ArtistID:     row.ID,
+			UserID:       opts.UserID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("GetArtist: CountListensFromArtist: %w", err)
@@ -115,11 +126,15 @@ func (d *Psql) GetArtist(ctx context.Context, opts db.GetArtistOpts) (*models.Ar
 		seconds, err := d.CountTimeListenedToItem(ctx, db.TimeListenedOpts{
 			Period:   db.PeriodAllTime,
 			ArtistID: row.ID,
+			UserID:   opts.UserID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("GetArtist: CountTimeListenedToItem: %w", err)
 		}
-		firstListen, err := d.q.GetFirstListenFromArtist(ctx, row.ID)
+		firstListen, err := d.q.GetFirstListenFromArtist(ctx, repository.GetFirstListenFromArtistParams{
+			ArtistID: row.ID,
+			UserID:   opts.UserID,
+		})
 		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 			return nil, fmt.Errorf("GetAlbum: GetFirstListenFromArtist: %w", err)
 		}

@@ -487,7 +487,7 @@ func SpotifyFetchMetadataHandler(store db.DB) http.HandlerFunc {
 func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		// l := logger.FromContext(ctx) // Unused variable 'l' removed
+		logger := logger.FromContext(ctx)
 
 		user := middleware.GetUserFromContext(ctx)
 		if user == nil {
@@ -498,6 +498,7 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 		w.Header().Set("Content-Type", "text/event-stream")
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("X-Accel-Buffering", "no") // Nginx
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
 		flusher, ok := w.(http.Flusher)
@@ -506,84 +507,154 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 			return
 		}
 
-		sendEvent := func(eventType string, data interface{}) {
-			jsonData, _ := json.Marshal(data)
-			fmt.Fprintf(w, "event: %s\ndata: %s\n\n", eventType, jsonData)
-			flusher.Flush()
+		type SSEEvent struct {
+			Type string
+			Data interface{}
 		}
 
-		client := spotify.NewClient(store, user.ID)
-		token, err := client.GetToken(ctx)
-		if err != nil {
-			sendEvent("error", map[string]string{"message": "Failed to get Spotify token: " + err.Error()})
-			return
-		}
+		// Unbuffered channel for events
+		eventChan := make(chan SSEEvent)
 
-		httpClient := &http.Client{Timeout: 10 * time.Second}
-		var processed, failed int
-		totalSteps := 300 // default
+		// Start processing in background goroutine
+		go func() {
+			defer close(eventChan)
 
-		// 1. Artists
-		sendEvent("log", map[string]string{"message": "Fetching Top 100 Artists..."})
-		artistResp, err := store.GetTopArtistsPaginated(ctx, db.GetItemsOpts{
-			Period: db.PeriodAllTime,
-			Limit:  100,
-			Page:   1,
-		})
-		if err == nil {
-			// Separate items that have SpotifyID vs those that need search
-			var idsToFetch []string
-			var itemsToFetch []*models.Artist
-			var searchItems []*models.Artist
-
-			for _, artist := range artistResp.Items {
-				if artist.SpotifyID != "" {
-					idsToFetch = append(idsToFetch, artist.SpotifyID)
-					itemsToFetch = append(itemsToFetch, artist)
-				} else {
-					searchItems = append(searchItems, artist)
+			send := func(eventType string, data interface{}) {
+				select {
+				case eventChan <- SSEEvent{Type: eventType, Data: data}:
+				case <-ctx.Done():
+					return
 				}
 			}
 
-			// Batch Fetch (Batch size 50)
-			for i := 0; i < len(idsToFetch); i += 50 {
-				end := i + 50
-				if end > len(idsToFetch) {
-					end = len(idsToFetch)
-				}
-				batchIDs := idsToFetch[i:end]
+			client := spotify.NewClient(store, user.ID)
+			token, err := client.GetToken(ctx) // ctx (from request) is safe here? Yes, if client disconnects, we want to stop.
+			if err != nil {
+				send("error", map[string]string{"message": "Failed to get Spotify token: " + err.Error()})
+				return
+			}
 
-				sendEvent("log", map[string]string{"message": fmt.Sprintf("Batch fetching %d artists...", len(batchIDs))})
+			httpClient := &http.Client{Timeout: 10 * time.Second}
+			var processed, failed int
+			totalSteps := 300 // default
 
-				u := "https://api.spotify.com/v1/artists?ids=" + strings.Join(batchIDs, ",")
-				req, _ := http.NewRequest("GET", u, nil)
-				req.Header.Set("Authorization", "Bearer "+token)
-				resp, err := httpClient.Do(req)
+			// 1. Artists
+			send("log", map[string]string{"message": "Fetching Top 100 Artists..."})
+			artistResp, err := store.GetTopArtistsPaginated(ctx, db.GetItemsOpts{
+				Period: db.PeriodAllTime,
+				Limit:  100,
+				Page:   1,
+			})
+			if err == nil {
+				// Separate items that have SpotifyID vs those that need search
+				var idsToFetch []string
+				var itemsToFetch []*models.Artist
+				var searchItems []*models.Artist
 
-				if err == nil && resp.StatusCode == http.StatusOK {
-					var batchResp struct {
-						Artists []struct {
-							ID         string   `json:"id"`
-							Genres     []string `json:"genres"`
-							Popularity int      `json:"popularity"`
-							Followers  struct {
-								Total int `json:"total"`
-							} `json:"followers"`
-						} `json:"artists"`
+				for _, artist := range artistResp.Items {
+					if artist.SpotifyID != "" {
+						idsToFetch = append(idsToFetch, artist.SpotifyID)
+						itemsToFetch = append(itemsToFetch, artist)
+					} else {
+						searchItems = append(searchItems, artist)
 					}
-					if err := json.NewDecoder(resp.Body).Decode(&batchResp); err == nil {
-						for j, item := range batchResp.Artists {
-							if item.ID == "" {
-								continue
+				}
+
+				// Batch Fetch (Batch size 50)
+				for i := 0; i < len(idsToFetch); i += 50 {
+					// Check context
+					select {
+					case <-ctx.Done():
+						return
+					default:
+					}
+
+					end := i + 50
+					if end > len(idsToFetch) {
+						end = len(idsToFetch)
+					}
+					batchIDs := idsToFetch[i:end]
+
+					send("log", map[string]string{"message": fmt.Sprintf("Batch fetching %d artists...", len(batchIDs))})
+
+					u := "https://api.spotify.com/v1/artists?ids=" + strings.Join(batchIDs, ",")
+					req, _ := http.NewRequest("GET", u, nil)
+					req = req.WithContext(ctx) // Use request context
+					req.Header.Set("Authorization", "Bearer "+token)
+					resp, err := httpClient.Do(req)
+
+					if err == nil && resp.StatusCode == http.StatusOK {
+						var batchResp struct {
+							Artists []struct {
+								ID         string   `json:"id"`
+								Genres     []string `json:"genres"`
+								Popularity int      `json:"popularity"`
+								Followers  struct {
+									Total int `json:"total"`
+								} `json:"followers"`
+							} `json:"artists"`
+						}
+						if err := json.NewDecoder(resp.Body).Decode(&batchResp); err == nil {
+							for j, item := range batchResp.Artists {
+								if item.ID == "" {
+									continue
+								}
+								targetArtist := itemsToFetch[i+j]
+								err = store.UpdateArtistMetadata(ctx, db.UpdateArtistMetadataParams{
+									ID:         targetArtist.ID,
+									Genres:     item.Genres,
+									Popularity: pgtype.Int4{Int32: int32(item.Popularity), Valid: true},
+									SpotifyID:  pgtype.Text{String: item.ID, Valid: true},
+									Bio:        pgtype.Text{Valid: false},
+									Followers:  pgtype.Int4{Int32: int32(item.Followers.Total), Valid: true},
+								})
+								if err == nil {
+									processed++
+								} else {
+									failed++
+								}
 							}
-							// Find corresponding artist in our list (order is preserved? usually yes but better use map if unsure, but Spotify preserves order for ids param)
-							// Actually we have itemsToFetch slice matching idsToFetch
-							// batch index 0 corresponds to batchIDs[0] which corresponds to itemsToFetch[i+0]
+						}
+						resp.Body.Close()
+					}
 
-							targetArtist := itemsToFetch[i+j]
+					progress := float64(processed+failed) / float64(totalSteps) * 100
+					send("progress", map[string]interface{}{"percent": progress, "processed": processed, "failed": failed})
+				}
 
+				// Search Handling (Legacy 1-by-1)
+				for _, artist := range searchItems {
+					// Check context
+					select {
+					case <-ctx.Done():
+						return
+					default:
+					}
+
+					searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=artist&limit=1", url.QueryEscape(artist.Name))
+					req, _ := http.NewRequest("GET", searchURL, nil)
+					req = req.WithContext(ctx)
+					req.Header.Set("Authorization", "Bearer "+token)
+					resp, err := httpClient.Do(req)
+
+					success := false
+					if err == nil && resp.StatusCode == http.StatusOK {
+						var searchResp struct {
+							Artists struct {
+								Items []struct {
+									ID         string   `json:"id"`
+									Genres     []string `json:"genres"`
+									Popularity int      `json:"popularity"`
+									Followers  struct {
+										Total int `json:"total"`
+									} `json:"followers"`
+								} `json:"items"`
+							} `json:"artists"`
+						}
+						if json.NewDecoder(resp.Body).Decode(&searchResp) == nil && len(searchResp.Artists.Items) > 0 {
+							item := searchResp.Artists.Items[0]
 							err = store.UpdateArtistMetadata(ctx, db.UpdateArtistMetadataParams{
-								ID:         targetArtist.ID,
+								ID:         artist.ID,
 								Genres:     item.Genres,
 								Popularity: pgtype.Int4{Int32: int32(item.Popularity), Valid: true},
 								SpotifyID:  pgtype.Text{String: item.ID, Valid: true},
@@ -591,235 +662,219 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 								Followers:  pgtype.Int4{Int32: int32(item.Followers.Total), Valid: true},
 							})
 							if err == nil {
-								processed++
-							} else {
-								failed++
+								success = true
 							}
 						}
+						resp.Body.Close()
 					}
-					resp.Body.Close()
-				}
 
-				progress := float64(processed+failed) / float64(totalSteps) * 100
-				sendEvent("progress", map[string]interface{}{"percent": progress, "processed": processed, "failed": failed})
+					if success {
+						processed++
+						send("log", map[string]string{"message": fmt.Sprintf("Found new artist mapping: %s", artist.Name)})
+					} else {
+						failed++
+						send("log", map[string]string{"message": fmt.Sprintf("Failed to find: %s", artist.Name)})
+					}
+					progress := float64(processed+failed) / float64(totalSteps) * 100
+					send("progress", map[string]interface{}{"percent": progress, "processed": processed, "failed": failed})
+					time.Sleep(50 * time.Millisecond) // Rate limit
+				}
 			}
 
-			// Search Handling (Legacy 1-by-1)
-			for _, artist := range searchItems {
-				searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=artist&limit=1", url.QueryEscape(artist.Name))
-				req, _ := http.NewRequest("GET", searchURL, nil)
-				req.Header.Set("Authorization", "Bearer "+token)
-				resp, err := httpClient.Do(req)
+			// 2. Process Top Albums
+			send("log", map[string]string{"message": "Fetching Top 100 Albums..."})
+			albumResp, err := store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{
+				Period: db.PeriodAllTime,
+				Limit:  100,
+				Page:   1,
+			})
 
-				success := false
-				if err == nil && resp.StatusCode == http.StatusOK {
-					var searchResp struct {
-						Artists struct {
-							Items []struct {
-								ID         string   `json:"id"`
-								Genres     []string `json:"genres"`
-								Popularity int      `json:"popularity"`
-								Followers  struct {
-									Total int `json:"total"`
-								} `json:"followers"`
-							} `json:"items"`
-						} `json:"artists"`
+			if err == nil {
+				for i, album := range albumResp.Items {
+					// Check context
+					select {
+					case <-ctx.Done():
+						return
+					default:
 					}
-					if json.NewDecoder(resp.Body).Decode(&searchResp) == nil && len(searchResp.Artists.Items) > 0 {
-						item := searchResp.Artists.Items[0]
-						err = store.UpdateArtistMetadata(ctx, db.UpdateArtistMetadataParams{
-							ID:         artist.ID,
-							Genres:     item.Genres,
-							Popularity: pgtype.Int4{Int32: int32(item.Popularity), Valid: true},
-							SpotifyID:  pgtype.Text{String: item.ID, Valid: true},
-							Bio:        pgtype.Text{Valid: false},
-							Followers:  pgtype.Int4{Int32: int32(item.Followers.Total), Valid: true},
-						})
-						if err == nil {
-							success = true
+
+					searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=album&limit=1", url.QueryEscape(album.Title))
+					req, _ := http.NewRequest("GET", searchURL, nil)
+					req = req.WithContext(ctx)
+					req.Header.Set("Authorization", "Bearer "+token)
+					resp, err := httpClient.Do(req)
+
+					success := false
+					if err == nil && resp.StatusCode == http.StatusOK {
+						var searchResp struct {
+							Albums struct {
+								Items []struct {
+									ID                   string   `json:"id"`
+									Genres               []string `json:"genres"`
+									Popularity           int      `json:"popularity"`
+									ReleaseDate          string   `json:"release_date"`
+									Label                string   `json:"label"`
+									ReleaseDatePrecision string   `json:"release_date_precision"`
+								} `json:"items"`
+							} `json:"albums"`
 						}
-					}
-					resp.Body.Close()
-				}
-
-				if success {
-					processed++
-					sendEvent("log", map[string]string{"message": fmt.Sprintf("Found new artist mapping: %s", artist.Name)})
-				} else {
-					failed++
-					sendEvent("log", map[string]string{"message": fmt.Sprintf("Failed to find: %s", artist.Name)})
-				}
-				progress := float64(processed+failed) / float64(totalSteps) * 100
-				sendEvent("progress", map[string]interface{}{"percent": progress, "processed": processed, "failed": failed})
-				time.Sleep(50 * time.Millisecond) // Rate limit
-			}
-		}
-
-		// 2. Process Top Albums (Simplified for brevity, similar batching logic can be applied)
-		// For now, I'll keep the loop but it should be noted that batching here is also possible
-		// if albums have spotify_id.
-
-		sendEvent("log", map[string]string{"message": "Fetching Top 100 Albums..."})
-		albumResp, err := store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{
-			Period: db.PeriodAllTime,
-			Limit:  100,
-			Page:   1,
-		})
-
-		if err == nil {
-			for i, album := range albumResp.Items {
-				// Search only for now (implement batching later if needed)
-				searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=album&limit=1", url.QueryEscape(album.Title))
-				req, _ := http.NewRequest("GET", searchURL, nil)
-				req.Header.Set("Authorization", "Bearer "+token)
-				resp, err := httpClient.Do(req)
-
-				success := false
-				if err == nil && resp.StatusCode == http.StatusOK {
-					var searchResp struct {
-						Albums struct {
-							Items []struct {
-								ID                   string   `json:"id"`
-								Genres               []string `json:"genres"`
-								Popularity           int      `json:"popularity"`
-								ReleaseDate          string   `json:"release_date"`
-								Label                string   `json:"label"`
-								ReleaseDatePrecision string   `json:"release_date_precision"`
-							} `json:"items"`
-						} `json:"albums"`
-					}
-					if json.NewDecoder(resp.Body).Decode(&searchResp) == nil && len(searchResp.Albums.Items) > 0 {
-						item := searchResp.Albums.Items[0]
-						err = store.UpdateReleaseMetadata(ctx, db.UpdateReleaseMetadataParams{
-							ID:                   album.ID,
-							Genres:               item.Genres,
-							Popularity:           pgtype.Int4{Int32: int32(item.Popularity), Valid: true},
-							ReleaseDate:          pgtype.Text{String: item.ReleaseDate, Valid: true},
-							SpotifyID:            pgtype.Text{String: item.ID, Valid: true},
-							Label:                pgtype.Text{String: item.Label, Valid: true},
-							ReleaseDatePrecision: pgtype.Text{String: item.ReleaseDatePrecision, Valid: true},
-						})
-						if err == nil {
-							success = true
-						}
-					}
-					resp.Body.Close()
-				}
-
-				if success {
-					processed++
-					sendEvent("log", map[string]string{"message": fmt.Sprintf("Updated album: %s", album.Title)})
-				} else {
-					failed++
-					sendEvent("log", map[string]string{"message": fmt.Sprintf("Failed to update album: %s", album.Title)})
-				}
-				progress := float64(100+i+1) / float64(totalSteps) * 100
-				sendEvent("progress", map[string]interface{}{"percent": progress, "processed": processed, "failed": failed})
-				time.Sleep(50 * time.Millisecond)
-			}
-		}
-
-		// 3. Process Top Tracks
-		sendEvent("log", map[string]string{"message": "Fetching Top 100 Tracks..."})
-		trackResp, err := store.GetTopTracksPaginated(ctx, db.GetItemsOpts{
-			Period: db.PeriodAllTime,
-			Limit:  100,
-			Page:   1,
-		})
-		if err == nil {
-			for i, track := range trackResp.Items {
-				searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=track&limit=1", url.QueryEscape(track.Title))
-				req, _ := http.NewRequest("GET", searchURL, nil)
-				req.Header.Set("Authorization", "Bearer "+token)
-				resp, err := httpClient.Do(req)
-
-				success := false
-				if err == nil && resp.StatusCode == http.StatusOK {
-					var searchResp struct {
-						Tracks struct {
-							Items []struct {
-								ID         string `json:"id"`
-								Popularity int    `json:"popularity"`
-							} `json:"items"`
-						} `json:"tracks"`
-					}
-					if json.NewDecoder(resp.Body).Decode(&searchResp) == nil && len(searchResp.Tracks.Items) > 0 {
-						item := searchResp.Tracks.Items[0]
-
-						// Fetch audio features
-						reqFeat, _ := http.NewRequest("GET", "https://api.spotify.com/v1/audio-features/"+item.ID, nil)
-						reqFeat.Header.Set("Authorization", "Bearer "+token)
-						respFeat, errFeat := httpClient.Do(reqFeat)
-
-						var dnc, enrg, loud, spch, acst, inst, live, val, tmp pgtype.Float8
-						var key, mode pgtype.Int4
-
-						if errFeat == nil && respFeat.StatusCode == http.StatusOK {
-							var feat struct {
-								Danceability     float64 `json:"danceability"`
-								Energy           float64 `json:"energy"`
-								Key              int     `json:"key"`
-								Loudness         float64 `json:"loudness"`
-								Mode             int     `json:"mode"`
-								Speechiness      float64 `json:"speechiness"`
-								Acousticness     float64 `json:"acousticness"`
-								Instrumentalness float64 `json:"instrumentalness"`
-								Liveness         float64 `json:"liveness"`
-								Valence          float64 `json:"valence"`
-								Tempo            float64 `json:"tempo"`
+						if json.NewDecoder(resp.Body).Decode(&searchResp) == nil && len(searchResp.Albums.Items) > 0 {
+							item := searchResp.Albums.Items[0]
+							err = store.UpdateReleaseMetadata(ctx, db.UpdateReleaseMetadataParams{
+								ID:                   album.ID,
+								Genres:               item.Genres,
+								Popularity:           pgtype.Int4{Int32: int32(item.Popularity), Valid: true},
+								ReleaseDate:          pgtype.Text{String: item.ReleaseDate, Valid: true},
+								SpotifyID:            pgtype.Text{String: item.ID, Valid: true},
+								Label:                pgtype.Text{String: item.Label, Valid: true},
+								ReleaseDatePrecision: pgtype.Text{String: item.ReleaseDatePrecision, Valid: true},
+							})
+							if err == nil {
+								success = true
 							}
-							if json.NewDecoder(respFeat.Body).Decode(&feat) == nil {
-								dnc = pgtype.Float8{Float64: feat.Danceability, Valid: true}
-								enrg = pgtype.Float8{Float64: feat.Energy, Valid: true}
-								key = pgtype.Int4{Int32: int32(feat.Key), Valid: true}
-								loud = pgtype.Float8{Float64: feat.Loudness, Valid: true}
-								mode = pgtype.Int4{Int32: int32(feat.Mode), Valid: true}
-								spch = pgtype.Float8{Float64: feat.Speechiness, Valid: true}
-								acst = pgtype.Float8{Float64: feat.Acousticness, Valid: true}
-								inst = pgtype.Float8{Float64: feat.Instrumentalness, Valid: true}
-								live = pgtype.Float8{Float64: feat.Liveness, Valid: true}
-								val = pgtype.Float8{Float64: feat.Valence, Valid: true}
-								tmp = pgtype.Float8{Float64: feat.Tempo, Valid: true}
-							}
-							respFeat.Body.Close()
 						}
-
-						err = store.UpdateTrackMetadata(ctx, db.UpdateTrackMetadataParams{
-							ID:               track.ID,
-							Popularity:       pgtype.Int4{Int32: int32(item.Popularity), Valid: true},
-							SpotifyID:        pgtype.Text{String: item.ID, Valid: true},
-							Danceability:     dnc,
-							Energy:           enrg,
-							Key:              key,
-							Loudness:         loud,
-							Mode:             mode,
-							Speechiness:      spch,
-							Acousticness:     acst,
-							Instrumentalness: inst,
-							Liveness:         live,
-							Valence:          val,
-							Tempo:            tmp,
-						})
-						if err == nil {
-							success = true
-						}
+						resp.Body.Close()
 					}
-					resp.Body.Close()
-				}
 
-				if success {
-					processed++
-					sendEvent("log", map[string]string{"message": fmt.Sprintf("Updated track: %s", track.Title)})
-				} else {
-					failed++
-					sendEvent("log", map[string]string{"message": fmt.Sprintf("Failed to update track: %s", track.Title)})
+					if success {
+						processed++
+						send("log", map[string]string{"message": fmt.Sprintf("Updated album: %s", album.Title)})
+					} else {
+						failed++
+						send("log", map[string]string{"message": fmt.Sprintf("Failed to update album: %s", album.Title)})
+					}
+					progress := float64(100+i+1) / float64(totalSteps) * 100
+					send("progress", map[string]interface{}{"percent": progress, "processed": processed, "failed": failed})
+					time.Sleep(50 * time.Millisecond)
 				}
-				progress := float64(200+i+1) / float64(totalSteps) * 100
-				sendEvent("progress", map[string]interface{}{"percent": progress, "processed": processed, "failed": failed})
-				time.Sleep(50 * time.Millisecond)
 			}
-		}
 
-		sendEvent("complete", map[string]interface{}{"processed": processed, "failed": failed})
+			// 3. Process Top Tracks
+			send("log", map[string]string{"message": "Fetching Top 100 Tracks..."})
+			trackResp, err := store.GetTopTracksPaginated(ctx, db.GetItemsOpts{
+				Period: db.PeriodAllTime,
+				Limit:  100,
+				Page:   1,
+			})
+			if err == nil {
+				for i, track := range trackResp.Items {
+					// Check context
+					select {
+					case <-ctx.Done():
+						return
+					default:
+					}
+
+					searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=track&limit=1", url.QueryEscape(track.Title))
+					req, _ := http.NewRequest("GET", searchURL, nil)
+					req = req.WithContext(ctx)
+					req.Header.Set("Authorization", "Bearer "+token)
+					resp, err := httpClient.Do(req)
+
+					success := false
+					if err == nil && resp.StatusCode == http.StatusOK {
+						var searchResp struct {
+							Tracks struct {
+								Items []struct {
+									ID         string `json:"id"`
+									Popularity int    `json:"popularity"`
+								} `json:"items"`
+							} `json:"tracks"`
+						}
+						if json.NewDecoder(resp.Body).Decode(&searchResp) == nil && len(searchResp.Tracks.Items) > 0 {
+							item := searchResp.Tracks.Items[0]
+
+							// Fetch audio features
+							reqFeat, _ := http.NewRequest("GET", "https://api.spotify.com/v1/audio-features/"+item.ID, nil)
+							reqFeat = reqFeat.WithContext(ctx)
+							reqFeat.Header.Set("Authorization", "Bearer "+token)
+							respFeat, errFeat := httpClient.Do(reqFeat)
+
+							var dnc, enrg, loud, spch, acst, inst, live, val, tmp pgtype.Float8
+							var key, mode pgtype.Int4
+
+							if errFeat == nil && respFeat.StatusCode == http.StatusOK {
+								var feat struct {
+									Danceability     float64 `json:"danceability"`
+									Energy           float64 `json:"energy"`
+									Key              int     `json:"key"`
+									Loudness         float64 `json:"loudness"`
+									Mode             int     `json:"mode"`
+									Speechiness      float64 `json:"speechiness"`
+									Acousticness     float64 `json:"acousticness"`
+									Instrumentalness float64 `json:"instrumentalness"`
+									Liveness         float64 `json:"liveness"`
+									Valence          float64 `json:"valence"`
+									Tempo            float64 `json:"tempo"`
+								}
+								if json.NewDecoder(respFeat.Body).Decode(&feat) == nil {
+									dnc = pgtype.Float8{Float64: feat.Danceability, Valid: true}
+									enrg = pgtype.Float8{Float64: feat.Energy, Valid: true}
+									key = pgtype.Int4{Int32: int32(feat.Key), Valid: true}
+									loud = pgtype.Float8{Float64: feat.Loudness, Valid: true}
+									mode = pgtype.Int4{Int32: int32(feat.Mode), Valid: true}
+									spch = pgtype.Float8{Float64: feat.Speechiness, Valid: true}
+									acst = pgtype.Float8{Float64: feat.Acousticness, Valid: true}
+									inst = pgtype.Float8{Float64: feat.Instrumentalness, Valid: true}
+									live = pgtype.Float8{Float64: feat.Liveness, Valid: true}
+									val = pgtype.Float8{Float64: feat.Valence, Valid: true}
+									tmp = pgtype.Float8{Float64: feat.Tempo, Valid: true}
+								}
+								respFeat.Body.Close()
+							}
+
+							err = store.UpdateTrackMetadata(ctx, db.UpdateTrackMetadataParams{
+								ID:               track.ID,
+								Popularity:       pgtype.Int4{Int32: int32(item.Popularity), Valid: true},
+								SpotifyID:        pgtype.Text{String: item.ID, Valid: true},
+								Danceability:     dnc,
+								Energy:           enrg,
+								Key:              key,
+								Loudness:         loud,
+								Mode:             mode,
+								Speechiness:      spch,
+								Acousticness:     acst,
+								Instrumentalness: inst,
+								Liveness:         live,
+								Valence:          val,
+								Tempo:            tmp,
+							})
+							if err == nil {
+								success = true
+							}
+						}
+						resp.Body.Close()
+					}
+
+					if success {
+						processed++
+						send("log", map[string]string{"message": fmt.Sprintf("Updated track: %s", track.Title)})
+					} else {
+						failed++
+						send("log", map[string]string{"message": fmt.Sprintf("Failed to update track: %s", track.Title)})
+					}
+					progress := float64(200+i+1) / float64(totalSteps) * 100
+					send("progress", map[string]interface{}{"percent": progress, "processed": processed, "failed": failed})
+					time.Sleep(50 * time.Millisecond)
+				}
+			}
+
+			send("complete", map[string]bool{"success": true})
+		}()
+
+		// Consumer Loop: Write to SSE stream
+		for event := range eventChan {
+			jsonData, err := json.Marshal(event.Data)
+			if err != nil {
+				logger.Error().Err(err).Msg("Failed to marshal SSE data")
+				continue
+			}
+			_, err = fmt.Fprintf(w, "event: %s\ndata: %s\n\n", event.Type, jsonData)
+			if err != nil {
+				logger.Error().Err(err).Msg("Failed to write to SSE stream")
+				return // Client disconnected or network error
+			}
+			flusher.Flush()
+		}
 	}
 }

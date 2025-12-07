@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
@@ -80,9 +81,15 @@ func DeleteListenHandler(store db.DB) http.HandlerFunc {
 			return
 		}
 
-		l.Debug().Msgf("DeleteListenHandler: Deleting listen record for track ID %d at timestamp %d", trackID, unix)
+		u := middleware.GetUserFromContext(ctx)
+		if u == nil {
+			utils.WriteError(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
 
-		err = store.DeleteListen(ctx, int32(trackID), time.Unix(unix, 0))
+		l.Debug().Msgf("DeleteListenHandler: Deleting listen record for track ID %d at timestamp %d for user %s", trackID, unix, u.Username)
+
+		err = store.DeleteListen(ctx, int32(trackID), time.Unix(unix, 0), u.ID)
 		if err != nil {
 			l.Err(err).Msg("DeleteListenHandler: Failed to delete listen record")
 			utils.WriteError(w, "failed to delete listen", http.StatusInternalServerError)

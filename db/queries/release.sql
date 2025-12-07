@@ -45,7 +45,8 @@ FROM listens l
 JOIN tracks t ON l.track_id = t.id
 JOIN releases_with_title r ON t.release_id = r.id
 JOIN artist_releases ar ON r.id = ar.release_id
-WHERE ar.artist_id = $5
+WHERE l.user_id = $6 
+  AND ar.artist_id = $5
   AND l.listened_at BETWEEN $1 AND $2
 GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id
 ORDER BY listen_count DESC, r.id
@@ -63,7 +64,7 @@ SELECT
 FROM listens l
 JOIN tracks t ON l.track_id = t.id
 JOIN releases_with_title r ON t.release_id = r.id
-WHERE l.listened_at BETWEEN $1 AND $2
+WHERE l.user_id = $5 AND l.listened_at BETWEEN $1 AND $2
 GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id
 ORDER BY listen_count DESC, r.id
 LIMIT $3 OFFSET $4;
@@ -73,7 +74,7 @@ SELECT COUNT(DISTINCT r.id) AS total_count
 FROM listens l
 JOIN tracks t ON l.track_id = t.id
 JOIN releases r ON t.release_id = r.id
-WHERE l.listened_at BETWEEN $1 AND $2;
+WHERE l.user_id = $3 AND l.listened_at BETWEEN $1 AND $2;
 
 -- name: CountReleasesFromArtist :one
 SELECT COUNT(*)

@@ -15,6 +15,7 @@ type GetAlbumOpts struct {
 	Title         string
 	Titles        []string
 	Image         uuid.UUID
+	UserID        int32 // Added for isolation
 }
 
 type GetArtistOpts struct {
@@ -22,6 +23,7 @@ type GetArtistOpts struct {
 	MusicBrainzID uuid.UUID
 	Name          string
 	Image         uuid.UUID
+	UserID        int32 // Added for isolation
 }
 
 type GetTrackOpts struct {
@@ -29,6 +31,7 @@ type GetTrackOpts struct {
 	MusicBrainzID uuid.UUID
 	Title         string
 	ArtistIDs     []int32
+	UserID        int32 // Added for isolation
 }
 
 type SaveTrackOpts struct {
@@ -117,6 +120,8 @@ type AddArtistsToAlbumOpts struct {
 }
 
 type GetItemsOpts struct {
+	UserID int // Added for isolation
+
 	Limit  int
 	Period Period
 	Page   int
@@ -135,6 +140,7 @@ type GetItemsOpts struct {
 }
 
 type ListenActivityOpts struct {
+	UserID   int32 // Added for isolation
 	Step     StepInterval
 	Range    int
 	Month    int
@@ -145,6 +151,7 @@ type ListenActivityOpts struct {
 }
 
 type TimeListenedOpts struct {
+	UserID   int32 // Added for isolation
 	Period   Period
 	AlbumID  int32
 	ArtistID int32

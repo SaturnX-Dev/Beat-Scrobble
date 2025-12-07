@@ -34,6 +34,7 @@ func (d *Psql) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts) 
 		l.Debug().Msgf("Fetching top %d tracks with period %s on page %d from range %v to %v",
 			opts.Limit, opts.Period, opts.Page, t1.Format("Jan 02, 2006"), t2.Format("Jan 02, 2006"))
 		rows, err := d.q.GetTopTracksInReleasePaginated(ctx, repository.GetTopTracksInReleasePaginatedParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			Limit:        int32(opts.Limit),
@@ -63,6 +64,7 @@ func (d *Psql) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts) 
 			tracks[i] = t
 		}
 		count, err = d.q.CountTopTracksByRelease(ctx, repository.CountTopTracksByReleaseParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			ReleaseID:    int32(opts.AlbumID),
@@ -74,6 +76,7 @@ func (d *Psql) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts) 
 		l.Debug().Msgf("Fetching top %d tracks with period %s on page %d from range %v to %v",
 			opts.Limit, opts.Period, opts.Page, t1.Format("Jan 02, 2006"), t2.Format("Jan 02, 2006"))
 		rows, err := d.q.GetTopTracksByArtistPaginated(ctx, repository.GetTopTracksByArtistPaginatedParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			Limit:        int32(opts.Limit),
@@ -103,6 +106,7 @@ func (d *Psql) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts) 
 			tracks[i] = t
 		}
 		count, err = d.q.CountTopTracksByArtist(ctx, repository.CountTopTracksByArtistParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			ArtistID:     int32(opts.ArtistID),
@@ -114,6 +118,7 @@ func (d *Psql) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts) 
 		l.Debug().Msgf("Fetching top %d tracks with period %s on page %d from range %v to %v",
 			opts.Limit, opts.Period, opts.Page, t1.Format("Jan 02, 2006"), t2.Format("Jan 02, 2006"))
 		rows, err := d.q.GetTopTracksPaginated(ctx, repository.GetTopTracksPaginatedParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			Limit:        int32(opts.Limit),
@@ -142,6 +147,7 @@ func (d *Psql) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts) 
 			tracks[i] = t
 		}
 		count, err = d.q.CountTopTracks(ctx, repository.CountTopTracksParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 		})

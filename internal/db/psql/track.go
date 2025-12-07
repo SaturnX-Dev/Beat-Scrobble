@@ -90,6 +90,7 @@ func (d *Psql) GetTrack(ctx context.Context, opts db.GetTrackOpts) (*models.Trac
 		ListenedAt:   time.Unix(0, 0),
 		ListenedAt_2: time.Now(),
 		TrackID:      track.ID,
+		UserID:       opts.UserID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GetTrack: CountListensFromTrack: %w", err)
@@ -98,12 +99,16 @@ func (d *Psql) GetTrack(ctx context.Context, opts db.GetTrackOpts) (*models.Trac
 	seconds, err := d.CountTimeListenedToItem(ctx, db.TimeListenedOpts{
 		Period:  db.PeriodAllTime,
 		TrackID: track.ID,
+		UserID:  opts.UserID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GetTrack: CountTimeListenedToItem: %w", err)
 	}
 
-	firstListen, err := d.q.GetFirstListenFromTrack(ctx, track.ID)
+	firstListen, err := d.q.GetFirstListenFromTrack(ctx, repository.GetFirstListenFromTrackParams{
+		ID:     track.ID,
+		UserID: opts.UserID,
+	})
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return nil, fmt.Errorf("GetAlbum: GetFirstListenFromRelease: %w", err)
 	}

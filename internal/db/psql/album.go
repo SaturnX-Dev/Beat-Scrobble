@@ -101,6 +101,7 @@ func (d *Psql) GetAlbum(ctx context.Context, opts db.GetAlbumOpts) (*models.Albu
 		ListenedAt:   time.Unix(0, 0),
 		ListenedAt_2: time.Now(),
 		ReleaseID:    ret.ID,
+		UserID:       opts.UserID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GetAlbum: CountListensFromRelease: %w", err)
@@ -109,12 +110,16 @@ func (d *Psql) GetAlbum(ctx context.Context, opts db.GetAlbumOpts) (*models.Albu
 	seconds, err := d.CountTimeListenedToItem(ctx, db.TimeListenedOpts{
 		Period:  db.PeriodAllTime,
 		AlbumID: ret.ID,
+		UserID:  opts.UserID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("GetAlbum: CountTimeListenedToItem: %w", err)
 	}
 
-	firstListen, err := d.q.GetFirstListenFromRelease(ctx, ret.ID)
+	firstListen, err := d.q.GetFirstListenFromRelease(ctx, repository.GetFirstListenFromReleaseParams{
+		ReleaseID: ret.ID,
+		UserID:    opts.UserID,
+	})
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return nil, fmt.Errorf("GetAlbum: GetFirstListenFromRelease: %w", err)
 	}

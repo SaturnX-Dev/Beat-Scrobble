@@ -1,133 +1,61 @@
 # 🎵 Beat Scrobble
 
-**Beat Scrobble** is a modern, AI-powered, self-hosted music analytics platform. Fork of [Koito](https://github.com/gabehf/koito) with enhanced features, AI integrations, and a mobile-first UI.
+<p align="center">
+  <img src="assets/Mod1.png" alt="Beat Scrobble Dashboard" width="800"/>
+</p>
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/SaturnX-Dev/Beat-Scrobble.svg)](https://pkg.go.dev/github.com/SaturnX-Dev/Beat-Scrobble)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+<p align="center">
+  <b>Modern, AI-Powered, Self-Hosted Music Analytics Platform</b><br/>
+  <i>Your music, your data, your insights.</i>
+</p>
 
----
-
-## ✨ Features
-
-### Core Features (from Koito)
-- ⚡ **High Performance** - Built with Go and PostgreSQL
-- 🔁 **ListenBrainz Compatible** - Works with any LB-compatible scrobbler
-- 📂 **Import Support** - Maloja, ListenBrainz, Last.fm, Spotify
-- 🔌 **Relay Mode** - Forward scrobbles to other services
-
-### 🆕 Beat Scrobble Exclusive Features
-
-#### 🤖 AI-Powered
-- **AI Music Critique** - Get witty AI reviews of your tracks
-- **AI Profile Critique** - Personalized analysis of your listening habits
-- **AI Playlists** - 7 types of auto-generated playlists:
-  - Mood Mix, Genre Dive, Discover Weekly
-  - Time Capsule, Artist Radio, Decade Mix, Hidden Gems
-- **OpenRouter Integration** - Use any LLM (GPT-4, Claude, Gemini, etc.)
-
-#### 📊 Enhanced Analytics
-- **Control Room** - Comprehensive dashboard with "Now Playing", metrics, and top charts
-- **Yearly Recap** - Spotify Wrapped-style annual summary (auto-popup Dec 15)
-- **Activity Grid** - GitHub-style listening heatmap with responsive design
-- **Timeline View** - Infinite scroll history with album art
-- **Listening Sessions** - Smart grouping of your listening sessions
-- **Period Filters** - Day, Week, Month, Year, All Time stats
-- **TopListChart** - Horizontal bar rankings with proportional play counts
-- **ListeningTrends** - SVG area chart showing listening evolution over time
-- **ArtistBubbles** - Interactive bubble diagram with circle packing
-- **AlbumQuilt** - Collage mosaic of top album covers with hover effects
-- **ScatterPlot** - Daily listening patterns (Time vs Day)
-- **The Wall** - Grid view of your top 50 artists
-- **StreamGraph** - "Battle of the bands" evolution wave chart
-- **Genre Cloud** - Tag cloud based on your top artists' genres
-
-
-
-#### 🎨 Premium UI & Customization
-- **Mobile-First Design** - Optimized bottom nav and responsive layouts
-- **Theme System** - Multiple themes with card aura effects (32+ aura styles)
-- **Auto Day/Night Mode** - Time-based automatic theme switching with configurable hours
-- **Custom Element Colors** - Personalize colors for 10 UI elements
-- **Custom Backgrounds** - Upload personalized images or looping videos
-- **Profile Images** - Upload and display your profile picture
-- **Glassmorphism** - Modern glass card aesthetics
-- **Collapsible Theme Editor** - Clean, organized custom theme configuration
-- **Dark Mode** - Full dark theme support
-
-#### 🎵 Spotify Integration
-- **Metadata Fetching** - Enriches your library with genres, popularity, and release dates
-- **Track Audio Features** - BPM, Key, Energy, Danceability, Mood, Acoustic displayed on track pages
-- **Artist Metadata** - Genres, popularity scores, Spotify IDs
-- **Album Metadata** - Release dates, genres, popularity
-- **Image Search** - Search and replace album/artist images directly from Spotify
-- **Refresh Button** - One-click metadata refresh on Artist/Album pages
-- **Persistent Fetch Terminal** - Progress persists when closing the fetch modal
-- **Settings Panel** - Easy credential management in Settings → Spotify
-- **Token Management** - Securely handles Spotify tokens (Client Credentials)
-
-
-#### ☁️ Server-Side Storage
-All user preferences, themes, and customizations are stored server-side:
-- **Cross-Device Sync** - Settings persist across all your devices
-- **Cross-Session Persistence** - Login from anywhere, your settings follow
-- **Profile Images** - Stored on server, never lost
-- **Custom Backgrounds** - Saved server-side for consistent experience
-- **Theme Preferences** - Your chosen theme travels with your account
-
-#### 🔗 Sharing & Public Profiles
-- **Public Profiles** - Share your stats with friends (`/u/username`)
-- **Visitor Theme Matching** - Visitors see YOUR chosen theme and customizations
-- **Profile Image Display** - Your profile image shows on public profile
-- **Custom Colors on Public** - Custom element colors visible to visitors
-- **Configurable Hostname** - Set your public domain in settings
-- **Export to JSON** - Backup playlists and data
-
-#### 🔧 Advanced Features
-- **Navidrome Integration** (Coming Soon) - Export playlists to your server
-- **Full Backup/Restore** - Settings, themes, and history
-- **Manual Scrobble** - Add listens manually
-- **Card Aura Effects** - Dynamic visual effects behind cards
-
-
----
-
-## 📸 Screenshots
-
-![Dashboard](assets/Mod1.png)
-![Profile](assets/Mod2.png)
-![Timeline](assets/Mod3.png)
-![Themes](assets/Themes.png)
+<p align="center">
+  <a href="https://pkg.go.dev/github.com/SaturnX-Dev/Beat-Scrobble"><img src="https://pkg.go.dev/badge/github.com/SaturnX-Dev/Beat-Scrobble.svg" alt="Go Reference"/></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"/></a>
+  <img src="https://img.shields.io/badge/Go-1.24-00ADD8?logo=go" alt="Go 1.24"/>
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react" alt="React 19"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql" alt="PostgreSQL 16"/>
+</p>
 
 ---
 
 ## 🚀 Quick Start
 
-### Docker Compose
+### Docker (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/SaturnX-Dev/Beat-Scrobble.git
+cd Beat-Scrobble
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings
+
+# Start with Docker Compose
+docker compose -f docker-compose.prod.yml up -d
+```
+
+### Docker Compose (Simple)
 
 ```yaml
 services:
   beat-scrobble:
     image: saturnxdev/beat-scrobble:latest
-    container_name: beat-scrobble
-    depends_on:
-      - db
-    environment:
-      - BEAT_SCROBBLE_DATABASE_URL=postgres://postgres:your_password@db:5432/beatscrobbledb
-      - BEAT_SCROBBLE_ALLOWED_HOSTS=your-domain.com,192.168.1.100:4110
     ports:
       - "4110:4110"
+    environment:
+      - BEAT_SCROBBLE_DATABASE_URL=postgres://postgres:password@db:5432/beatscrobble
     volumes:
-      - ./beat-scrobble-data:/etc/beat-scrobble
-    restart: unless-stopped
+      - ./data:/app/data
+    depends_on:
+      - db
 
   db:
-    image: postgres:16
-    container_name: psql
-    restart: unless-stopped
+    image: pgvector/pgvector:pg16
     environment:
-      POSTGRES_DB: beatscrobbledb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: beatscrobble
+      POSTGRES_PASSWORD: password
     volumes:
       - ./db-data:/var/lib/postgresql/data
 ```
@@ -135,25 +63,213 @@ services:
 ### Build from Source
 
 ```bash
-git clone https://github.com/SaturnX-Dev/Beat-Scrobble.git
-cd Beat-Scrobble
-
-# Build backend
+# Backend
 go build -o beat-scrobble ./cmd/api
 
-# Build frontend
+# Frontend
 cd client && npm install && npm run build
 ```
 
 ---
 
+## ✨ Features
+
+### 🎯 Core Platform
+| Feature | Description |
+|---------|-------------|
+| **ListenBrainz Compatible** | Works with any LB-compatible scrobbler |
+| **Multi-Source Import** | Spotify, Last.fm, ListenBrainz, Maloja |
+| **Relay Mode** | Forward scrobbles to other services |
+| **Full Data Ownership** | Self-hosted, your data stays yours |
+
+---
+
+### 🤖 AI-Powered Features
+
+<details>
+<summary><b>🧠 AI Music Critique</b></summary>
+
+Get witty, personalized AI reviews of your tracks and listening habits.
+
+- **Track Critiques** - AI commentary on individual songs
+- **Profile Critique** - Deep analysis of your listening personality
+- **Smart Caching** - Critiques cached indefinitely, zero repeat token usage
+- **OpenRouter Integration** - Use GPT-4, Claude, Gemini, or any LLM
+
+</details>
+
+<details>
+<summary><b>🎵 AI Playlists (7 Types)</b></summary>
+
+| Playlist | Description |
+|----------|-------------|
+| **Mood Mix** | Tracks matching a specific mood |
+| **Genre Dive** | Deep exploration of a genre |
+| **Discover Weekly** | New music based on your taste |
+| **Time Capsule** | Throwback to a past era |
+| **Artist Radio** | Similar artists to your favorites |
+| **Decade Mix** | Best of a specific decade |
+| **Hidden Gems** | Underplayed tracks you might love |
+
+</details>
+
+<details>
+<summary><b>🔮 Semantic Search (pgvector)</b></summary>
+
+- **Vector Embeddings** - Tracks, artists, albums stored as vectors
+- **Vibe-Based Search** - "Sad songs from the 90s"
+- **Similar Users** - Find people with your taste
+- **Recommendations** - AI-powered discovery
+
+</details>
+
+---
+
+### 📊 Analytics & Visualizations
+
+Beat Scrobble offers **15+ interactive visualizations** to explore your listening data:
+
+#### 🗓️ Activity & History
+
+| Visualization | Description |
+|---------------|-------------|
+| **Activity Grid** | GitHub-style heatmap showing your listening intensity by day. Darker squares = more listens. Hover for exact counts. Responsive design adapts to screen size. |
+| **Timeline View** | Infinite-scroll chronological history with album art thumbnails. Click any listen to jump to the track page. |
+| **Listening Sessions** | Smart grouping of consecutive listens into "sessions" with duration and track counts. |
+
+#### 📈 Rankings & Charts
+
+| Visualization | Description |
+|---------------|-------------|
+| **TopListChart** | Horizontal bar chart showing your top tracks/albums/artists. Bar width proportional to play count. Animated entrance. |
+| **ListeningTrends** | SVG area chart showing how your listening volume evolves over time. Supports day/week/month granularity. |
+| **The Wall** | Grid layout of your top 50 artists with cover images. Hover to see play counts. Instagram-style aesthetic. |
+
+#### 🎨 Creative Visualizations
+
+| Visualization | Description |
+|---------------|-------------|
+| **ArtistBubbles** | Interactive circle-packing diagram. Bubble size = play count. Click to explore artist. Physics-based animations. |
+| **AlbumQuilt** | Mosaic collage of your top album covers. Hover for glow effect and album info. Sizes vary by popularity. |
+| **StreamGraph** | "Battle of the bands" - stacked area waves showing how your top artists compete over time. Smooth D3.js animations. |
+| **Genre Cloud** | Tag cloud generated from your top artists' genres. Larger text = more common genre. Click to filter. |
+
+#### 📉 Data Insights
+
+| Visualization | Description |
+|---------------|-------------|
+| **ScatterPlot** | Dot plot showing when you listen: X-axis = time of day, Y-axis = day of week. Reveals your listening patterns (morning person? night owl?). |
+| **Music Decades** | Retro-styled striped bar chart showing distribution of your music by release decade. 60s, 70s, 80s... |
+| **Music Ratio** | Radial/donut chart breaking down your library: unique tracks vs albums vs artists. Shows your collection diversity. |
+| **Listening Fingerprint** | Radar/spider chart creating a visual "fingerprint" of your listening personality. Experimental feature based on audio features (energy, danceability, valence). |
+
+#### 🎯 Dashboard Features
+
+| Feature | Description |
+|---------|-------------|
+| **Control Room** | Your home dashboard combining Now Playing card, key metrics (total listens, unique artists, listening time), and mini-charts in one glanceable view. |
+| **Yearly Recap** | Spotify Wrapped-style annual summary. Auto-popups during December. Shows top artists, albums, tracks, total listening time, and fun statistics for the year. |
+| **Period Filters** | All visualizations support filtering by: Today, This Week, This Month, This Year, All Time. Instant refresh. |
+| **Now Playing** | Real-time display of currently playing track with album art, AI critique button, and quick actions. |
+
+
+
+---
+
+### 🎨 Premium UI & Customization
+
+| Feature | Description |
+|---------|-------------|
+| **Mobile-First** | Optimized bottom nav, responsive layouts |
+| **32+ Aura Styles** | Dynamic visual effects behind cards |
+| **Auto Day/Night** | Time-based automatic theme switching |
+| **Custom Colors** | Personalize 10 UI elements |
+| **Custom Backgrounds** | Upload images or looping videos |
+| **Profile Images** | Personal profile pictures |
+| **Glassmorphism** | Modern glass card aesthetics |
+
+### Built-in Themes
+Midnight, Snow, Ocean, Forest, Sunset, Neon, Retro, Minimal, and more...
+
+---
+
+### 🎵 Spotify Integration
+
+| Feature | Description |
+|---------|-------------|
+| **Metadata Fetching** | Genres, popularity, release dates |
+| **Audio Features** | BPM, Key, Energy, Danceability, Mood |
+| **Image Search** | Replace album/artist images from Spotify |
+| **Bulk Fetch** | SSE-powered progress updates |
+
+**Setup:**
+1. Create app at [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+2. Enter Client ID & Secret in Settings → Spotify
+
+---
+
+### ☁️ Server-Side Storage
+
+All preferences sync across devices:
+- ✅ Themes & Aura settings
+- ✅ Custom colors & backgrounds
+- ✅ Profile images
+- ✅ AI cache & preferences
+
+---
+
+### 🔗 Public Profiles
+
+Share your stats at `/u/username`:
+- Visitors see YOUR theme and customizations
+- Profile image displayed
+- Full stats visible
+
+---
+
+## ⚡ Performance
+
+Beat Scrobble is engineered for speed with millions of scrobbles:
+
+### Backend Optimizations
+| Optimization | Impact |
+|--------------|--------|
+| **Materialized Views** | Pre-aggregated daily/monthly/yearly stats |
+| **Full-Text Search** | tsvector with triggers for instant search |
+| **Compound Indexes** | `(user_id, listened_at)` for fast queries |
+| **User Isolation** | All queries filtered by `user_id` |
+| **Gzip Compression** | 10x smaller API responses |
+| **Connection Pooling** | Tuned pgx pool settings |
+| **Background Workers** | Async imports via Go channels |
+
+### Frontend Optimizations
+| Optimization | Impact |
+|--------------|--------|
+| **Virtualization** | Only visible list items rendered |
+| **Code Splitting** | React.lazy for heavy routes |
+| **Optimistic Updates** | Instant UI feedback |
+| **Persistent Cache** | TanStack Query to localStorage |
+| **Lazy Images** | Load on viewport entry |
+
+### Docker Image
+- **Alpine-based** - ~50MB (vs 500MB+ with Debian)
+- **Non-root user** - Security hardened
+- **Health checks** - Built-in `/health` endpoint
+
+---
+
 ## ⚙️ Configuration
 
-| Environment Variable | Description | Default |
-|---------------------|-------------|---------|
-| `BEAT_SCROBBLE_DATABASE_URL` | PostgreSQL connection string | Required |
-| `BEAT_SCROBBLE_ALLOWED_HOSTS` | Comma-separated allowed hosts | `localhost` |
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `BEAT_SCROBBLE_DATABASE_URL` | PostgreSQL connection | Required |
+| `BEAT_SCROBBLE_ALLOWED_HOSTS` | Allowed hosts (comma-sep) | `localhost` |
 | `BEAT_SCROBBLE_PORT` | Server port | `4110` |
+| `OPENAI_API_KEY` | OpenRouter API key | - |
+| `SPOTIFY_CLIENT_ID` | Spotify app ID | - |
+| `SPOTIFY_CLIENT_SECRET` | Spotify app secret | - |
 
 ---
 
@@ -162,197 +278,128 @@ cd client && npm install && npm run build
 1. Get an API key from [OpenRouter](https://openrouter.ai)
 2. Go to **Settings → API Keys**
 3. Enter your OpenRouter key
-4. Enable features: AI Critique, Profile Critique, AI Playlists
+4. Enable: AI Critique, Profile Critique, AI Playlists
 
-### 🧠 AI Caching Logic & Token Savings
+### Smart Caching (Token Saver)
 
-Beat Scrobble implements smart server-side caching to minimize API usage and save tokens:
+Beat Scrobble implements intelligent server-side caching to minimize API calls:
 
-- **Track Critiques (Now Playing)**:
-  - **Behavior**: Critiques are generated once per track and **stored indefinitely** on the server.
-  - **Persistence**: They persist across restarts until manually cleared via the "Clear Cache" button or by changing the AI prompt.
-  - **Benefit**: Zero token usage for re-listening to tracks.
+| Feature | Refresh Interval | Condition |
+|---------|------------------|-----------|
+| **Now Playing Critique** | Forever | Only generates when you're viewing the app |
+| **Profile (Day)** | 4 hours | Only if new listens |
+| **Profile (Week)** | 3 days | Only if new listens |
+| **Profile (Month/Year/All)** | 7 days | Only if new listens |
+| **AI Playlists** | 7 days | Or manual regenerate |
 
-- **Profile Critiques (Stats)**:
-  - **Day View**: Cached for **1 hour**. (Allows refreshing stats during a listening session without spamming AI).
-  - **Week/Month/Year/All Time**: Cached for **7 days**.
-  - **Persistence**: Auto-refreshes when cache expires. Can be forced to refresh by changing the prompt.
-
-- **AI Playlists**:
-  - Generated on-demand and not cached (as users typically want fresh recommendations).
-
----
-
-## 🎵 Spotify Setup
-
-1. Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
-2. Log in and click **Create App**
-3. Enter any name/description and create
-4. Click **Settings** to reveal your **Client ID** and **Client Secret**
-5. Go to **Settings → Spotify** in Beat Scrobble
-6. Enter your credentials to enable image search and metadata fetching
-
----
-
-## � Customization Features
-
-### Theme System
-- Multiple built-in themes (Midnight, Snow, Ocean, etc.)
-- Custom theme creation with color picker
-- 32+ card aura effect styles
-- Per-card aura customization
-
-### Custom Element Colors
-Customize colors for 10 UI elements:
-- Cards, Buttons, Links, Backgrounds
-- Icons, Navbars, Tooltips, Badges
-- Progress bars, Input fields
-
-### Custom Backgrounds
-- Upload custom background images (WebP, JPEG)
-- Upload looping background videos (MP4)
-- Automatic overlay for text readability
-
-### Profile Images
-- Upload profile picture (max 5MB)
-- Displayed on your profile and public page
-- Stored server-side, syncs across devices
-
----
-
-## ⚡ Performance Optimizations
-
-Beat Scrobble handles large libraries efficiently with modern rendering techniques:
-
-- **List Virtualization**: Uses `@tanstack/react-virtual` to render only visible items in long lists (Tracks, History), ensuring smooth 60fps scrolling even with thousands of items.
-- **Smart Image Loading**: 
-  - **Lazy Loading**: Images only load when they enter the viewport.
-  - **Skeleton States**: Smooth loading placeholders prevent layout shifts.
-  - **Server-Side Resizing**: Fetches optimized image sizes (small/medium/large) instead of full-resolution originals to save bandwidth.
+**Smart Features:**
+- ✅ **Presence Detection** - Critiques only generated when app is open (heartbeat every 20 sec)
+- ✅ **Change Detection** - Cache invalidates only when your data actually changes
+- ✅ **Prompt Isolation** - Changing one prompt only clears that prompt's cache
+- ✅ **Cross-Device Sync** - Cache shared across all your devices
 
 ---
 
 
 ## 📦 Backup & Import
 
-### Backup
-Beat Scrobble offers two backup modes:
-- **Full Backup (Recommended)**: Saves your entire listening history, user preferences, themes, and AI configurations.
-- **Legacy Export**: Saves only listening history in a format compatible with older Koito instances.
+### Supported Formats
 
-### Import
-Supports importing from various sources:
-- **Beat Scrobble / Koito**: Full support for v1 (Legacy) and v2 (Full Backup) files.
-  - *Note: Listening history imports require an application restart to process.*
-- **Last.fm**: Export via lastfm-to-csv or similar tools.
-- **ListenBrainz**: Direct JSON export.
-- **Maloja**: Native backup format.
-- **Spotify**: Extended streaming history JSON.
+| Source | Format |
+|--------|--------|
+| Beat Scrobble | v1 (Legacy) & v2 (Full) |
+| Last.fm | CSV export |
+| ListenBrainz | JSON export |
+| Maloja | Native backup |
+| Spotify | Extended streaming history |
 
-To import, go to **Settings → Backup** or place files in the `/etc/beat_scrobble/import` directory.
+### How to Import
+1. Go to **Settings → Backup**
+2. Upload your export file
+3. Or place files in `/etc/beat_scrobble/import`
 
 ---
 
-## 🛠️ API Endpoints
+## 🛠️ API Reference
 
-### Public (No Auth)
+<details>
+<summary><b>View Full API Documentation</b></summary>
+
+### Public Endpoints
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/apis/web/v1/config` | Server configuration |
+| `GET` | `/apis/web/v1/config` | Server config |
 | `GET` | `/apis/web/v1/health` | Health check |
-| `GET` | `/apis/web/v1/public/profile/{username}` | Public profile with theme and stats |
-| `GET` | `/profile-images/{filename}` | Profile images |
-| `GET` | `/background-images/{filename}` | Background images |
-| `GET` | `/images/{size}/{filename}` | Album/artist images |
+| `GET` | `/apis/web/v1/public/profile/{username}` | Public profile |
 
-### Auth (Session Required)
+### Authenticated
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/apis/web/v1/login` | User login |
-| `POST` | `/apis/web/v1/logout` | User logout |
-| `GET` | `/apis/web/v1/user/me` | Current user info |
-| `PATCH` | `/apis/web/v1/user` | Update user |
-
-### Data Retrieval
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/apis/web/v1/artist` | Get artist details |
-| `GET` | `/apis/web/v1/artists` | Get artists for item |
-| `GET` | `/apis/web/v1/album` | Get album details |
-| `GET` | `/apis/web/v1/track` | Get track details |
-| `GET` | `/apis/web/v1/top-tracks` | Top tracks (paginated) |
-| `GET` | `/apis/web/v1/top-albums` | Top albums (paginated) |
-| `GET` | `/apis/web/v1/top-artists` | Top artists (paginated) |
+| `GET` | `/apis/web/v1/top-tracks` | Top tracks |
+| `GET` | `/apis/web/v1/top-albums` | Top albums |
+| `GET` | `/apis/web/v1/top-artists` | Top artists |
 | `GET` | `/apis/web/v1/listens` | Recent listens |
-| `GET` | `/apis/web/v1/listen-activity` | Activity heatmap data |
-| `GET` | `/apis/web/v1/now-playing` | Currently playing track |
-| `GET` | `/apis/web/v1/stats` | User statistics |
-| `GET` | `/apis/web/v1/search` | Search artists/albums/tracks |
-| `GET` | `/apis/web/v1/aliases` | Get aliases for item |
-| `GET` | `/apis/web/v1/yearly-recap?year=YYYY` | Yearly statistics |
+| `GET` | `/apis/web/v1/stats` | User stats |
+| `GET` | `/apis/web/v1/yearly-recap` | Yearly summary |
 
-### User Preferences & Theme
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/apis/web/v1/user/preferences` | Get preferences |
-| `POST` | `/apis/web/v1/user/preferences` | Save preferences |
-| `GET` | `/apis/web/v1/user/theme` | Get theme |
-| `POST` | `/apis/web/v1/user/theme` | Save theme |
-| `POST` | `/apis/web/v1/user/profile-image` | Upload profile image |
-| `POST` | `/apis/web/v1/user/background-image` | Upload background |
-
-### AI Features
+### AI
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/apis/web/v1/ai/critique` | Track critique |
 | `POST` | `/apis/web/v1/ai/profile-critique` | Profile analysis |
-| `POST` | `/apis/web/v1/ai/generate-playlist` | Generate AI playlist |
-| `POST` | `/apis/web/v1/ai/clear-cache` | Clear AI cache |
+| `POST` | `/apis/web/v1/ai/generate-playlist` | AI playlist |
+| `POST` | `/apis/web/v1/ai/clear-cache` | Clear all AI caches |
 | `GET` | `/apis/web/v1/ai/cache/export` | Export AI cache |
 | `POST` | `/apis/web/v1/ai/cache/import` | Import AI cache |
 
-### Spotify Integration
+### Presence (for smart caching)
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/apis/web/v1/spotify/configured` | Check credentials |
-| `GET` | `/apis/web/v1/spotify/search` | Search Spotify |
-| `POST` | `/apis/web/v1/spotify/fetch-metadata` | Fetch metadata |
-| `GET` | `/apis/web/v1/spotify/bulk-fetch-sse` | Bulk fetch (SSE) |
-
-### Data Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/apis/web/v1/export` | Export data |
-| `POST` | `/apis/web/v1/import` | Import data |
-| `POST` | `/apis/web/v1/replace-image` | Replace image |
-| `PATCH` | `/apis/web/v1/album` | Update album |
-| `DELETE` | `/apis/web/v1/artist` | Delete artist |
-| `DELETE` | `/apis/web/v1/album` | Delete album |
-| `DELETE` | `/apis/web/v1/track` | Delete track |
-| `POST` | `/apis/web/v1/merge/tracks` | Merge tracks |
-| `POST` | `/apis/web/v1/merge/albums` | Merge albums |
-| `POST` | `/apis/web/v1/merge/artists` | Merge artists |
-| `POST` | `/apis/web/v1/listen` | Submit listen |
-| `DELETE` | `/apis/web/v1/listen` | Delete listen |
-| `POST` | `/apis/web/v1/aliases` | Create alias |
-| `POST` | `/apis/web/v1/aliases/delete` | Delete alias |
-| `POST` | `/apis/web/v1/aliases/primary` | Set primary alias |
-| `POST` | `/apis/web/v1/artists/primary` | Set primary artist |
-
-### API Keys
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/apis/web/v1/user/apikeys` | List API keys |
-| `POST` | `/apis/web/v1/user/apikeys` | Generate API key |
-| `PATCH` | `/apis/web/v1/user/apikeys` | Update key label |
-| `DELETE` | `/apis/web/v1/user/apikeys` | Delete API key |
+| `POST` | `/apis/web/v1/presence/ping` | Heartbeat (auto-called every 20s) |
 
 ### ListenBrainz Compatible
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/apis/listenbrainz/1/submit-listens` | Submit scrobbles |
-| `GET` | `/apis/listenbrainz/1/validate-token` | Validate API key |
+| `GET` | `/apis/listenbrainz/1/validate-token` | Validate token |
 
+</details>
+
+---
+
+## 🐳 Production Deployment
+
+### With Nginx (Recommended)
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+Includes:
+- **Nginx** - Reverse proxy with edge caching
+- **App** - Beat Scrobble (Alpine, ~50MB)
+- **DB** - PostgreSQL 16 with pgvector
+
+### Edge Caching
+
+The included `nginx.conf` provides:
+- **30-day image cache** - Album/artist images
+- **Gzip compression** - All text responses
+- **Rate limiting** - API protection
+- **Security headers** - XSS, clickjacking protection
+
+---
+
+## 📸 Screenshots
+
+<p align="center">
+  <img src="assets/Mod1.png" alt="Dashboard" width="400"/>
+  <img src="assets/Mod2.png" alt="Profile" width="400"/>
+</p>
+<p align="center">
+  <img src="assets/Mod3.png" alt="Timeline" width="400"/>
+  <img src="assets/Themes.png" alt="Themes" width="400"/>
+</p>
 
 ---
 
@@ -370,5 +417,6 @@ MIT License - See [LICENSE](LICENSE) for details.
 ---
 
 <p align="center">
-  <b>Beat Scrobble</b> - Your music, your data, your insights.
+  <b>Beat Scrobble</b> - Your music, your data, your insights.<br/>
+  ⭐ Star this repo if you find it useful!
 </p>

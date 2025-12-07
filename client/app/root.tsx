@@ -12,16 +12,31 @@ import type { Route } from "./+types/root";
 import './themes.css'
 import "~/styles/themes.css.ts";
 import "./app.css";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { ThemeProvider } from './providers/ThemeProvider';
 import Sidebar from "./components/sidebar/Sidebar";
 import MobileNavBar from "./components/MobileNavBar";
 import { AppProvider } from "./providers/AppProvider";
 import GlobalBackground from "./components/GlobalBackground";
 import { SpotifyProvider } from "./providers/SpotifyProvider";
+import { usePresenceHeartbeat } from "./hooks/usePresenceHeartbeat";
 
-// Create a client
-const queryClient = new QueryClient()
+// Create a client with GC time
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days (garbage collection)
+      staleTime: 1000 * 60 * 5, // 5 minutes (data remains fresh)
+    },
+  },
+});
+
+// Create localStorage persister
+const persister = createSyncStoragePersister({
+  storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+});
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -69,6 +84,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  // Presence heartbeat for AI Now Playing optimization
+  usePresenceHeartbeat();
+
   // Register service worker for PWA
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -87,7 +105,10 @@ export default function App() {
     <>
       <AppProvider>
         <ThemeProvider>
-          <QueryClientProvider client={queryClient}>
+          <PersistQueryClientProvider
+            client={queryClient}
+            persistOptions={{ persister }}
+          >
             <SpotifyProvider>
               <GlobalBackground />
               <div className="flex-col flex sm:flex-row min-h-screen relative z-10">
@@ -98,7 +119,7 @@ export default function App() {
                 </div>
               </div>
             </SpotifyProvider>
-          </QueryClientProvider>
+          </PersistQueryClientProvider>
         </ThemeProvider>
       </AppProvider>
     </>

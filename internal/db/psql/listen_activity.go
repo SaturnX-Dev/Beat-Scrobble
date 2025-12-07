@@ -29,6 +29,7 @@ func (d *Psql) GetListenActivity(ctx context.Context, opts db.ListenActivityOpts
 			Column2:   t2,
 			Column3:   stepToInterval(opts.Step),
 			ReleaseID: opts.AlbumID,
+			UserID:    opts.UserID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("GetListenActivity: ListenActivityForRelease: %w", err)
@@ -50,6 +51,7 @@ func (d *Psql) GetListenActivity(ctx context.Context, opts db.ListenActivityOpts
 			Column2:  t2,
 			Column3:  stepToInterval(opts.Step),
 			ArtistID: opts.ArtistID,
+			UserID:   opts.UserID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("GetListenActivity: ListenActivityForArtist: %w", err)
@@ -71,6 +73,7 @@ func (d *Psql) GetListenActivity(ctx context.Context, opts db.ListenActivityOpts
 			Column2: t2,
 			Column3: stepToInterval(opts.Step),
 			ID:      opts.TrackID,
+			UserID:  opts.UserID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("GetListenActivity: ListenActivityForTrack: %w", err)
@@ -91,6 +94,7 @@ func (d *Psql) GetListenActivity(ctx context.Context, opts db.ListenActivityOpts
 			Column1: t1,
 			Column2: t2,
 			Column3: stepToInterval(opts.Step),
+			UserID:  opts.UserID,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("GetListenActivity: ListenActivity: %w", err)

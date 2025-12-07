@@ -71,7 +71,7 @@ FROM listens l
 JOIN tracks t ON l.track_id = t.id
 JOIN artist_tracks at ON at.track_id = t.id
 JOIN artists_with_name a ON a.id = at.artist_id
-WHERE l.listened_at BETWEEN $1 AND $2
+WHERE l.user_id = $5 AND l.listened_at BETWEEN $1 AND $2
 GROUP BY a.id, a.name, a.musicbrainz_id, a.image, a.genres, a.bio, a.popularity, a.spotify_id
 ORDER BY listen_count DESC, a.id
 LIMIT $3 OFFSET $4;
@@ -80,7 +80,7 @@ LIMIT $3 OFFSET $4;
 SELECT COUNT(DISTINCT at.artist_id) AS total_count
 FROM listens l
 JOIN artist_tracks at ON l.track_id = at.track_id
-WHERE l.listened_at BETWEEN $1 AND $2;
+WHERE l.user_id = $3 AND l.listened_at BETWEEN $1 AND $2;
 
 -- name: UpdateArtistMbzID :exec
 UPDATE artists SET musicbrainz_id = $2

@@ -50,7 +50,7 @@ SELECT
 FROM listens l
 JOIN tracks_with_title t ON l.track_id = t.id
 JOIN releases r ON t.release_id = r.id
-WHERE l.listened_at BETWEEN $1 AND $2
+WHERE l.user_id = $5 AND l.listened_at BETWEEN $1 AND $2
 GROUP BY t.id, t.title, t.musicbrainz_id, t.release_id, r.image, t.popularity, t.spotify_id
 ORDER BY listen_count DESC, t.id
 LIMIT $3 OFFSET $4;
@@ -70,7 +70,8 @@ FROM listens l
 JOIN tracks_with_title t ON l.track_id = t.id
 JOIN releases r ON t.release_id = r.id
 JOIN artist_tracks at ON at.track_id = t.id
-WHERE l.listened_at BETWEEN $1 AND $2
+WHERE l.user_id = $6
+  AND l.listened_at BETWEEN $1 AND $2
   AND at.artist_id = $5
 GROUP BY t.id, t.title, t.musicbrainz_id, t.release_id, r.image, t.popularity, t.spotify_id
 ORDER BY listen_count DESC, t.id
@@ -90,7 +91,8 @@ SELECT
 FROM listens l
 JOIN tracks_with_title t ON l.track_id = t.id
 JOIN releases r ON t.release_id = r.id
-WHERE l.listened_at BETWEEN $1 AND $2
+WHERE l.user_id = $6
+  AND l.listened_at BETWEEN $1 AND $2
   AND t.release_id = $5
 GROUP BY t.id, t.title, t.musicbrainz_id, t.release_id, r.image, t.popularity, t.spotify_id
 ORDER BY listen_count DESC, t.id
@@ -99,21 +101,23 @@ LIMIT $3 OFFSET $4;
 -- name: CountTopTracks :one
 SELECT COUNT(DISTINCT l.track_id) AS total_count
 FROM listens l
-WHERE l.listened_at BETWEEN $1 AND $2;
+WHERE l.user_id = $3 AND l.listened_at BETWEEN $1 AND $2;
 
 -- name: CountTopTracksByArtist :one
 SELECT COUNT(DISTINCT l.track_id) AS total_count
 FROM listens l
 JOIN artist_tracks at ON l.track_id = at.track_id
-WHERE l.listened_at BETWEEN $1 AND $2
-AND at.artist_id = $3;
+WHERE l.user_id = $4
+  AND l.listened_at BETWEEN $1 AND $2
+  AND at.artist_id = $3;
 
 -- name: CountTopTracksByRelease :one
 SELECT COUNT(DISTINCT l.track_id) AS total_count
 FROM listens l
 JOIN tracks t ON l.track_id = t.id
-WHERE l.listened_at BETWEEN $1 AND $2
-AND t.release_id = $3;
+WHERE l.user_id = $4
+  AND l.listened_at BETWEEN $1 AND $2
+  AND t.release_id = $3;
 
 -- name: UpdateTrackMbzID :exec
 UPDATE tracks SET musicbrainz_id = $2

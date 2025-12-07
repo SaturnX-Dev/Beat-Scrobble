@@ -37,6 +37,7 @@ func (d *Psql) GetTopAlbumsPaginated(ctx context.Context, opts db.GetItemsOpts) 
 			opts.Limit, opts.ArtistID, opts.Period, opts.Page, t1.Format("Jan 02, 2006"), t2.Format("Jan 02, 2006"))
 
 		rows, err := d.q.GetTopReleasesFromArtist(ctx, repository.GetTopReleasesFromArtistParams{
+			UserID:       int32(opts.UserID),
 			ArtistID:     int32(opts.ArtistID),
 			Limit:        int32(opts.Limit),
 			Offset:       int32(offset),
@@ -77,6 +78,7 @@ func (d *Psql) GetTopAlbumsPaginated(ctx context.Context, opts db.GetItemsOpts) 
 		l.Debug().Msgf("Fetching top %d albums with period %s on page %d from range %v to %v",
 			opts.Limit, opts.Period, opts.Page, t1.Format("Jan 02, 2006"), t2.Format("Jan 02, 2006"))
 		rows, err := d.q.GetTopReleasesPaginated(ctx, repository.GetTopReleasesPaginatedParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			Limit:        int32(opts.Limit),
@@ -110,6 +112,7 @@ func (d *Psql) GetTopAlbumsPaginated(ctx context.Context, opts db.GetItemsOpts) 
 			rgs[i] = t
 		}
 		count, err = d.q.CountTopReleases(ctx, repository.CountTopReleasesParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 		})

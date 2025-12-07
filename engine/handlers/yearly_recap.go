@@ -82,14 +82,15 @@ func YearlyRecapHandler(store db.DB) http.HandlerFunc {
 		l.Debug().Msgf("YearlyRecapHandler: Fetching recap for year %d", year)
 
 		// Use PeriodYear for all stats (approximation)
-		listens, _ := store.CountListens(ctx, db.PeriodYear)
-		tracks, _ := store.CountTracks(ctx, db.PeriodYear)
-		albums, _ := store.CountAlbums(ctx, db.PeriodYear)
-		artists, _ := store.CountArtists(ctx, db.PeriodYear)
-		timeListened, _ := store.CountTimeListened(ctx, db.PeriodYear)
+		listens, _ := store.CountListens(ctx, int32(user.ID), db.PeriodYear)
+		tracks, _ := store.CountTracks(ctx, int32(user.ID), db.PeriodYear)
+		albums, _ := store.CountAlbums(ctx, int32(user.ID), db.PeriodYear)
+		artists, _ := store.CountArtists(ctx, int32(user.ID), db.PeriodYear)
+		timeListened, _ := store.CountTimeListened(ctx, int32(user.ID), db.PeriodYear)
 
 		// Get top artist using paginated method
 		topArtistsResp, err := store.GetTopArtistsPaginated(ctx, db.GetItemsOpts{
+			UserID: int(user.ID),
 			Limit:  1,
 			Page:   1,
 			Period: db.PeriodYear,
@@ -107,6 +108,7 @@ func YearlyRecapHandler(store db.DB) http.HandlerFunc {
 
 		// Get top album using paginated method
 		topAlbumsResp, err := store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{
+			UserID: int(user.ID),
 			Limit:  1,
 			Page:   1,
 			Period: db.PeriodYear,
@@ -129,6 +131,7 @@ func YearlyRecapHandler(store db.DB) http.HandlerFunc {
 
 		// Get top track using paginated method
 		topTracksResp, err := store.GetTopTracksPaginated(ctx, db.GetItemsOpts{
+			UserID: int(user.ID),
 			Limit:  1,
 			Page:   1,
 			Period: db.PeriodYear,

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/worker"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
@@ -26,8 +27,9 @@ type BeatScrobbleImport struct {
 	Listens     []interface{}          `json:"listens"`
 }
 
-func ImportHandler(store db.DB) http.HandlerFunc {
+func ImportHandler(store db.DB, wWorker *worker.Worker) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		ctx := r.Context()
 		l := logger.FromContext(ctx)
 
@@ -115,6 +117,9 @@ func ImportHandler(store db.DB) http.HandlerFunc {
 				return
 			}
 			l.Info().Msgf("ImportHandler: Listens queued for import in file %s", filename)
+
+			// Background Processing (Phase 3)
+			wWorker.EnqueueImport(filename)
 		}
 
 		// Build response based on what was restored
@@ -122,7 +127,7 @@ func ImportHandler(store db.DB) http.HandlerFunc {
 		if importData.Version == "1" {
 			if listensPending > 0 {
 				message = "Legacy export (v1) received! " +
-					strconv.Itoa(listensPending) + " listens will be imported on next restart."
+					strconv.Itoa(listensPending) + " listens will be imported in the background."
 			} else {
 				message = "Legacy export (v1) detected but no listens were found."
 			}
@@ -136,7 +141,7 @@ func ImportHandler(store db.DB) http.HandlerFunc {
 				parts = append(parts, "theme")
 			}
 			if listensPending > 0 {
-				parts = append(parts, strconv.Itoa(listensPending)+" listens (pending restart)")
+				parts = append(parts, strconv.Itoa(listensPending)+" listens (processing in background)")
 			}
 
 			if len(parts) > 0 {

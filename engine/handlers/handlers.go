@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
 )
@@ -71,10 +72,16 @@ func OptsFromRequest(r *http.Request) db.GetItemsOpts {
 		period = db.PeriodDay
 	}
 
-	l.Debug().Msgf("OptsFromRequest: Parsed options: limit=%d, page=%d, week=%d, month=%d, year=%d, from=%d, to=%d, artist_id=%d, album_id=%d, track_id=%d, period=%s",
-		limit, page, week, month, year, from, to, artistId, albumId, trackId, period)
+	var userId int = 0
+	if u := middleware.GetUserFromContext(r.Context()); u != nil {
+		userId = int(u.ID)
+	}
+
+	l.Debug().Msgf("OptsFromRequest: Parsed options: limit=%d, page=%d, week=%d, month=%d, year=%d, from=%d, to=%d, artist_id=%d, album_id=%d, track_id=%d, period=%s, user_id=%d",
+		limit, page, week, month, year, from, to, artistId, albumId, trackId, period, userId)
 
 	return db.GetItemsOpts{
+		UserID:   userId,
 		Limit:    limit,
 		Period:   period,
 		Page:     page,

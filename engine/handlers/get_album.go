@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
@@ -32,7 +33,13 @@ func GetAlbumHandler(store db.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		l.Debug().Msgf("GetAlbumHandler: Retrieving album with ID %d", id)
 
-		album, err := store.GetAlbum(ctx, db.GetAlbumOpts{ID: int32(id)})
+		user := middleware.GetUserFromContext(ctx)
+		var userID int32
+		if user != nil {
+			userID = int32(user.ID)
+		}
+
+		album, err := store.GetAlbum(ctx, db.GetAlbumOpts{ID: int32(id), UserID: userID})
 		if err != nil {
 			l.Err(err).Msgf("GetAlbumHandler: Failed to retrieve album with ID %d", id)
 			utils.WriteError(w, "album with specified id could not be found", http.StatusNotFound)

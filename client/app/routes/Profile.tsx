@@ -48,12 +48,11 @@ export default function Profile() {
     const backgroundImage = getPreference('background_image', null);
     const profileImage = getPreference('profile_image', null);
 
-    // Check if recap should be visible (Dec 15-21 only)
+    // Check if recap should be visible (entire December)
     const isRecapPeriod = () => {
         const today = new Date();
         const month = today.getMonth(); // 11 = December
-        const day = today.getDate();
-        return month === 11 && day >= 15 && day <= 21;
+        return month === 11; // Show for entire December
     };
 
     const showRecapButton = isRecapPeriod();

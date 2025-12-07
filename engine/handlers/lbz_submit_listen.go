@@ -18,62 +18,14 @@ import (
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/mbz"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"golang.org/x/sync/singleflight"
 )
 
-type LbzListenType string
-
-const (
-	ListenTypeSingle     LbzListenType = "single"
-	ListenTypePlayingNow LbzListenType = "playing_now"
-	ListenTypeImport     LbzListenType = "import"
-)
-
-type LbzSubmitListenRequest struct {
-	ListenType LbzListenType            `json:"listen_type,omitempty"`
-	Payload    []LbzSubmitListenPayload `json:"payload,omitempty"`
-}
-
-type LbzSubmitListenPayload struct {
-	ListenedAt int64        `json:"listened_at,omitempty"`
-	TrackMeta  LbzTrackMeta `json:"track_metadata"`
-}
-
-type LbzTrackMeta struct {
-	ArtistName     string            `json:"artist_name"` // required
-	TrackName      string            `json:"track_name"`  // required
-	ReleaseName    string            `json:"release_name,omitempty"`
-	MBIDMapping    LbzMBIDMapping    `json:"mbid_mapping"`
-	AdditionalInfo LbzAdditionalInfo `json:"additional_info,omitempty"`
-}
-type LbzArtist struct {
-	ArtistMBID string `json:"artist_mbid"`
-	ArtistName string `json:"artist_credit_name"`
-}
-type LbzMBIDMapping struct {
-	ReleaseMBID   string      `json:"release_mbid"`
-	RecordingMBID string      `json:"recording_mbid"`
-	ArtistMBIDs   []string    `json:"artist_mbids"`
-	Artists       []LbzArtist `json:"artists"`
-}
-
-type LbzAdditionalInfo struct {
-	MediaPlayer             string   `json:"media_player,omitempty"`
-	SubmissionClient        string   `json:"submission_client,omitempty"`
-	SubmissionClientVersion string   `json:"submission_client_version,omitempty"`
-	ReleaseMBID             string   `json:"release_mbid,omitempty"`
-	ReleaseGroupMBID        string   `json:"release_group_mbid,omitempty"`
-	ArtistMBIDs             []string `json:"artist_mbids,omitempty"`
-	ArtistNames             []string `json:"artist_names,omitempty"`
-	RecordingMBID           string   `json:"recording_mbid,omitempty"`
-	DurationMs              int32    `json:"duration_ms,omitempty"`
-	Duration                int32    `json:"duration,omitempty"`
-	Tags                    []string `json:"tags,omitempty"`
-	AlbumArtist             string   `json:"albumartist,omitempty"`
-}
+// Structs moved to internal/models/lbz.go
 
 const (
 	maxListensPerRequest = 1000
@@ -87,7 +39,7 @@ func LbzSubmitListenHandler(store db.DB, mbzc mbz.MusicBrainzCaller) func(w http
 
 		l.Debug().Msg("LbzSubmitListenHandler: Received request to submit listens")
 
-		var req LbzSubmitListenRequest
+		var req models.LbzSubmitListenRequest
 		requestBytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			l.Err(err).Msg("LbzSubmitListenHandler: Failed to read request body")
@@ -134,7 +86,7 @@ func LbzSubmitListenHandler(store db.DB, mbzc mbz.MusicBrainzCaller) func(w http
 				return
 			}
 
-			if req.ListenType != ListenTypePlayingNow && req.ListenType != ListenTypeSingle && req.ListenType != ListenTypeImport {
+			if req.ListenType != models.ListenTypePlayingNow && req.ListenType != models.ListenTypeSingle && req.ListenType != models.ListenTypeImport {
 				l.Debug().Msg("LbzSubmitListenHandler: No listen type provided, assuming 'single'")
 				req.ListenType = "single"
 			}
@@ -215,8 +167,8 @@ func LbzSubmitListenHandler(store db.DB, mbzc mbz.MusicBrainzCaller) func(w http
 				Time:               listenedAt,
 				UserID:             u.ID,
 				Client:             client,
-				IsNowPlaying:       req.ListenType == ListenTypePlayingNow,
-				SkipSaveListen:     req.ListenType == ListenTypePlayingNow,
+				IsNowPlaying:       req.ListenType == models.ListenTypePlayingNow,
+				SkipSaveListen:     req.ListenType == models.ListenTypePlayingNow,
 			}
 
 			_, err, shared := sfGroup.Do(buildCaolescingKey(payload), func() (interface{}, error) {
@@ -311,7 +263,7 @@ func doLbzRelay(requestBytes []byte, l *zerolog.Logger) {
 	}
 }
 
-func buildCaolescingKey(p LbzSubmitListenPayload) string {
+func buildCaolescingKey(p models.LbzSubmitListenPayload) string {
 	// the key not including the listen_type introduces the very rare possibility of a playing_now
 	// request taking precedence over a single, meaning that a listen will not be logged when it
 	// should, however that would require a playing_now request to fire a few seconds before a 'single'

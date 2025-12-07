@@ -44,6 +44,7 @@ func (d *Psql) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*
 		l.Debug().Msgf("Fetching %d listens with period %s on page %d from range %v to %v",
 			opts.Limit, opts.Period, opts.Page, t1.Format("Jan 02, 2006"), t2.Format("Jan 02, 2006"))
 		rows, err := d.q.GetLastListensFromTrackPaginated(ctx, repository.GetLastListensFromTrackPaginatedParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			Limit:        int32(opts.Limit),
@@ -72,6 +73,7 @@ func (d *Psql) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*
 			listens[i] = t
 		}
 		count, err = d.q.CountListensFromTrack(ctx, repository.CountListensFromTrackParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			TrackID:      int32(opts.TrackID),
@@ -83,6 +85,7 @@ func (d *Psql) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*
 		l.Debug().Msgf("Fetching %d listens with period %s on page %d from range %v to %v",
 			opts.Limit, opts.Period, opts.Page, t1.Format("Jan 02, 2006"), t2.Format("Jan 02, 2006"))
 		rows, err := d.q.GetLastListensFromReleasePaginated(ctx, repository.GetLastListensFromReleasePaginatedParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			Limit:        int32(opts.Limit),
@@ -111,6 +114,7 @@ func (d *Psql) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*
 			listens[i] = t
 		}
 		count, err = d.q.CountListensFromRelease(ctx, repository.CountListensFromReleaseParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			ReleaseID:    int32(opts.AlbumID),
@@ -122,6 +126,7 @@ func (d *Psql) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*
 		l.Debug().Msgf("Fetching %d listens with period %s on page %d from range %v to %v",
 			opts.Limit, opts.Period, opts.Page, t1.Format("Jan 02, 2006"), t2.Format("Jan 02, 2006"))
 		rows, err := d.q.GetLastListensFromArtistPaginated(ctx, repository.GetLastListensFromArtistPaginatedParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			Limit:        int32(opts.Limit),
@@ -150,6 +155,7 @@ func (d *Psql) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*
 			listens[i] = t
 		}
 		count, err = d.q.CountListensFromArtist(ctx, repository.CountListensFromArtistParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			ArtistID:     int32(opts.ArtistID),
@@ -161,6 +167,7 @@ func (d *Psql) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*
 		l.Debug().Msgf("Fetching %d listens with period %s on page %d from range %v to %v",
 			opts.Limit, opts.Period, opts.Page, t1.Format("Jan 02, 2006"), t2.Format("Jan 02, 2006"))
 		rows, err := d.q.GetLastListensPaginated(ctx, repository.GetLastListensPaginatedParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 			Limit:        int32(opts.Limit),
@@ -188,6 +195,7 @@ func (d *Psql) GetListensPaginated(ctx context.Context, opts db.GetItemsOpts) (*
 			listens[i] = t
 		}
 		count, err = d.q.CountListens(ctx, repository.CountListensParams{
+			UserID:       int32(opts.UserID),
 			ListenedAt:   t1,
 			ListenedAt_2: t2,
 		})
@@ -227,13 +235,14 @@ func (d *Psql) SaveListen(ctx context.Context, opts db.SaveListenOpts) error {
 	})
 }
 
-func (d *Psql) DeleteListen(ctx context.Context, trackId int32, listenedAt time.Time) error {
+func (d *Psql) DeleteListen(ctx context.Context, trackId int32, listenedAt time.Time, userId int32) error {
 	l := logger.FromContext(ctx)
 	if trackId == 0 {
 		return errors.New("required parameter 'trackId' missing")
 	}
 	l.Debug().Msgf("Deleting listen from track %d at time %s from DB", trackId, listenedAt)
 	return d.q.DeleteListen(ctx, repository.DeleteListenParams{
+		UserID:     userId,
 		TrackID:    trackId,
 		ListenedAt: listenedAt,
 	})
