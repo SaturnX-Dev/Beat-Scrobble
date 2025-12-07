@@ -76,7 +76,7 @@ export default function SettingsModal({ open, setOpen }: Props) {
                                 Developed with ❤️ by saturnxdev.
                             </p>
                             <a
-                                href="https://github.com/saturnxdev/Beat Scrobble"
+                                href="https://github.com/SaturnX-Dev/Beat-Scrobble"
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-sm text-[var(--color-primary)] hover:underline"
