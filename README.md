@@ -220,6 +220,19 @@ Customize colors for 10 UI elements:
 
 ---
 
+## ⚡ Performance Optimizations
+
+Beat Scrobble handles large libraries efficiently with modern rendering techniques:
+
+- **List Virtualization**: Uses `@tanstack/react-virtual` to render only visible items in long lists (Tracks, History), ensuring smooth 60fps scrolling even with thousands of items.
+- **Smart Image Loading**: 
+  - **Lazy Loading**: Images only load when they enter the viewport.
+  - **Skeleton States**: Smooth loading placeholders prevent layout shifts.
+  - **Server-Side Resizing**: Fetches optimized image sizes (small/medium/large) instead of full-resolution originals to save bandwidth.
+
+---
+
+
 ## 📦 Backup & Import
 
 ### Backup
