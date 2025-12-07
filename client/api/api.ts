@@ -24,6 +24,17 @@ async function request(input: RequestInfo | URL, init?: RequestInit): Promise<Re
   });
 }
 
+// Helper to build query string skipping undefined/null
+function buildQuery(params: Record<string, any>): string {
+  const searchParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      searchParams.append(key, String(value));
+    }
+  });
+  return searchParams.toString();
+}
+
 async function handleJson<T>(r: Response): Promise<T> {
   if (!r.ok) {
     const err = await r.json();
@@ -34,48 +45,71 @@ async function handleJson<T>(r: Response): Promise<T> {
 async function getLastListens(
   args: getItemsArgs
 ): Promise<PaginatedResponse<Listen>> {
-  const r = await request(
-    `/apis/web/v1/listens?period=${args.period}&limit=${args.limit}&artist_id=${args.artist_id}&album_id=${args.album_id}&track_id=${args.track_id}&page=${args.page}&offset=${args.offset || 0}`
-  );
+  const query = buildQuery({
+    period: args.period,
+    limit: args.limit,
+    artist_id: args.artist_id,
+    album_id: args.album_id,
+    track_id: args.track_id,
+    page: args.page,
+    offset: args.offset || 0
+  });
+  const r = await request(`/apis/web/v1/listens?${query}`);
   return handleJson<PaginatedResponse<Listen>>(r);
 }
 
 async function getTopTracks(
   args: getItemsArgs
 ): Promise<PaginatedResponse<Track>> {
-  let url = `/apis/web/v1/top-tracks?period=${args.period}&limit=${args.limit}&page=${args.page}`;
-
-  if (args.artist_id) url += `&artist_id=${args.artist_id}`;
-  else if (args.album_id) url += `&album_id=${args.album_id}`;
-
-  const r = await request(url);
+  const query = buildQuery({
+    period: args.period,
+    limit: args.limit,
+    page: args.page,
+    artist_id: args.artist_id,
+    album_id: args.album_id
+  });
+  const r = await request(`/apis/web/v1/top-tracks?${query}`);
   return handleJson<PaginatedResponse<Track>>(r);
 }
 
 async function getTopAlbums(
   args: getItemsArgs
 ): Promise<PaginatedResponse<Album>> {
-  let url = `/apis/web/v1/top-albums?period=${args.period}&limit=${args.limit}&page=${args.page}`;
-  if (args.artist_id) url += `&artist_id=${args.artist_id}`;
-
-  const r = await request(url);
+  const query = buildQuery({
+    period: args.period,
+    limit: args.limit,
+    page: args.page,
+    artist_id: args.artist_id
+  });
+  const r = await request(`/apis/web/v1/top-albums?${query}`);
   return handleJson<PaginatedResponse<Album>>(r);
 }
 
 async function getTopArtists(
   args: getItemsArgs
 ): Promise<PaginatedResponse<Artist>> {
-  const url = `/apis/web/v1/top-artists?period=${args.period}&limit=${args.limit}&page=${args.page}`;
-  const r = await request(url);
+  const query = buildQuery({
+    period: args.period,
+    limit: args.limit,
+    page: args.page
+  });
+  const r = await request(`/apis/web/v1/top-artists?${query}`);
   return handleJson<PaginatedResponse<Artist>>(r);
 }
 
 async function getActivity(
   args: getActivityArgs
 ): Promise<ListenActivityItem[]> {
-  const r = await request(
-    `/apis/web/v1/listen-activity?step=${args.step}&range=${args.range}&month=${args.month}&year=${args.year}&album_id=${args.album_id}&artist_id=${args.artist_id}&track_id=${args.track_id}`
-  );
+  const query = buildQuery({
+    step: args.step,
+    range: args.range,
+    month: args.month,
+    year: args.year,
+    album_id: args.album_id,
+    artist_id: args.artist_id,
+    track_id: args.track_id
+  });
+  const r = await request(`/apis/web/v1/listen-activity?${query}`);
   return handleJson<ListenActivityItem[]>(r);
 }
 

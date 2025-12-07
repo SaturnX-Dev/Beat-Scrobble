@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Link } from "react-router";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { getLastListens, getStats, getTopArtists, getTopAlbums, getTopTracks, imageUrl, type Listen, type PaginatedResponse } from "api/api";
-import { BarChart3, User, TrendingUp, Clock, Disc, Music, Share2, Gift, Copy, Check, Grid3X3, Circle, LineChart } from "lucide-react";
+import { BarChart3, User, TrendingUp, Clock, Disc, Music, Share2, Gift, Copy, Check, Grid3X3, Circle, LineChart, PieChart, Radar, CalendarRange } from "lucide-react";
 import ProfileCritique from "~/components/ProfileCritique";
 import PeriodSelector from "~/components/PeriodSelector";
 import ActivityGrid from "~/components/ActivityGrid";
@@ -10,7 +10,7 @@ import TimelineView from "~/components/TimelineView";
 import YearlyRecapModal from "~/components/modals/YearlyRecapModal";
 import { usePreferences } from "~/hooks/usePreferences";
 import { useAppContext } from "~/providers/AppProvider";
-import { TopListChart, ListeningTrends, ArtistBubbles, ScatterPlot, WordCloud, StreamGraph } from "~/components/charts";
+import { TopListChart, ListeningTrends, ArtistBubbles, ScatterPlot, WordCloud, StreamGraph, MusicRatio, ListeningFingerprint, MusicDecades } from "~/components/charts";
 
 interface Artist {
     id: number;
@@ -35,7 +35,7 @@ interface StatsData {
     minutes_listened: number;
 }
 
-type ChartView = 'rankings' | 'trends' | 'bubbles' | 'stream' | 'scatter' | 'cloud';
+type ChartView = 'rankings' | 'bubbles' | 'stream' | 'scatter' | 'cloud' | 'ratio' | 'fingerprint' | 'decades';
 
 export default function Profile() {
     const [period, setPeriod] = useState<string>("week");
@@ -356,6 +356,9 @@ export default function Profile() {
                                 { id: 'stream' as ChartView, label: 'Stream', icon: TrendingUp },
                                 { id: 'scatter' as ChartView, label: 'Scatter', icon: Clock },
                                 { id: 'cloud' as ChartView, label: 'Tags', icon: Share2 },
+                                { id: 'ratio' as ChartView, label: 'Ratio', icon: PieChart },
+                                { id: 'fingerprint' as ChartView, label: 'Fingerprint', icon: Radar },
+                                { id: 'decades' as ChartView, label: 'Decades', icon: CalendarRange },
                             ].map(tab => (
                                 <button
                                     key={tab.id}
@@ -531,6 +534,65 @@ export default function Profile() {
                                             </div>
                                         )}
                                     </div>
+                                </div>
+                            )}
+
+                            {chartView === 'ratio' && (
+                                <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)] flex flex-col items-center">
+                                    <div className="flex items-center justify-between w-full mb-8">
+                                        <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                            Music Ratio - {periodLabel}
+                                        </h2>
+                                    </div>
+                                    <div className="flex justify-center w-full">
+                                        <MusicRatio
+                                            trackCount={uniqueTracks}
+                                            albumCount={uniqueAlbums}
+                                            artistCount={uniqueArtists}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {chartView === 'fingerprint' && (
+                                <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                            Listening Fingerprint
+                                        </h2>
+                                    </div>
+                                    <p className="text-xs text-[var(--color-fg-tertiary)] mb-4">
+                                        Your unique listening personality profile. <span className="opacity-50 italic">(Experimental / Placeholder Data)</span>
+                                    </p>
+                                    <div className="flex justify-center">
+                                        <ListeningFingerprint
+                                            consistency={75}
+                                            discovery={Math.min((uniqueArtists / (uniqueTracks || 1)) * 100, 100)}
+                                            variance={Math.min((uniqueAlbums / (uniqueArtists || 1)) * 50, 100)}
+                                            concentration={80} // Placeholder
+                                            replay={Math.min((totalScrobbles / (uniqueTracks || 1)) * 20, 100)}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {chartView === 'decades' && (
+                                <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                            Music by Decade - {periodLabel}
+                                        </h2>
+                                    </div>
+                                    <p className="text-xs text-[var(--color-fg-tertiary)] mb-6">
+                                        Tracks from each decade based on your album listening history.
+                                    </p>
+                                    {topAlbumsData?.items && topAlbumsData.items.length > 0 ? (
+                                        <MusicDecades items={topAlbumsData.items} />
+                                    ) : (
+                                        <div className="h-64 flex items-center justify-center text-[var(--color-fg-tertiary)]">
+                                            No album data available to determine decades.
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
