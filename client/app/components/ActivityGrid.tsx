@@ -5,90 +5,10 @@ import {
   type ListenActivityItem,
 } from "api/api";
 import Popup from "./Popup";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useTheme } from "~/hooks/useTheme";
 import ActivityOptsSelector from "./ActivityOptsSelector";
 import type { Theme } from "~/styles/themes.css";
-
-const colorUtils = {
-  getPrimaryColor(theme: Theme): string {
-    const value = theme.primary;
-    const rgbMatch = value.match(
-      /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/
-    );
-
-    if (rgbMatch) {
-      const [, r, g, b] = rgbMatch.map(Number);
-      return "#" + [r, g, b].map((n) => n.toString(16).padStart(2, "0")).join("");
-    }
-    return value;
-  },
-
-  hexToRgb(hex: string): { r: number; g: number; b: number } | null {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
-      : null;
-  },
-
-  rgbToHex(r: number, g: number, b: number): string {
-    return "#" + [r, g, b].map((x) => {
-      const hex = Math.round(x).toString(16);
-      return hex.length === 1 ? "0" + hex : hex;
-    }).join("");
-  },
-
-  interpolateColor(color1: string, color2: string, factor: number): string {
-    const c1 = this.hexToRgb(color1);
-    const c2 = this.hexToRgb(color2);
-
-    if (!c1 || !c2) return color1;
-
-    const r = c1.r + factor * (c2.r - c1.r);
-    const g = c1.g + factor * (c2.g - c1.g);
-    const b = c1.b + factor * (c2.b - c1.b);
-
-    return this.rgbToHex(r, g, b);
-  }
-};
-
-const LAYOUT_CONFIG = {
-  week: {
-    maxRange: 14,
-    cellSize: "w-8 h-8 sm:w-10 sm:h-10",
-    rounded: "rounded-lg",
-    gap: "gap-2",
-    containerHeight: "h-auto",
-    horizontal: true
-  },
-  month: {
-    maxRange: 31,
-    cellSize: "w-6 h-6 sm:w-7 sm:h-7",
-    rounded: "rounded-md",
-    gap: "gap-1.5",
-    containerHeight: "h-auto",
-    horizontal: false
-  },
-  year: {
-    maxRange: Infinity,
-    cellSize: "w-3 h-3 sm:w-3.5 sm:h-3.5",
-    rounded: "rounded-sm",
-    gap: "gap-1",
-    containerHeight: "h-auto",
-    horizontal: false
-  }
-};
-
-const INTENSITY_TARGETS = {
-  day: { base: 10, specific: 1 },
-  week: { base: 20, specific: 1 },
-  month: { base: 50, specific: 1 },
-  year: { base: 100, specific: 1 }
-} as const;
 
 interface Props {
   step?: string;
@@ -99,7 +19,7 @@ interface Props {
   albumId?: number;
   trackId?: number;
   configurable?: boolean;
-  autoAdjust?: boolean;
+  compact?: boolean;
 }
 
 export default function ActivityGrid({
@@ -111,6 +31,7 @@ export default function ActivityGrid({
   albumId = 0,
   trackId = 0,
   configurable = false,
+  compact = false,
 }: Props) {
   const [stepState, setStep] = useState(step);
   const [rangeState, setRange] = useState(range);
@@ -134,85 +55,89 @@ export default function ActivityGrid({
     queryFn: ({ queryKey }) => getActivity(queryKey[1] as getActivityArgs),
   });
 
-  const { theme, themeName } = useTheme();
-  const primaryColor = useMemo(() => colorUtils.getPrimaryColor(theme), [theme]);
+  const { theme } = useTheme();
 
-  const layoutConfig = useMemo(() => {
-    if (rangeState <= LAYOUT_CONFIG.week.maxRange) return LAYOUT_CONFIG.week;
-    if (rangeState <= LAYOUT_CONFIG.month.maxRange) return LAYOUT_CONFIG.month;
-    return LAYOUT_CONFIG.year;
-  }, [rangeState]);
-
-  // Calcula el máximo de listens para normalización suave
+  // Calcular máximo de listens para normalización
   const maxListens = useMemo(() => {
     if (!data?.length) return 1;
     return Math.max(...data.map(item => item.listens), 1);
   }, [data]);
 
-  // Premium curve for better visualization of data
-  const getColorForIntensity = (listens: number): string => {
-    if (listens === 0) return "transparent";
+  // Configuración responsive basada en el rango
+  const gridConfig = useMemo(() => {
+    const count = data?.length || 0;
 
-    // Logarithmic scale for better distribution
-    const normalized = Math.min(listens / maxListens, 1);
-    // Use css variables for dynamic theming
-    return `color-mix(in srgb, var(--color-primary) ${Math.round(normalized * 100)}%, var(--color-bg-tertiary))`;
-  };
-
-  const getOpacity = (listens: number): number => {
-    if (listens === 0) return 0.1;
-    return 0.3 + (Math.min(listens / maxListens, 1) * 0.7);
-  }
-
-  const gridStyle = useMemo(() => {
-    if (!data?.length) return {};
-    const totalItems = data.length;
-
-    if (layoutConfig.horizontal) {
+    // Calcular columnas óptimas para mantener celdas cuadradas pequeñas
+    if (rangeState <= 14) {
       return {
-        display: "grid",
-        gridTemplateColumns: `repeat(${totalItems}, minmax(0, 1fr))`,
-        gridTemplateRows: "1fr",
+        columns: count,
+        rows: 1,
+        cellClass: "w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7",
+        gap: "gap-1 sm:gap-1.5",
+        flow: "row" as const
+      };
+    } else if (rangeState <= 31) {
+      return {
+        columns: Math.ceil(count / 7),
+        rows: 7,
+        cellClass: "w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4",
+        gap: "gap-[2px] sm:gap-1",
+        flow: "column" as const
+      };
+    } else {
+      // Año o rango largo - celdas muy pequeñas
+      const cols = Math.ceil(count / 7);
+      return {
+        columns: cols,
+        rows: 7,
+        cellClass: "w-[6px] h-[6px] sm:w-2 sm:h-2 md:w-2.5 md:h-2.5",
+        gap: "gap-[1px] sm:gap-[2px]",
+        flow: "column" as const
       };
     }
+  }, [rangeState, data?.length]);
 
-    const columns = Math.ceil(totalItems / 7);
-    return {
-      display: "grid",
-      gridTemplateRows: "repeat(7, 1fr)",
-      gridTemplateColumns: `repeat(${columns}, 1fr)`,
-      gridAutoFlow: "column" as const,
-    };
-  }, [data?.length, layoutConfig.horizontal]);
-
+  // Estados de carga y error
   if (isPending) {
     return (
-      <div className="w-full h-32 flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[var(--color-primary)]/20 border-t-[var(--color-primary)] animate-spin" />
+      <div className={`w-full ${compact ? 'h-16' : 'h-24'} flex items-center justify-center`}>
+        <div className="w-5 h-5 rounded-full border-2 border-[var(--color-primary)]/30 border-t-[var(--color-primary)] animate-spin" />
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="w-full p-4 bg-red-500/10 rounded-xl border border-red-500/20 flex flex-col items-center justify-center text-red-400 gap-1">
-        <span className="text-lg font-bold">!</span>
-        <span className="text-xs">Unable to load history</span>
+      <div className="w-full py-3 px-4 bg-red-500/5 rounded-lg border border-red-500/10 flex items-center justify-center gap-2 text-red-400">
+        <span className="text-xs font-medium">Unable to load activity</span>
       </div>
     );
   }
 
   if (!data?.length) {
     return (
-      <div className="w-full h-32 flex flex-col items-center justify-center text-[var(--color-fg-tertiary)] gap-2 border border-dashed border-[var(--color-bg-tertiary)] rounded-xl">
-        <span className="text-2xl opacity-50">📊</span>
-        <span className="text-xs font-medium">No activity data found</span>
+      <div className={`w-full ${compact ? 'h-16' : 'h-20'} flex items-center justify-center text-[var(--color-fg-tertiary)]`}>
+        <span className="text-xs font-medium opacity-50">No activity data</span>
       </div>
     );
   }
 
+  const gridStyle = gridConfig.flow === "row"
+    ? {
+      display: "flex",
+      flexDirection: "row" as const,
+      justifyContent: "center",
+      flexWrap: "wrap" as const,
+    }
+    : {
+      display: "grid",
+      gridTemplateRows: `repeat(7, 1fr)`,
+      gridTemplateColumns: `repeat(${gridConfig.columns}, 1fr)`,
+      gridAutoFlow: "column" as const,
+    };
+
   return (
-    <div className="w-full flex flex-col gap-4">
+    <div className="w-full flex flex-col gap-2 sm:gap-3">
       {configurable && (
         <div className="flex justify-end">
           <ActivityOptsSelector
@@ -224,94 +149,80 @@ export default function ActivityGrid({
         </div>
       )}
 
-      {/* Main Grid Container with fade masks for scrolling */}
-      <div className="relative group/heat">
-        {/* Scroll Shadows */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[var(--color-bg)] to-transparent z-10 pointer-events-none opacity-0 transition-opacity" />
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[var(--color-bg)] to-transparent z-10 pointer-events-none" />
-
-        <div className={`w-full overflow-x-auto hide-scrollbar pb-3 pt-1 px-1`}>
+      {/* Grid Container */}
+      <div className="relative w-full">
+        <div className="overflow-x-auto hide-scrollbar">
           <div
             style={gridStyle}
-            className={`${layoutConfig.gap} w-fit mx-auto min-w-full sm:min-w-0 flex justify-center`}
+            className={`${gridConfig.gap} w-fit mx-auto`}
           >
             {data.map((item, idx) => {
               const intensity = item.listens / maxListens;
               const isEmpty = item.listens === 0;
 
               return (
-                <div
+                <Popup
                   key={`${item.start_time}-${idx}`}
-                  className="relative group flex items-center justify-center"
-                >
-                  <Popup
-                    position="top"
-                    space={8}
-                    extraClasses="z-50"
-                    inner={
-                      <div className="flex flex-col gap-0.5 min-w-[100px]">
-                        <span className="font-bold text-[var(--color-primary)] text-sm">
-                          {item.listens} {item.listens === 1 ? 'play' : 'plays'}
-                        </span>
-                        <span className="text-[10px] uppercase tracking-wider text-[var(--color-fg-secondary)]">
-                          {new Date(item.start_time).toLocaleDateString('en-US', {
-                            weekday: 'long',
-                            month: 'short',
-                            day: 'numeric'
-                          })}
-                        </span>
-                      </div>
-                    }
-                  >
-                    <div
-                      className={`
-                        ${layoutConfig.cellSize}
-                        ${layoutConfig.rounded}
-                        transition-all duration-300 ease-out
-                        relative
-                        cursor-help
-                        hover:z-20 hover:scale-150
-                        group-hover:shadow-[0_0_15px_var(--color-primary)]
-                        `}
-                      style={{
-                        backgroundColor: isEmpty
-                          ? 'var(--color-bg-tertiary)'
-                          : `color-mix(in srgb, var(--color-primary) ${Math.min(100, Math.max(20, intensity * 100))}%, transparent)`,
-                        opacity: isEmpty ? 0.15 : 1,
-                        boxShadow: !isEmpty && intensity > 0.5 ? '0 0 5px var(--color-primary)' : 'none'
-                      }}
-                    >
-                      {/* Inner detail for high activity */}
-                      {!isEmpty && intensity > 0.7 && (
-                        <div className="absolute inset-1 bg-white/20 rounded-sm blur-[1px]" />
-                      )}
+                  position="top"
+                  space={6}
+                  extraClasses="z-50"
+                  inner={
+                    <div className="flex flex-col gap-0.5 min-w-[80px]">
+                      <span className="font-bold text-[var(--color-primary)] text-xs">
+                        {item.listens} {item.listens === 1 ? 'play' : 'plays'}
+                      </span>
+                      <span className="text-[9px] text-[var(--color-fg-secondary)] opacity-75">
+                        {new Date(item.start_time).toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </span>
                     </div>
-                  </Popup>
-                </div>
+                  }
+                >
+                  <div
+                    className={`
+                      ${gridConfig.cellClass}
+                      rounded-[2px] sm:rounded-[3px]
+                      transition-all duration-150 ease-out
+                      ${!isEmpty ? 'hover:scale-[2] hover:z-30 cursor-pointer' : 'cursor-default'}
+                    `}
+                    style={{
+                      backgroundColor: isEmpty
+                        ? 'var(--color-bg-tertiary)'
+                        : `color-mix(in srgb, var(--color-primary) ${Math.max(20, Math.round(intensity * 100))}%, transparent)`,
+                      opacity: isEmpty ? 0.15 : 1,
+                      boxShadow: !isEmpty && intensity > 0.5
+                        ? `0 0 ${Math.round(intensity * 8)}px color-mix(in srgb, var(--color-primary) 40%, transparent)`
+                        : 'none'
+                    }}
+                  />
+                </Popup>
               );
             })}
           </div>
         </div>
       </div>
 
-      {/* Modern Legend */}
-      <div className="flex items-center justify-end gap-3 text-[10px] font-medium text-[var(--color-fg-tertiary)]">
-        <span>Less</span>
-        <div className="flex items-center gap-1.5 p-1 bg-[var(--color-bg-tertiary)]/30 rounded-full border border-[var(--color-bg-tertiary)]/50 backdrop-blur-sm">
-          {[0.1, 0.3, 0.5, 0.7, 1].map((level, i) => (
+      {/* Legend - ultra compacta */}
+      <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+        <span className="text-[8px] sm:text-[9px] text-[var(--color-fg-tertiary)] font-medium opacity-50">Less</span>
+        <div className="flex items-center gap-[2px] sm:gap-[3px]">
+          {[0, 0.25, 0.5, 0.75, 1].map((level, i) => (
             <div
-              key={level}
-              className="w-2.5 h-2.5 rounded-sm transition-all hover:scale-125"
+              key={i}
+              className="w-[5px] h-[5px] sm:w-1.5 sm:h-1.5 rounded-[1px] transition-transform hover:scale-150"
               style={{
                 backgroundColor: i === 0
                   ? 'var(--color-bg-tertiary)'
                   : `color-mix(in srgb, var(--color-primary) ${level * 100}%, transparent)`,
-                opacity: i === 0 ? 0.3 : 1
+                opacity: i === 0 ? 0.2 : 1
               }}
             />
           ))}
         </div>
-        <span>More</span>
+        <span className="text-[8px] sm:text-[9px] text-[var(--color-fg-tertiary)] font-medium opacity-50">More</span>
       </div>
     </div>
   );

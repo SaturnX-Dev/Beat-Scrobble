@@ -6,89 +6,96 @@ interface HeatmapProps {
 }
 
 export default function Heatmap({ data = [], className = "" }: HeatmapProps) {
-    // Generate a 7x24 grid (Days x Hours)
     const days = ["M", "T", "W", "T", "F", "S", "S"];
+    const hours = [0, 6, 12, 18, 23];
 
     const grid = useMemo(() => {
         const cells = [];
         for (let d = 0; d < 7; d++) {
             const dayRow = [];
             for (let h = 0; h < 24; h++) {
-                // Find count for this day/hour
                 const item = data.find(item => item.day === d && item.hour === h);
                 const count = item ? item.count : 0;
 
-                // Normalize intensity 0-4 based on count (assuming max count ~10 for now, can be dynamic)
                 let intensity = 0;
                 if (count > 0) intensity = 1;
                 if (count > 2) intensity = 2;
                 if (count > 5) intensity = 3;
                 if (count > 10) intensity = 4;
 
-                dayRow.push(intensity);
+                dayRow.push({ intensity, count });
             }
             cells.push(dayRow);
         }
         return cells;
     }, [data]);
 
-    const getIntensityClass = (intensity: number) => {
-        // Dynamic intensity based on theme variables
-        if (intensity === 0) return { bg: 'bg-[var(--color-bg-tertiary)]/20', opacity: 'opacity-100' };
-
-        // Return styles for inline application if needed, or classes
-        // Note: Tailwind arbitrary values with CSS vars are powerful
-        switch (intensity) {
-            case 1: return { bg: 'bg-[var(--color-primary)]', opacity: 'opacity-30' };
-            case 2: return { bg: 'bg-[var(--color-primary)]', opacity: 'opacity-50' };
-            case 3: return { bg: 'bg-[var(--color-primary)]', opacity: 'opacity-70' };
-            case 4: return { bg: 'bg-[var(--color-primary)]', opacity: 'opacity-100' };
-            default: return { bg: 'bg-[var(--color-bg-tertiary)]', opacity: 'opacity-20' };
-        }
-    };
+    const maxCount = useMemo(() => {
+        return Math.max(...data.map(d => d.count), 1);
+    }, [data]);
 
     return (
-        <div className={`flex flex-col gap-4 ${className} w-full`}>
-            {/* Scrollable Container with Fade Masks */}
-            <div className="relative group">
-                <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-[var(--color-bg-secondary)] to-transparent z-10 pointer-events-none lg:hidden" />
-                <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-[var(--color-bg-secondary)] to-transparent z-10 pointer-events-none lg:hidden" />
-
-                <div className="overflow-x-auto hide-scrollbar pb-2">
-                    <div className="min-w-[320px] pr-2">
-                        {/* Hours Labels */}
-                        <div className="flex justify-between text-[10px] uppercase tracking-wider text-[var(--color-fg-tertiary)] mb-2 pl-8 font-medium">
-                            <span>12am</span>
-                            <span>6am</span>
-                            <span>12pm</span>
-                            <span>6pm</span>
-                            <span>11pm</span>
+        <div className={`w-full ${className}`}>
+            {/* Container con aspect ratio fijo para responsividad */}
+            <div className="relative w-full">
+                {/* Contenedor scrollable solo en móvil muy pequeño */}
+                <div className="overflow-x-auto hide-scrollbar">
+                    <div className="min-w-[280px] w-full">
+                        {/* Header con horas */}
+                        <div className="flex items-end mb-1 sm:mb-1.5">
+                            <div className="w-4 sm:w-5 shrink-0" />
+                            <div className="flex-1 flex justify-between px-0.5">
+                                {hours.map((h) => (
+                                    <span key={h} className="text-[8px] sm:text-[9px] text-[var(--color-fg-tertiary)] font-medium opacity-60">
+                                        {h === 0 ? '12a' : h === 12 ? '12p' : h < 12 ? `${h}a` : `${h - 12}p`}
+                                    </span>
+                                ))}
+                            </div>
                         </div>
 
-                        <div className="flex gap-3">
-                            {/* Days Axis */}
-                            <div className="flex flex-col justify-between text-[10px] font-bold text-[var(--color-fg-secondary)] py-[2px] h-[160px]">
-                                {days.map((d, i) => <span key={i} className="h-4 flex items-center justify-center w-4">{d}</span>)}
+                        {/* Grid principal */}
+                        <div className="flex gap-0.5 sm:gap-1">
+                            {/* Labels de días */}
+                            <div className="flex flex-col justify-around shrink-0">
+                                {days.map((d, i) => (
+                                    <span
+                                        key={i}
+                                        className="text-[8px] sm:text-[9px] font-semibold text-[var(--color-fg-tertiary)] w-4 sm:w-5 text-center opacity-70"
+                                    >
+                                        {d}
+                                    </span>
+                                ))}
                             </div>
 
-                            {/* Grid */}
-                            <div className="flex-1 grid grid-rows-7 gap-1.5 h-[160px]">
+                            {/* Celdas del heatmap */}
+                            <div className="flex-1 grid grid-rows-7 gap-[2px] sm:gap-[3px]">
                                 {grid.map((row, dayIndex) => (
-                                    <div key={dayIndex} className="grid grid-cols-24 gap-1.5">
-                                        {row.map((intensity, hourIndex) => {
-                                            const style = getIntensityClass(intensity);
+                                    <div key={dayIndex} className="grid grid-cols-24 gap-[2px] sm:gap-[3px]">
+                                        {row.map((cell, hourIndex) => {
+                                            const { intensity, count } = cell;
+                                            const normalizedIntensity = count / maxCount;
+
                                             return (
                                                 <div
                                                     key={`${dayIndex}-${hourIndex}`}
                                                     className={`
-                                                        rounded-[2px] sm:rounded-sm 
-                                                        ${style.bg} 
-                                                        transition-all duration-300
-                                                        ${intensity > 0 ? style.opacity : 'opacity-20'}
-                                                        ${intensity > 0 ? 'hover:scale-150 hover:z-20 hover:shadow-[0_0_8px_var(--color-primary)]' : ''}
-                                                        cursor-help
+                                                        aspect-square rounded-[2px] sm:rounded-[3px]
+                                                        transition-all duration-200 ease-out
+                                                        ${intensity > 0
+                                                            ? 'hover:scale-[1.8] hover:z-30 cursor-pointer'
+                                                            : 'cursor-default'
+                                                        }
                                                     `}
-                                                    title={`Day ${days[dayIndex]}, ${hourIndex}:00 - Activity Level: ${intensity}`}
+                                                    style={{
+                                                        backgroundColor: intensity === 0
+                                                            ? 'var(--color-bg-tertiary)'
+                                                            : `color-mix(in srgb, var(--color-primary) ${Math.max(25, normalizedIntensity * 100)}%, transparent)`,
+                                                        opacity: intensity === 0 ? 0.2 : 1,
+                                                        boxShadow: intensity > 2
+                                                            ? `0 0 ${4 + intensity * 2}px color-mix(in srgb, var(--color-primary) 50%, transparent)`
+                                                            : 'none'
+                                                    }}
+                                                    title={`${days[dayIndex]} ${hourIndex}:00 — ${count} plays`}
                                                 />
                                             );
                                         })}
@@ -98,21 +105,26 @@ export default function Heatmap({ data = [], className = "" }: HeatmapProps) {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Legend */}
-            <div className="flex justify-end items-center gap-3 mt-1 text-[10px] font-medium text-[var(--color-fg-tertiary)]">
-                <span>Less</span>
-                <div className="flex gap-1.5 p-1 bg-[var(--color-bg-tertiary)]/20 rounded-full">
-                    {[0, 1, 2, 3, 4].map((level) => (
-                        <div
-                            key={level}
-                            className={`w-2.5 h-2.5 rounded-[2px] bg-[var(--color-primary)] transition-all`}
-                            style={{ opacity: level === 0 ? 0.1 : 0.2 + (level * 0.2) }}
-                        />
-                    ))}
+                {/* Leyenda compacta */}
+                <div className="flex items-center justify-end gap-2 mt-2 sm:mt-3">
+                    <span className="text-[8px] sm:text-[9px] text-[var(--color-fg-tertiary)] font-medium opacity-60">Less</span>
+                    <div className="flex items-center gap-[3px]">
+                        {[0, 0.25, 0.5, 0.75, 1].map((level, i) => (
+                            <div
+                                key={i}
+                                className="w-[6px] h-[6px] sm:w-2 sm:h-2 rounded-[1px] sm:rounded-[2px] transition-transform hover:scale-125"
+                                style={{
+                                    backgroundColor: i === 0
+                                        ? 'var(--color-bg-tertiary)'
+                                        : `color-mix(in srgb, var(--color-primary) ${level * 100}%, transparent)`,
+                                    opacity: i === 0 ? 0.25 : 1
+                                }}
+                            />
+                        ))}
+                    </div>
+                    <span className="text-[8px] sm:text-[9px] text-[var(--color-fg-tertiary)] font-medium opacity-60">More</span>
                 </div>
-                <span>More</span>
             </div>
         </div>
     );

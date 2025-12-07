@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link } from "react-router";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { getLastListens, getStats, getTopArtists, getTopAlbums, imageUrl, type Listen, type PaginatedResponse } from "api/api";
-import { BarChart3, User, TrendingUp, Clock, Disc, Music, Share2, Gift, Copy, Check } from "lucide-react";
+import { getLastListens, getStats, getTopArtists, getTopAlbums, getTopTracks, imageUrl, type Listen, type PaginatedResponse } from "api/api";
+import { BarChart3, User, TrendingUp, Clock, Disc, Music, Share2, Gift, Copy, Check, Grid3X3, Circle, LineChart } from "lucide-react";
 import ProfileCritique from "~/components/ProfileCritique";
 import PeriodSelector from "~/components/PeriodSelector";
 import ActivityGrid from "~/components/ActivityGrid";
@@ -11,6 +11,7 @@ import YearlyRecapModal from "~/components/modals/YearlyRecapModal";
 import TopTracks from "~/components/TopTracks";
 import { usePreferences } from "~/hooks/usePreferences";
 import { useAppContext } from "~/providers/AppProvider";
+import { TopListChart, ListeningTrends, ArtistBubbles, AlbumQuilt, ScatterPlot, TheWall, WordCloud, StreamGraph } from "~/components/charts";
 
 interface Artist {
     id: number;
@@ -35,11 +36,14 @@ interface StatsData {
     minutes_listened: number;
 }
 
+type ChartView = 'rankings' | 'trends' | 'bubbles' | 'quilt' | 'scatter' | 'wall' | 'stream' | 'cloud';
+
 export default function Profile() {
     const [period, setPeriod] = useState<string>("week");
     const [recapOpen, setRecapOpen] = useState(false);
     const [shareUrl, setShareUrl] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [chartView, setChartView] = useState<ChartView>('rankings');
     const { getPreference, savePreference } = usePreferences();
     const { user } = useAppContext();
     const backgroundImage = getPreference('background_image', null);
@@ -92,16 +96,16 @@ export default function Profile() {
         queryFn: () => getStats(period)
     });
 
-    // Top Artists Query
+    // Top Artists Query - more for bubbles view
     const { data: topArtistsData } = useQuery({
         queryKey: ['profile-top-artists', period],
-        queryFn: () => getTopArtists({ limit: 5, period, page: 1 })
+        queryFn: () => getTopArtists({ limit: 15, period, page: 1 })
     });
 
-    // Top Albums Query (5 instead of 1)
+    // Top Albums Query - more for quilt view
     const { data: topAlbumsData } = useQuery({
         queryKey: ['profile-top-albums', period],
-        queryFn: () => getTopAlbums({ limit: 5, period, page: 1 })
+        queryFn: () => getTopAlbums({ limit: 16, period, page: 1 })
     });
 
     // Stats calculations
@@ -322,196 +326,302 @@ export default function Profile() {
 
                         </div>
 
-
-                        {/* Full Width Listening Activity Heatmap */}
-                        <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)] mb-8">
-                            <div className="flex items-center gap-2 mb-4">
-                                <BarChart3 size={18} className="text-[var(--color-primary)]" />
-                                <h2 className="text-lg font-bold text-[var(--color-fg)]">Listening Activity</h2>
+                        {/* Listening Activity with Trends */}
+                        <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)] mb-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2">
+                                    <BarChart3 size={18} className="text-[var(--color-primary)]" />
+                                    <h2 className="text-lg font-bold text-[var(--color-fg)]">Listening Activity</h2>
+                                </div>
                             </div>
-                            <div className="overflow-x-auto">
-                                <ActivityGrid range={getActivityRange(period)} />
+                            <div className="space-y-4">
+                                <ActivityGrid range={getActivityRange(period)} compact />
+                                <div className="pt-2 border-t border-[var(--color-bg-tertiary)]">
+                                    <p className="text-[10px] text-[var(--color-fg-tertiary)] mb-2 uppercase tracking-wider">Trend</p>
+                                    <ListeningTrends range={getActivityRange(period)} height={80} />
+                                </div>
                             </div>
                         </div>
 
-                        {/* Main Content */}
-                        <div className="flex flex-col gap-8">
+                        {/* Chart View Tabs */}
+                        <div className="flex flex-wrap items-center gap-2 mb-6">
+                            {[
+                                { id: 'rankings' as ChartView, label: 'Rankings', icon: BarChart3 },
+                                { id: 'wall' as ChartView, label: 'The Wall', icon: Grid3X3 },
+                                { id: 'quilt' as ChartView, label: 'Album Quilt', icon: Disc },
+                                { id: 'bubbles' as ChartView, label: 'Bubbles', icon: Circle },
+                                { id: 'stream' as ChartView, label: 'Stream', icon: TrendingUp },
+                                { id: 'scatter' as ChartView, label: 'Scatter', icon: Clock },
+                                { id: 'cloud' as ChartView, label: 'Tags', icon: Share2 },
+                            ].map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setChartView(tab.id)}
+                                    className={`
+                                        flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
+                                        ${chartView === tab.id
+                                            ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/25'
+                                            : 'bg-[var(--color-bg-tertiary)]/50 text-[var(--color-fg-secondary)] hover:bg-[var(--color-bg-tertiary)]'
+                                        }
+                                    `}
+                                >
+                                    <tab.icon size={14} />
+                                    <span className="hidden sm:inline">{tab.label}</span>
+                                </button>
+                            ))}
+                        </div>
 
-                            {/* Top Charts Section */}
-                            <div className="flex flex-col gap-6">
-                                {/* Top Artists */}
-                                {topArtistsData && topArtistsData.items && topArtistsData.items.length > 0 && (
+                        {/* Main Content - Conditional based on view */}
+                        <div className="flex flex-col gap-6">
+                            {chartView === 'rankings' && (
+                                <>
+                                    {/* Top Artists with bars */}
+                                    {topArtistsData?.items && topArtistsData.items.length > 0 && (
+                                        <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                                    Top Artists - {periodLabel}
+                                                </h2>
+                                                <Link
+                                                    to={`/chart/top-artists?period=${period}`}
+                                                    className="text-xs text-[var(--color-primary)] hover:underline font-medium"
+                                                >
+                                                    View All →
+                                                </Link>
+                                            </div>
+                                            <TopListChart
+                                                items={topArtistsData.items}
+                                                type="artist"
+                                                maxItems={aiEnabled ? 5 : 8}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Top Albums with bars */}
+                                    {topAlbumsData?.items && topAlbumsData.items.length > 0 && (
+                                        <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                                    Top Albums - {periodLabel}
+                                                </h2>
+                                                <Link
+                                                    to={`/chart/top-albums?period=${period}`}
+                                                    className="text-xs text-[var(--color-primary)] hover:underline font-medium"
+                                                >
+                                                    View All →
+                                                </Link>
+                                            </div>
+                                            <TopListChart
+                                                items={topAlbumsData.items}
+                                                type="album"
+                                                maxItems={aiEnabled ? 5 : 8}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Top Tracks */}
                                     <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
                                         <div className="flex items-center justify-between mb-4">
-                                            <h2 className="text-lg sm:text-xl font-bold text-[var(--color-fg)]">
-                                                Top Artists - {periodLabel}
+                                            <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                                Top Tracks - {periodLabel}
                                             </h2>
                                             <Link
-                                                to={`/chart/top-artists?period=${period}`}
-                                                className="text-xs sm:text-sm text-[var(--color-primary)] hover:underline font-medium"
+                                                to={`/chart/top-tracks?period=${period}`}
+                                                className="text-xs text-[var(--color-primary)] hover:underline font-medium"
                                             >
                                                 View All →
                                             </Link>
                                         </div>
-                                        <div className={`grid grid-cols-1 sm:grid-cols-2 ${aiEnabled ? 'lg:grid-cols-4' : 'lg:grid-cols-5'} gap-4`}>
-                                            {topArtistsData.items.map((artist: Artist, index: number) => (
-                                                <Link
-                                                    to={`/artist/${artist.id}`}
-                                                    key={artist.id}
-                                                    className="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--color-bg-tertiary)]/50 transition-all group"
-                                                >
-                                                    <div className="relative">
-                                                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden bg-[var(--color-primary)]/20 flex-shrink-0 ring-2 ring-transparent group-hover:ring-[var(--color-primary)]/40 transition-all">
-                                                            {artist.image ? (
-                                                                <img
-                                                                    src={imageUrl(artist.image, "small")}
-                                                                    alt={artist.name}
-                                                                    className="w-full h-full object-cover"
-                                                                />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center">
-                                                                    <User size={20} className="text-[var(--color-fg-tertiary)]" />
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                        <span className="absolute -top-1 -left-1 w-5 h-5 bg-[var(--color-primary)] rounded-full flex items-center justify-center text-[10px] font-bold text-white">
-                                                            {index + 1}
-                                                        </span>
-                                                    </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className="text-sm font-bold text-[var(--color-fg)] truncate group-hover:text-[var(--color-primary)] transition-colors">
-                                                            {artist.name}
-                                                        </p>
-                                                        <p className="text-xs text-[var(--color-fg-secondary)]">
-                                                            {artist.listen_count?.toLocaleString() || 0} plays
-                                                        </p>
-                                                    </div>
-                                                </Link>
-                                            ))}
+                                        <div className="bg-[var(--color-bg-secondary)]/30 rounded-xl p-4">
+                                            <TopTracks period={period} limit={aiEnabled ? 5 : 8} />
                                         </div>
                                     </div>
-                                )}
+                                </>
+                            )}
 
-                                {/* Top Albums */}
-                                {topAlbumsData && topAlbumsData.items && topAlbumsData.items.length > 0 && (
-                                    <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h2 className="text-lg sm:text-xl font-bold text-[var(--color-fg)]">
-                                                Top Albums - {periodLabel}
-                                            </h2>
-                                            <Link
-                                                to={`/chart/top-albums?period=${period}`}
-                                                className="text-xs sm:text-sm text-[var(--color-primary)] hover:underline font-medium"
-                                            >
-                                                View All →
-                                            </Link>
-                                        </div>
-                                        <div className={`grid grid-cols-2 sm:grid-cols-3 ${aiEnabled ? 'lg:grid-cols-5' : 'lg:grid-cols-6'} gap-4`}>
-                                            {topAlbumsData.items.map((album: Album, index: number) => (
-                                                <Link
-                                                    to={`/album/${album.id}`}
-                                                    key={album.id}
-                                                    className="group flex flex-col gap-2"
-                                                >
-                                                    <div className="relative aspect-square rounded-lg overflow-hidden bg-[var(--color-bg-tertiary)] shadow-lg group-hover:shadow-xl transition-all">
-                                                        {album.image ? (
-                                                            <img
-                                                                src={imageUrl(album.image, "medium")}
-                                                                alt={album.title}
-                                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                            />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center">
-                                                                <Disc size={32} className="text-[var(--color-fg-tertiary)]" />
-                                                            </div>
-                                                        )}
-                                                        <span className="absolute top-2 left-2 w-6 h-6 bg-black/70 rounded-full flex items-center justify-center text-xs font-bold text-white backdrop-blur-sm">
-                                                            {index + 1}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-bold text-[var(--color-fg)] truncate group-hover:text-[var(--color-primary)] transition-colors">
-                                                            {album.title}
-                                                        </p>
-                                                        <p className="text-xs text-[var(--color-fg-secondary)] truncate">
-                                                            {album.artists?.[0]?.name || "Unknown Artist"}
-                                                        </p>
-                                                        <p className="text-xs text-[var(--color-fg-tertiary)] mt-0.5">
-                                                            {album.listen_count?.toLocaleString() || 0} plays
-                                                        </p>
-                                                    </div>
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Top Tracks */}
+                            {chartView === 'bubbles' && (
                                 <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
                                     <div className="flex items-center justify-between mb-4">
-                                        <h2 className="text-lg sm:text-xl font-bold text-[var(--color-fg)]">
-                                            Top Tracks - {periodLabel}
+                                        <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                            Artist Bubbles - {periodLabel}
                                         </h2>
                                         <Link
-                                            to={`/chart/top-tracks?period=${period}`}
-                                            className="text-xs sm:text-sm text-[var(--color-primary)] hover:underline font-medium"
+                                            to={`/chart/top-artists?period=${period}`}
+                                            className="text-xs text-[var(--color-primary)] hover:underline font-medium"
                                         >
                                             View All →
                                         </Link>
                                     </div>
-                                    <div className="bg-[var(--color-bg-secondary)]/30 rounded-xl p-4">
-                                        <TopTracks period={period} limit={aiEnabled ? 5 : 10} />
+                                    <p className="text-xs text-[var(--color-fg-tertiary)] mb-4">
+                                        Bubble size represents play count. Click to view artist.
+                                    </p>
+                                    {topArtistsData?.items && topArtistsData.items.length > 0 ? (
+                                        <ArtistBubbles items={topArtistsData.items} maxItems={12} />
+                                    ) : (
+                                        <div className="h-64 flex items-center justify-center text-[var(--color-fg-tertiary)]">
+                                            No artist data available
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {chartView === 'quilt' && (
+                                <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                            Album Quilt - {periodLabel}
+                                        </h2>
+                                        <Link
+                                            to={`/chart/top-albums?period=${period}`}
+                                            className="text-xs text-[var(--color-primary)] hover:underline font-medium"
+                                        >
+                                            View All →
+                                        </Link>
+                                    </div>
+                                    <p className="text-xs text-[var(--color-fg-tertiary)] mb-4">
+                                        Your top albums as a visual mosaic. Hover for details.
+                                    </p>
+                                    {topAlbumsData?.items && topAlbumsData.items.length > 0 ? (
+                                        <AlbumQuilt items={topAlbumsData.items} gridSize={4} />
+                                    ) : (
+                                        <div className="h-64 flex items-center justify-center text-[var(--color-fg-tertiary)]">
+                                            No album data available
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {chartView === 'wall' && (
+                                <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                            The Wall - {periodLabel}
+                                        </h2>
+                                        <Link
+                                            to={`/chart/top-artists?period=${period}`}
+                                            className="text-xs text-[var(--color-primary)] hover:underline font-medium"
+                                        >
+                                            View All →
+                                        </Link>
+                                    </div>
+                                    <p className="text-xs text-[var(--color-fg-tertiary)] mb-4">
+                                        Your top artists in a unified grid.
+                                    </p>
+                                    {topArtistsData?.items && topArtistsData.items.length > 0 ? (
+                                        <TheWall items={topArtistsData.items} />
+                                    ) : (
+                                        <div className="h-64 flex items-center justify-center text-[var(--color-fg-tertiary)]">
+                                            No artist data available
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {chartView === 'scatter' && (
+                                <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                            Listening History Scatter - {periodLabel}
+                                        </h2>
+                                    </div>
+                                    <p className="text-xs text-[var(--color-fg-tertiary)] mb-4">
+                                        Listening time habits (Hour of Day vs Date)
+                                    </p>
+                                    <div className="bg-[var(--color-bg-secondary)]/30 rounded-xl p-4 overflow-hidden">
+                                        <ScatterPlot period={period} height={400} />
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Listening Timeline - Now inside the main column */}
-                            <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h2 className="text-lg sm:text-xl font-bold text-[var(--color-fg)]">
-                                        Recent Listening History
-                                    </h2>
-                                    <Link
-                                        to="/timeline"
-                                        className="text-xs sm:text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-dim)] font-medium"
-                                    >
-                                        Full Timeline →
-                                    </Link>
-                                </div>
-                                <div className="max-h-[500px] overflow-y-auto custom-scrollbar pr-1 sm:pr-2">
-                                    <TimelineView
-                                        listens={listens}
-                                        compact={true}
-                                        showFilters={false}
-                                    />
-                                    {/* Loader / Sentinel for Infinite Scroll */}
-                                    <div ref={lastElementRef} className="h-10 flex items-center justify-center">
-                                        {isFetchingNextPage && (
-                                            <p className="text-sm text-[var(--color-fg-secondary)] animate-pulse">Loading more...</p>
+                            {chartView === 'stream' && (
+                                <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                            Artist StreamGraph - {periodLabel}
+                                        </h2>
+                                    </div>
+                                    <p className="text-xs text-[var(--color-fg-tertiary)] mb-4">
+                                        Evolution of your Top 5 artists over time.
+                                    </p>
+                                    <div className="bg-[var(--color-bg-secondary)]/30 rounded-xl p-4 overflow-hidden">
+                                        {topArtistsData?.items && topArtistsData.items.length > 0 ? (
+                                            <StreamGraph items={topArtistsData.items} period={period} />
+                                        ) : (
+                                            <div className="h-64 flex items-center justify-center text-[var(--color-fg-tertiary)]">
+                                                No artist data available
+                                            </div>
                                         )}
                                     </div>
                                 </div>
-                            </div>
+                            )}
+
+                            {chartView === 'cloud' && (
+                                <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                            Genre Cloud - {periodLabel}
+                                        </h2>
+                                    </div>
+                                    <p className="text-xs text-[var(--color-fg-tertiary)] mb-4">
+                                        Top genres based on your artist activity.
+                                    </p>
+                                    <div className="bg-[var(--color-bg-secondary)]/30 rounded-xl p-4 overflow-hidden">
+                                        {topArtistsData?.items && topArtistsData.items.length > 0 ? (
+                                            <WordCloud items={topArtistsData.items} />
+                                        ) : (
+                                            <div className="h-64 flex items-center justify-center text-[var(--color-fg-tertiary)]">
+                                                No genre data available
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Mobile AI Critique Card - Only visible on mobile/tablet */}
-                        {aiEnabled && (
-                            <div className="lg:hidden mt-8">
-                                <ProfileCritique period={period as "day" | "week" | "month" | "year" | "all_time"} />
+                        {/* Listening Timeline */}
+                        <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)] mt-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg sm:text-xl font-bold text-[var(--color-fg)]">
+                                    Recent Listening History
+                                </h2>
+                                <Link
+                                    to="/timeline"
+                                    className="text-xs sm:text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-dim)] font-medium"
+                                >
+                                    Full Timeline →
+                                </Link>
                             </div>
-                        )}
+                            <div className="max-h-[500px] overflow-y-auto custom-scrollbar pr-1 sm:pr-2">
+                                <TimelineView
+                                    listens={listens}
+                                    compact={true}
+                                    showFilters={false}
+                                />
+                                {/* Loader / Sentinel for Infinite Scroll */}
+                                <div ref={lastElementRef} className="h-10 flex items-center justify-center">
+                                    {isFetchingNextPage && (
+                                        <p className="text-sm text-[var(--color-fg-secondary)] animate-pulse">Loading more...</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </main >
+
+                    {/* Mobile AI Critique Card - Only visible on mobile/tablet */}
+                    {aiEnabled && (
+                        <div className="lg:hidden mt-8">
+                            <ProfileCritique period={period as "day" | "week" | "month" | "year" | "all_time"} />
+                        </div>
+                    )}
+                </main>
 
                 {/* Fixed AI Sidebar for Desktop */}
-                {
-                    aiEnabled && (
-                        <aside className="hidden lg:block w-96 flex-shrink-0 overflow-y-auto bg-transparent p-4 py-6 md:py-10 hide-scrollbar">
-                            <ProfileCritique period={period as "day" | "week" | "month" | "year" | "all_time"} />
-                        </aside>
-                    )
-                }
-            </div >
+                {aiEnabled && (
+                    <aside className="hidden lg:block w-96 flex-shrink-0 overflow-y-auto bg-transparent p-4 py-6 md:py-10 hide-scrollbar">
+                        <ProfileCritique period={period as "day" | "week" | "month" | "year" | "all_time"} />
+                    </aside>
+                )}
+            </div>
         </>
     );
 }

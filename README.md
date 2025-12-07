@@ -32,6 +32,16 @@
 - **Timeline View** - Infinite scroll history with album art
 - **Listening Sessions** - Smart grouping of your listening sessions
 - **Period Filters** - Day, Week, Month, Year, All Time stats
+- **TopListChart** - Horizontal bar rankings with proportional play counts
+- **ListeningTrends** - SVG area chart showing listening evolution over time
+- **ArtistBubbles** - Interactive bubble diagram with circle packing
+- **AlbumQuilt** - Collage mosaic of top album covers with hover effects
+- **ScatterPlot** - Daily listening patterns (Time vs Day)
+- **The Wall** - Grid view of your top 50 artists
+- **StreamGraph** - "Battle of the bands" evolution wave chart
+- **Genre Cloud** - Tag cloud based on your top artists' genres
+
+
 
 #### 🎨 Premium UI & Customization
 - **Mobile-First Design** - Optimized bottom nav and responsive layouts
