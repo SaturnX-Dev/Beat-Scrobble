@@ -1,4 +1,36 @@
-test_config_dir
+# Directorios de prueba y dependencias
+test_config_dir/
+node_modules/
+pgdata/
+
+# Archivos de desarrollo personal (no para usuarios)
+docker-compose.dev.yml
+docker-compose.prod.yml
 run.sh
-reemplazar_icons.sh
-node_modules
+
+# Roadmap interno
+BEAT_SCROBBLE_ROADMAP.md
+
+# Binarios
+*.exe
+*.dll
+*.so
+*.dylib
+api
+app
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# Archivos de configuración local
+.env
+.env.local
+*.local
+
+# Logs y cache
+*.log
+.cache/
+dist/
+build/
