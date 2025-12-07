@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-  <b>Modern, AI-Powered, Self-Hosted Music Analytics Platform</b><br/>
-  <i>Your music, your data, your insights.</i>
+  <b>Modern, Colorful, Self-Hosted Music Analytics Platform</b><br/>
+  <i>Your music, your data, your insights. Powered by smart AI with zero wasted tokens.</i>
 </p>
 
 <p align="center">

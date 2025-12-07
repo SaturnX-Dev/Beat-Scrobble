@@ -56,7 +56,7 @@ export default function SettingsModal({ open, setOpen }: Props) {
                         <div className="flex flex-col gap-2">
                             <h2 className="text-2xl font-bold text-[var(--color-fg)]">About Beat Scrobble</h2>
                             <p className="text-[var(--color-fg-secondary)]">
-                                A modern, self-hosted music analytics platform for tracking your listening habits across services.
+                                A modern, colorful, self-hosted music analytics platform. Your music, your data, your insights. Powered by smart AI with zero wasted tokens.
                             </p>
                         </div>
 
