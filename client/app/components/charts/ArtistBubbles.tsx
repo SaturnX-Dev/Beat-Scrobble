@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router";
 import { imageUrl } from "api/api";
+import Matter from "matter-js";
 
 interface BubbleItem {
     id: number;
@@ -14,84 +15,161 @@ interface ArtistBubblesProps {
     maxItems?: number;
 }
 
-interface Bubble {
-    id: number;
-    name: string;
-    image?: string;
-    count: number;
-    size: number;
-    x: number;
-    y: number;
-}
-
 export default function ArtistBubbles({ items, maxItems = 15 }: ArtistBubblesProps) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const sceneRef = useRef<any>(null); // To store engine/runner cleanup info
+    const bubbleRefs = useRef<{ [key: number]: SVGGElement | null }>({});
+    const navigate = useNavigate();
     const [hoveredId, setHoveredId] = useState<number | null>(null);
 
-    const bubbles = useMemo(() => {
-        if (!items?.length) return [];
+    // Initial data setup
+    const displayItems = items.slice(0, maxItems);
+    const maxCount = Math.max(...displayItems.map(i => i.listen_count), 1);
+    const minSize = 40; // increased min size for better visibility
+    const maxSize = 90;
 
-        const displayItems = items.slice(0, maxItems);
-        const maxCount = Math.max(...displayItems.map(i => i.listen_count), 1);
-        const minSize = 32;
-        const maxSize = 80;
+    useEffect(() => {
+        if (!containerRef.current || !displayItems.length) return;
 
-        // Simple circle packing algorithm
-        const packed: Bubble[] = [];
-        const width = 100;
-        const height = 100;
+        // --- Physics Setup ---
+        const Engine = Matter.Engine,
+            Render = Matter.Render,
+            Runner = Matter.Runner,
+            Bodies = Matter.Bodies,
+            Composite = Matter.Composite,
+            Mouse = Matter.Mouse,
+            MouseConstraint = Matter.MouseConstraint,
+            Events = Matter.Events;
 
-        displayItems.forEach((item, index) => {
+        const engine = Engine.create();
+        const world = engine.world;
+
+        // Disable gravity for "floating" effect, or keep it very low
+        engine.gravity.y = 0;
+        engine.gravity.x = 0;
+
+        const containerWidth = containerRef.current.clientWidth;
+        const containerHeight = containerRef.current.clientHeight;
+
+        // Walls to keep bubbles in
+        const wallThickness = 60;
+        const walls = [
+            Bodies.rectangle(containerWidth / 2, -wallThickness / 2, containerWidth * 2, wallThickness, { isStatic: true, render: { visible: false } }), // Top
+            Bodies.rectangle(containerWidth / 2, containerHeight + wallThickness / 2, containerWidth * 2, wallThickness, { isStatic: true, render: { visible: false } }), // Bottom
+            Bodies.rectangle(containerWidth + wallThickness / 2, containerHeight / 2, wallThickness, containerHeight * 2, { isStatic: true, render: { visible: false } }), // Right
+            Bodies.rectangle(-wallThickness / 2, containerHeight / 2, wallThickness, containerHeight * 2, { isStatic: true, render: { visible: false } }) // Left
+        ];
+        Composite.add(world, walls);
+
+        // Artist Bubbles
+        const bodies = displayItems.map((item, index) => {
             const normalizedCount = item.listen_count / maxCount;
             const size = minSize + normalizedCount * (maxSize - minSize);
+            const radius = size / 2;
 
-            // Try to place bubble without overlap
-            let placed = false;
-            let attempts = 0;
-            let x = 0, y = 0;
+            // Random initial position within bounds
+            const x = Math.random() * (containerWidth - 100) + 50;
+            const y = Math.random() * (containerHeight - 100) + 50;
 
-            while (!placed && attempts < 100) {
-                // Spiral placement from center
-                const angle = (index * 0.7 + attempts * 0.3) * Math.PI;
-                const radius = 10 + (attempts * 2) + (index * 3);
-                x = 50 + Math.cos(angle) * radius;
-                y = 50 + Math.sin(angle) * radius;
+            const body = Bodies.circle(x, y, radius, {
+                restitution: 0.9, // Bounciness
+                friction: 0.005,
+                frictionAir: 0.02, // Air resistance for floating feel
+                density: 0.04,
+                label: `artist-${item.id}`
+            });
 
-                // Check bounds
-                const halfSize = (size / 2) * 0.5; // Account for viewport scaling
-                if (x - halfSize < 5 || x + halfSize > 95 || y - halfSize < 5 || y + halfSize > 95) {
-                    attempts++;
-                    continue;
-                }
+            // Store original radius for hover scaling later if needed
+            (body as any).plugin = { item, radius };
 
-                // Check overlap with existing bubbles (simplified)
-                const hasOverlap = packed.some(b => {
-                    const dist = Math.hypot(b.x - x, b.y - y);
-                    const minDist = ((b.size + size) / 2) * 0.45;
-                    return dist < minDist;
-                });
+            return body;
+        });
 
-                if (!hasOverlap) {
-                    placed = true;
-                } else {
-                    attempts++;
-                }
+        Composite.add(world, bodies);
+
+        // Mouse Interaction
+        const mouse = Mouse.create(containerRef.current);
+        const mouseConstraint = MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+                stiffness: 0.2,
+                render: { visible: false }
             }
+        });
 
-            packed.push({
-                id: item.id,
-                name: item.name,
-                image: item.image,
-                count: item.listen_count,
-                size,
-                x: placed ? x : 50 + (Math.random() - 0.5) * 60,
-                y: placed ? y : 50 + (Math.random() - 0.5) * 60
+        // Double click detection variables
+        let lastClickTime = 0;
+        let lastClickedBodyId: number | null = null;
+
+        // Custom double click logic using Matter events
+        Events.on(mouseConstraint, "mousedown", (event) => {
+            const body = mouseConstraint.body;
+            if (body) {
+                const now = Date.now();
+                if (lastClickedBodyId === body.id && now - lastClickTime < 300) {
+                    // Double click detected!
+                    const itemId = (body as any).plugin?.item?.id;
+                    if (itemId) {
+                        navigate(`/artist/${itemId}`);
+                    }
+                }
+                lastClickedBodyId = body.id;
+                lastClickTime = now;
+            }
+        });
+
+        // Handle hovering via checking mouse position vs bodies for tooltip
+        Events.on(engine, "beforeUpdate", () => {
+            // Add gentle ambient motion
+            bodies.forEach(body => {
+                // Push gently towards center if too far out (soft bounds helper) or just random noise
+                // Actually frictionAir handles the slowing down, let's just add slight random force for "floating"
+                if (Math.random() < 0.05) {
+                    Matter.Body.applyForce(body, body.position, {
+                        x: (Math.random() - 0.5) * 0.0005,
+                        y: (Math.random() - 0.5) * 0.0005
+                    });
+                }
             });
         });
 
-        return packed;
-    }, [items, maxItems]);
+        Composite.add(world, mouseConstraint);
 
-    if (!bubbles.length) {
+        // Sync Physics with DOM
+        const runner = Runner.create();
+
+        // Render loop to update DOM elements
+        let animationFrameId: number = 0;
+
+        const updateDOM = () => {
+            bodies.forEach(body => {
+                const itemId = (body as any).plugin.item.id;
+                const el = bubbleRefs.current[itemId];
+                if (el) {
+                    const { x, y } = body.position;
+                    // Update group transform
+                    el.setAttribute('transform', `translate(${x}, ${y})`);
+                }
+            });
+            animationFrameId = requestAnimationFrame(updateDOM);
+        };
+
+        Runner.run(runner, engine);
+        updateDOM();
+
+        // Cleanup
+        sceneRef.current = { engine, runner, animationFrameId };
+
+        return () => {
+            Runner.stop(runner);
+            Engine.clear(engine);
+            cancelAnimationFrame(animationFrameId);
+            Composite.clear(world, false, true);
+        };
+    }, [displayItems, maxItems, navigate]);
+
+
+    if (!displayItems.length) {
         return (
             <div className="w-full h-64 flex items-center justify-center text-[var(--color-fg-tertiary)]">
                 <span className="text-sm">No artist data</span>
@@ -100,114 +178,100 @@ export default function ArtistBubbles({ items, maxItems = 15 }: ArtistBubblesPro
     }
 
     return (
-        <div className="relative w-full aspect-square max-h-[350px] bg-[var(--color-bg-secondary)]/30 rounded-2xl overflow-hidden group/container">
+        <div
+            ref={containerRef}
+            className="relative w-full aspect-square max-h-[400px] bg-[var(--color-bg-secondary)]/30 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing"
+        >
             {/* Ambient glow background */}
-            <div className="absolute inset-0 bg-gradient-radial from-[var(--color-primary)]/5 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-radial from-[var(--color-primary)]/5 to-transparent pointer-events-none" />
 
-            <style>{`
-                @keyframes coin-entry {
-                    0% { transform: scale(0); opacity: 0; }
-                    50% { transform: scale(1.1); }
-                    70% { transform: scale(0.95); }
-                    100% { transform: scale(1); opacity: 1; }
-                }
-                .bubble-entry {
-                    animation: coin-entry 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-                }
-            `}</style>
-
-            <svg viewBox="0 0 100 100" className="w-full h-full">
+            <svg className="w-full h-full pointer-events-none">
                 <defs>
-                    {bubbles.map(b => (
-                        <clipPath key={`clip-${b.id}`} id={`clip-${b.id}`}>
-                            <circle cx={b.x} cy={b.y} r={b.size * 0.45 / 2} />
-                        </clipPath>
-                    ))}
-                    {bubbles.map(b => b.image ? (
-                        <pattern key={`img-pattern-${b.id}`} id={`img-pattern-${b.id}`} patternUnits="userSpaceOnUse" width="100" height="100">
-                            <image
-                                href={imageUrl(b.image, "large")}
-                                x={b.x - (b.size * 0.45 / 2)}
-                                y={b.y - (b.size * 0.45 / 2)}
-                                width={b.size * 0.45}
-                                height={b.size * 0.45}
+                    {/* Definitions for patterns/images */}
+                    {displayItems.map(item => {
+                        const normalizedCount = item.listen_count / maxCount;
+                        const size = minSize + normalizedCount * (maxSize - minSize);
+                        const radius = size / 2;
+
+                        return (
+                            <pattern
+                                key={`img-pattern-${item.id}`}
+                                id={`img-pattern-${item.id}`}
+                                patternUnits="objectBoundingBox"
+                                width="1"
+                                height="1"
+                                viewBox="0 0 1 1"
                                 preserveAspectRatio="xMidYMid slice"
-                            />
-                        </pattern>
-                    ) : null)}
+                            >
+                                {item.image && (
+                                    <image
+                                        href={imageUrl(item.image, "large")}
+                                        width="1"
+                                        height="1"
+                                        preserveAspectRatio="xMidYMid slice"
+                                    />
+                                )}
+                            </pattern>
+                        );
+                    })}
                 </defs>
 
-                {bubbles.map((bubble, index) => {
-                    const isHovered = hoveredId === bubble.id;
-                    const scale = isHovered ? 1.15 : 1;
-                    const r = (bubble.size * 0.45 / 2) * scale;
-                    // Add slight delay based on index for staggered entry
-                    const delay = index * 50;
+                {displayItems.map((item) => {
+                    const normalizedCount = item.listen_count / maxCount;
+                    const size = minSize + normalizedCount * (maxSize - minSize);
+                    const radius = size / 2;
 
                     return (
                         <g
-                            key={bubble.id}
-                            style={{ animationDelay: `${delay}ms`, transformBox: 'fill-box', transformOrigin: 'center' }}
-                            className="bubble-entry opacity-0"
+                            key={item.id}
+                            ref={(el) => { bubbleRefs.current[item.id] = el; }}
+                        // Initial position off-screen or rendered by physics immediately
                         >
-                            <Link to={`/artist/${bubble.id}`}>
-                                {/* Shadow/Glow behind */}
-                                <circle
-                                    cx={bubble.x}
-                                    cy={bubble.y}
-                                    r={r}
-                                    fill="black"
-                                    opacity="0.2"
-                                    className="transition-all duration-300"
-                                    style={{
-                                        filter: 'blur(3px)',
-                                        transform: isHovered ? 'translateY(2px) scale(1.05)' : 'translateY(1px)'
-                                    }}
-                                />
+                            {/* Shadow/Glow */}
+                            <circle
+                                r={radius}
+                                fill="black"
+                                opacity="0.2"
+                                style={{ filter: 'blur(3px)', transform: 'translateY(2px)' }}
+                            />
 
-                                {/* Main Bubble Circle */}
-                                <circle
-                                    cx={bubble.x}
-                                    cy={bubble.y}
-                                    r={r}
-                                    fill={bubble.image ? `url(#img-pattern-${bubble.id})` : "var(--color-bg-tertiary)"}
-                                    stroke="var(--color-bg-secondary)"
-                                    strokeWidth="1.5"
-                                    className="transition-all duration-300 ease-spring cursor-pointer"
-                                    style={{
-                                        filter: isHovered ? 'brightness(1.1) contrast(1.1)' : 'none',
-                                        transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
-                                    }}
-                                    onMouseEnter={() => setHoveredId(bubble.id)}
-                                    onMouseLeave={() => setHoveredId(null)}
-                                />
+                            {/* Main Bubble */}
+                            <circle
+                                r={radius}
+                                fill={item.image ? `url(#img-pattern-${item.id})` : "var(--color-bg-tertiary)"}
+                                stroke="var(--color-bg-secondary)"
+                                strokeWidth="2"
+                                className="transition-all duration-300 pointer-events-auto"
+                                style={{
+                                    filter: hoveredId === item.id ? 'brightness(1.1)' : 'none'
+                                }}
+                                onMouseEnter={() => setHoveredId(item.id)}
+                                onMouseLeave={() => setHoveredId(null)}
+                            />
 
-                                {/* Inner Border / Highlight */}
-                                <circle
-                                    cx={bubble.x}
-                                    cy={bubble.y}
-                                    r={r}
-                                    fill="none"
-                                    stroke="white"
-                                    strokeWidth="1"
-                                    opacity={isHovered ? 0.3 : 0.1}
-                                    className="pointer-events-none transition-opacity duration-300"
-                                />
-                            </Link>
+                            {/* Inner shine/highlight */}
+                            <circle
+                                r={radius}
+                                fill="none"
+                                stroke="white"
+                                strokeWidth="1"
+                                opacity="0.15"
+                                className="pointer-events-none"
+                            />
                         </g>
                     );
                 })}
             </svg>
 
-            {/* Tooltip */}
-            {hoveredId && bubbles.find(b => b.id === hoveredId) && (
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[var(--color-bg-secondary)]/90 backdrop-blur border border-[var(--color-bg-tertiary)] rounded-full px-4 py-2 shadow-xl z-20 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200">
+            {/* Tooltip Overlay */}
+            {hoveredId && displayItems.find(b => b.id === hoveredId) && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[var(--color-bg-secondary)]/90 backdrop-blur border border-[var(--color-bg-tertiary)] rounded-full px-4 py-2 shadow-xl z-20 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <div className="flex flex-col items-center">
                         <span className="text-sm font-bold text-[var(--color-fg)] whitespace-nowrap">
-                            {bubbles.find(b => b.id === hoveredId)?.name}
+                            {displayItems.find(b => b.id === hoveredId)?.name}
                         </span>
                         <span className="text-[10px] uppercase tracking-wider text-[var(--color-primary)] font-bold">
-                            {bubbles.find(b => b.id === hoveredId)?.count.toLocaleString()} plays
+                            {displayItems.find(b => b.id === hoveredId)?.listen_count.toLocaleString()} plays
                         </span>
                     </div>
                 </div>

@@ -15,10 +15,10 @@ import "./app.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from './providers/ThemeProvider';
 import Sidebar from "./components/sidebar/Sidebar";
+import MobileNavBar from "./components/MobileNavBar";
 import { AppProvider } from "./providers/AppProvider";
 import GlobalBackground from "./components/GlobalBackground";
 import { SpotifyProvider } from "./providers/SpotifyProvider";
-import MobileNavBar from "./components/MobileNavBar";
 
 // Create a client
 const queryClient = new QueryClient()

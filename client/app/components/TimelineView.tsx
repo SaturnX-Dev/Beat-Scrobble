@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { deleteListen, type Listen, imageUrl } from "api/api";
 import { timeSince } from "~/utils/utils";
 import ArtistLinks from "./ArtistLinks";
+import OptimizedImage from "./OptimizedImage";
 import { useState } from "react";
 import { Layers, List, Filter } from "lucide-react";
 import { useAppContext } from "~/providers/AppProvider";
@@ -63,14 +64,12 @@ export default function TimelineView({
                                 {/* Album Art */}
                                 <div className={`${compact ? 'w-10 h-10 md:w-12 md:h-12' : 'w-12 h-12 md:w-14 md:h-14'} rounded-lg overflow-hidden flex-shrink-0 shadow-md bg-[var(--color-bg-tertiary)] relative group-hover:scale-105 transition-transform duration-150`}>
                                     {item.track?.image ? (
-                                        <img
-                                            src={imageUrl(item.track.image, "large")}
+                                        <OptimizedImage
+                                            id={item.track.image}
+                                            size="large"
                                             alt={item.track.album || 'Album'}
                                             className="w-full h-full object-cover"
-                                            loading="lazy"
-                                            onError={(e) => {
-                                                e.currentTarget.style.display = 'none';
-                                            }}
+                                            fill
                                         />
                                     ) : null}
                                     <div className={`absolute inset-0 flex items-center justify-center bg-[var(--color-bg-tertiary)] text-[var(--color-fg-tertiary)] ${!item.track?.image ? 'z-0' : '-z-10'}`}>

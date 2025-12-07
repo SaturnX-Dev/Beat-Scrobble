@@ -4,6 +4,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import CardAura from "./CardAura";
 import GridSkeleton from "./skeletons/GridSkeleton";
 import EmptyState from "./EmptyState";
+import OptimizedImage from "./OptimizedImage";
 import { Disc, Mic2, Music } from "lucide-react";
 
 type Item = Album | Track | Artist;
@@ -113,11 +114,12 @@ function ItemCard({ item, type, index }: { item: Item; type: "album" | "track" |
             <CardAura size="small" id="top-items" className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
             <div className="w-full aspect-square bg-[var(--color-bg-tertiary)] overflow-hidden relative z-10">
-                <img
-                    loading="lazy"
-                    src={imageUrl(image, "medium")}
+                <OptimizedImage
+                    id={item.image}
+                    size="medium"
                     alt={title}
-                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                    fill
+                    className="transition-transform duration-700 ease-out group-hover:scale-110"
                 />
 
                 {/* Gradient Gradient Overlay on Hover */}

@@ -5,7 +5,7 @@ import SidebarSettings from "./SidebarSettings";
 import SidebarItem from "./SidebarItem";
 import SidebarSearch from "./SidebarSearch";
 import SettingsModal from "../modals/SettingsModal";
-import MobileBottomNav from "./MobileBottomNav";
+
 
 export default function Sidebar() {
     const [settingsOpen, setSettingsOpen] = useState(false);
@@ -72,8 +72,7 @@ export default function Sidebar() {
                 </div>
             </div>
 
-            {/* Mobile Bottom Navigation */}
-            <MobileBottomNav />
+            {/* Desktop Sidebar - Vertical Left */}
         </>
     );
 }

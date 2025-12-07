@@ -82,8 +82,8 @@ export default function ActivityGrid({
       return {
         columns: cols,
         rows: 7,
-        cellClass: "w-8 h-8 sm:w-10 sm:h-10", // Fixed reasonable size
-        gap: "gap-2",
+        cellClass: "w-4 h-4 sm:w-5 sm:h-5", // Smaller, compact cells
+        gap: "gap-1",
         flow: "column" as const
       };
     } else {
@@ -153,10 +153,11 @@ export default function ActivityGrid({
 
       {/* Grid Container */}
       <div className="relative w-full">
-        <div className="overflow-x-auto hide-scrollbar">
+        <div className="overflow-x-auto hide-scrollbar flex justify-center">
           <div
             style={gridStyle}
-            className={`${gridConfig.gap} ${rangeState <= 31 ? 'w-full' : 'w-fit mx-auto'}`}
+            // Always use w-fit mx-auto for compact grid look, avoid w-full stretching
+            className={`${gridConfig.gap} w-fit mx-auto`}
           >
             {data.map((item, idx) => {
               const intensity = item.listens / maxListens;

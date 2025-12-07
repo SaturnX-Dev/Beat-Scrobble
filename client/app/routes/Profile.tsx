@@ -8,7 +8,6 @@ import PeriodSelector from "~/components/PeriodSelector";
 import ActivityGrid from "~/components/ActivityGrid";
 import TimelineView from "~/components/TimelineView";
 import YearlyRecapModal from "~/components/modals/YearlyRecapModal";
-import TopTracks from "~/components/TopTracks";
 import { usePreferences } from "~/hooks/usePreferences";
 import { useAppContext } from "~/providers/AppProvider";
 import { TopListChart, ListeningTrends, ArtistBubbles, ScatterPlot, WordCloud, StreamGraph } from "~/components/charts";
@@ -106,6 +105,12 @@ export default function Profile() {
     const { data: topAlbumsData } = useQuery({
         queryKey: ['profile-top-albums', period],
         queryFn: () => getTopAlbums({ limit: 16, period, page: 1 })
+    });
+
+    // Top Tracks Query
+    const { data: topTracksData } = useQuery({
+        queryKey: ['profile-top-tracks', period],
+        queryFn: () => getTopTracks({ limit: 16, period, page: 1 })
     });
 
     // Stats calculations
@@ -418,22 +423,26 @@ export default function Profile() {
                                     )}
 
                                     {/* Top Tracks */}
-                                    <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h2 className="text-lg font-bold text-[var(--color-fg)]">
-                                                Top Tracks - {periodLabel}
-                                            </h2>
-                                            <Link
-                                                to={`/chart/top-tracks?period=${period}`}
-                                                className="text-xs text-[var(--color-primary)] hover:underline font-medium"
-                                            >
-                                                View All →
-                                            </Link>
+                                    {topTracksData?.items && topTracksData.items.length > 0 && (
+                                        <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h2 className="text-lg font-bold text-[var(--color-fg)]">
+                                                    Top Tracks - {periodLabel}
+                                                </h2>
+                                                <Link
+                                                    to={`/chart/top-tracks?period=${period}`}
+                                                    className="text-xs text-[var(--color-primary)] hover:underline font-medium"
+                                                >
+                                                    View All →
+                                                </Link>
+                                            </div>
+                                            <TopListChart
+                                                items={topTracksData.items}
+                                                type="track"
+                                                maxItems={aiEnabled ? 5 : 8}
+                                            />
                                         </div>
-                                        <div className="bg-[var(--color-bg-secondary)]/30 rounded-xl p-4">
-                                            <TopTracks period={period} limit={aiEnabled ? 5 : 8} />
-                                        </div>
-                                    </div>
+                                    )}
                                 </>
                             )}
 
