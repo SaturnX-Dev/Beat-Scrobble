@@ -77,15 +77,17 @@ export default function ActivityGrid({
         flow: "row" as const
       };
     } else if (rangeState <= 31) {
+      // Month view: 4 weeks approx, full width stretch
+      const cols = Math.ceil(count / 7);
       return {
-        columns: Math.ceil(count / 7),
+        columns: cols,
         rows: 7,
-        cellClass: "w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4",
-        gap: "gap-[2px] sm:gap-1",
+        cellClass: "flex-1 aspect-square", // Flex stretch
+        gap: "gap-1",
         flow: "column" as const
       };
     } else {
-      // Año o rango largo - celdas muy pequeñas
+      // Year or Long Range
       const cols = Math.ceil(count / 7);
       return {
         columns: cols,
@@ -154,7 +156,7 @@ export default function ActivityGrid({
         <div className="overflow-x-auto hide-scrollbar">
           <div
             style={gridStyle}
-            className={`${gridConfig.gap} w-fit mx-auto`}
+            className={`${gridConfig.gap} ${rangeState <= 31 ? 'w-full' : 'w-fit mx-auto'}`}
           >
             {data.map((item, idx) => {
               const intensity = item.listens / maxListens;
@@ -205,10 +207,10 @@ export default function ActivityGrid({
         </div>
       </div>
 
-      {/* Legend - ultra compacta */}
-      <div className="flex items-center justify-end gap-1.5 sm:gap-2">
-        <span className="text-[8px] sm:text-[9px] text-[var(--color-fg-tertiary)] font-medium opacity-50">Less</span>
-        <div className="flex items-center gap-[2px] sm:gap-[3px]">
+      {/* Legend - Centered */}
+      <div className="flex items-center justify-center gap-2 mt-1">
+        <span className="text-[9px] text-[var(--color-fg-tertiary)] font-medium opacity-50 uppercase tracking-widest">Less</span>
+        <div className="flex items-center gap-1">
           {[0, 0.25, 0.5, 0.75, 1].map((level, i) => (
             <div
               key={i}
@@ -222,7 +224,7 @@ export default function ActivityGrid({
             />
           ))}
         </div>
-        <span className="text-[8px] sm:text-[9px] text-[var(--color-fg-tertiary)] font-medium opacity-50">More</span>
+        <span className="text-[9px] text-[var(--color-fg-tertiary)] font-medium opacity-50 uppercase tracking-widest">More</span>
       </div>
     </div>
   );

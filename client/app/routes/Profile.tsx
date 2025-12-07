@@ -11,7 +11,7 @@ import YearlyRecapModal from "~/components/modals/YearlyRecapModal";
 import TopTracks from "~/components/TopTracks";
 import { usePreferences } from "~/hooks/usePreferences";
 import { useAppContext } from "~/providers/AppProvider";
-import { TopListChart, ListeningTrends, ArtistBubbles, AlbumQuilt, ScatterPlot, TheWall, WordCloud, StreamGraph } from "~/components/charts";
+import { TopListChart, ListeningTrends, ArtistBubbles, ScatterPlot, WordCloud, StreamGraph } from "~/components/charts";
 
 interface Artist {
     id: number;
@@ -36,7 +36,7 @@ interface StatsData {
     minutes_listened: number;
 }
 
-type ChartView = 'rankings' | 'trends' | 'bubbles' | 'quilt' | 'scatter' | 'wall' | 'stream' | 'cloud';
+type ChartView = 'rankings' | 'trends' | 'bubbles' | 'stream' | 'scatter' | 'cloud';
 
 export default function Profile() {
     const [period, setPeriod] = useState<string>("week");
@@ -170,18 +170,18 @@ export default function Profile() {
                     <div className="max-w-7xl mx-auto">
                         {/* Header with Banner */}
                         <div className="relative mb-8 rounded-2xl overflow-hidden bg-[var(--color-bg-secondary)]/60 backdrop-blur-md border border-[var(--color-bg-tertiary)]">
-                            {/* Banner Image */}
-                            <div className="w-full aspect-[3/1] max-h-[400px] bg-[var(--color-bg-tertiary)] relative">
+                            {/* Banner Image - Full width/height container */}
+                            <div className="w-full h-[250px] sm:h-[350px] bg-[var(--color-bg-tertiary)] relative">
                                 {backgroundImage ? (
                                     <img
                                         src={backgroundImage}
                                         alt="Profile Banner"
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover object-center"
                                     />
                                 ) : (
                                     <div className="w-full h-full bg-gradient-to-r from-[var(--color-primary)]/20 to-[var(--color-accent)]/20" />
                                 )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-secondary)] to-transparent opacity-40" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-secondary)] via-transparent to-transparent opacity-90" />
                             </div>
 
                             {/* Profile Info (Overlapping Banner) */}
@@ -344,11 +344,9 @@ export default function Profile() {
                         </div>
 
                         {/* Chart View Tabs */}
-                        <div className="flex flex-wrap items-center gap-2 mb-6">
+                        <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
                             {[
                                 { id: 'rankings' as ChartView, label: 'Rankings', icon: BarChart3 },
-                                { id: 'wall' as ChartView, label: 'The Wall', icon: Grid3X3 },
-                                { id: 'quilt' as ChartView, label: 'Album Quilt', icon: Disc },
                                 { id: 'bubbles' as ChartView, label: 'Bubbles', icon: Circle },
                                 { id: 'stream' as ChartView, label: 'Stream', icon: TrendingUp },
                                 { id: 'scatter' as ChartView, label: 'Scatter', icon: Clock },
@@ -465,57 +463,7 @@ export default function Profile() {
                                 </div>
                             )}
 
-                            {chartView === 'quilt' && (
-                                <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h2 className="text-lg font-bold text-[var(--color-fg)]">
-                                            Album Quilt - {periodLabel}
-                                        </h2>
-                                        <Link
-                                            to={`/chart/top-albums?period=${period}`}
-                                            className="text-xs text-[var(--color-primary)] hover:underline font-medium"
-                                        >
-                                            View All →
-                                        </Link>
-                                    </div>
-                                    <p className="text-xs text-[var(--color-fg-tertiary)] mb-4">
-                                        Your top albums as a visual mosaic. Hover for details.
-                                    </p>
-                                    {topAlbumsData?.items && topAlbumsData.items.length > 0 ? (
-                                        <AlbumQuilt items={topAlbumsData.items} gridSize={4} />
-                                    ) : (
-                                        <div className="h-64 flex items-center justify-center text-[var(--color-fg-tertiary)]">
-                                            No album data available
-                                        </div>
-                                    )}
-                                </div>
-                            )}
 
-                            {chartView === 'wall' && (
-                                <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h2 className="text-lg font-bold text-[var(--color-fg)]">
-                                            The Wall - {periodLabel}
-                                        </h2>
-                                        <Link
-                                            to={`/chart/top-artists?period=${period}`}
-                                            className="text-xs text-[var(--color-primary)] hover:underline font-medium"
-                                        >
-                                            View All →
-                                        </Link>
-                                    </div>
-                                    <p className="text-xs text-[var(--color-fg-tertiary)] mb-4">
-                                        Your top artists in a unified grid.
-                                    </p>
-                                    {topArtistsData?.items && topArtistsData.items.length > 0 ? (
-                                        <TheWall items={topArtistsData.items} />
-                                    ) : (
-                                        <div className="h-64 flex items-center justify-center text-[var(--color-fg-tertiary)]">
-                                            No artist data available
-                                        </div>
-                                    )}
-                                </div>
-                            )}
 
                             {chartView === 'scatter' && (
                                 <div className="glass-card p-4 sm:p-6 rounded-xl border border-[var(--color-bg-tertiary)]">

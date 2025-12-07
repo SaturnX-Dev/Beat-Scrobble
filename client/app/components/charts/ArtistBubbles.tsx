@@ -140,15 +140,16 @@ export default function ArtistBubbles({ items, maxItems = 15 }: ArtistBubblesPro
                                     cx={bubble.x}
                                     cy={bubble.y}
                                     r={r}
-                                    fill="var(--color-bg-tertiary)"
-                                    className="transition-all duration-200 cursor-pointer"
+                                    fill={bubble.image ? `url(#img-pattern-${bubble.id})` : "var(--color-bg-tertiary)"}
+                                    stroke="var(--color-bg-secondary)"
+                                    strokeWidth="2"
+                                    className="transition-all duration-200 cursor-pointer group-hover:stroke-[var(--color-primary)] group-hover:stroke-4"
                                     style={{
                                         filter: isHovered ? 'drop-shadow(0 0 8px var(--color-primary))' : 'none'
                                     }}
                                     onMouseEnter={() => setHoveredId(bubble.id)}
                                     onMouseLeave={() => setHoveredId(null)}
                                 />
-
                                 {/* Image */}
                                 {bubble.image && (
                                     <image

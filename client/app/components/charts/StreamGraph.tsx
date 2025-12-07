@@ -1,4 +1,4 @@
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQueries } from "@tanstack/react-query";
 import { getActivity, type ListenActivityItem } from "api/api";
 import { useMemo } from "react";
 
@@ -8,17 +8,16 @@ interface StreamGraphProps {
 }
 
 export default function StreamGraph({ items, period }: StreamGraphProps) {
-    // Take top 5 artists
-    const topArtists = items.slice(0, 5);
+    // Increase to Top 10 as requested
+    const topArtists = items.slice(0, 10);
 
     // Prepare queries for each artist's activity
-    // We'll use 'day' step for smoothness
     const artistQueries = useQueries({
         queries: topArtists.map(artist => ({
             queryKey: ['activity', artist.id, period],
             queryFn: () => getActivity({
-                step: 'day',
-                range: period === 'year' ? 365 : 30, // Simplified range logic
+                step: 'day', // Granularity
+                range: period === 'year' ? 365 : (period === 'month' ? 30 : 90),
                 month: 0,
                 year: 0,
                 artist_id: artist.id,
@@ -34,92 +33,113 @@ export default function StreamGraph({ items, period }: StreamGraphProps) {
     const chartData = useMemo(() => {
         if (isLoading || artistQueries.some(q => !q.data)) return null;
 
-        // Determine all unique dates/timestamps across all data
-        // Assuming all queries return similar time ranges if successful
         const allData = artistQueries.map(q => q.data || []);
         if (allData.length === 0 || allData[0].length === 0) return null;
 
         const timestamps = allData[0].map(d => new Date(d.start_time).getTime());
 
-        // Construct stacked data
-        // For streamgraph, we usually center it, but simple stacked area is safer for now
-        // Structure: [{ time, y0_0, y1_0, ... }]
-
+        // Stacked Logic
         const stackedPoints = timestamps.map((ts, i) => {
             let currentY = 0;
             const point: any = { time: ts };
 
             allData.forEach((artistData, artistIndex) => {
                 const dayData = artistData[i];
+                // Smooth slightly if needed, or raw
                 const value = dayData ? dayData.listens : 0;
 
                 point[`y0_${artistIndex}`] = currentY;
                 point[`y1_${artistIndex}`] = currentY + value;
-                currentY += value; // Stack up
+                currentY += value;
             });
             point.total = currentY;
             return point;
         });
 
-        // Smooth paths? SVG polygon/path construction
-        return { points: stackedPoints, maxVal: Math.max(...stackedPoints.map(p => p.total)) };
+        // Normalize if needed, or find max for scaling
+        const maxVal = Math.max(...stackedPoints.map(p => p.total)) || 1; // avoid /0
+
+        return { points: stackedPoints, maxVal };
     }, [artistQueries, isLoading]);
 
-    if (isLoading) return <div className="animate-pulse h-64 bg-[var(--color-bg-secondary)] rounded-xl opacity-20" />;
-    if (!chartData) return <div className="h-64 flex items-center justify-center text-[var(--color-fg-tertiary)]">Not enough data for streamgraph</div>;
+    if (isLoading) return <div className="animate-pulse h-[300px] w-full bg-[var(--color-bg-secondary)] rounded-xl opacity-20" />;
+
+    // Empty state
+    if (!chartData || !chartData.points.length) {
+        return <div className="h-[300px] flex items-center justify-center text-[var(--color-fg-tertiary)]">Insufficient activity data for StreamGraph</div>;
+    }
 
     const { points, maxVal } = chartData;
-    const width = 800;
-    const height = 300;
+
+    // Use viewBox 0 0 100 100 for purely responsive SVG
+    const width = 1000;
+    const height = 400;
 
     // Generate paths for each artist (layer)
     const layers = topArtists.map((artist, artistIdx) => {
-        // Construct SVG path "d" attribute
-        // Move to first point bottom
-        let path = `M 0 ${height - (points[0][`y0_${artistIdx}`] / maxVal) * height} `;
+        // Start bottom left
+        let path = `M 0 ${height} `; // Default start
 
-        // Line top
+        if (points.length > 0) {
+            path = `M 0 ${height - (points[0][`y0_${artistIdx}`] / maxVal) * height} `;
+        }
+
+        // Top line L to R
         points.forEach((p, i) => {
             const x = (i / (points.length - 1)) * width;
             const y1 = height - (p[`y1_${artistIdx}`] / maxVal) * height;
-            path += `L ${x} ${y1} `;
+            path += `L ${x.toFixed(1)} ${y1.toFixed(1)} `;
         });
 
-        // Line bottom reverse
+        // Bottom line R to L (reverse)
         for (let i = points.length - 1; i >= 0; i--) {
             const p = points[i];
             const x = (i / (points.length - 1)) * width;
             const y0 = height - (p[`y0_${artistIdx}`] / maxVal) * height;
-            path += `L ${x} ${y0} `;
+            path += `L ${x.toFixed(1)} ${y0.toFixed(1)} `;
         }
 
-        path += "Z"; // Close
+        path += "Z";
         return { path, artist };
     });
 
-    const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6"]; // Standard vivid palette for distinction
+    // Enhanced Palette for 10 items
+    const colors = [
+        "#3b82f6", // Blue
+        "#ec4899", // Pink
+        "#eab308", // Yellow
+        "#22c55e", // Green
+        "#ef4444", // Red
+        "#8b5cf6", // Violet
+        "#06b6d4", // Cyan
+        "#f97316", // Orange
+        "#14b8a6", // Teal
+        "#6366f1"  // Indigo
+    ];
 
     return (
-        <div className="w-full h-full min-h-[300px] relative">
-            <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="w-full h-full">
-                {layers.map((layer, i) => (
-                    <g key={layer.artist.id} className="group">
-                        <path
-                            d={layer.path}
-                            fill={colors[i % colors.length]}
-                            className="opacity-80 group-hover:opacity-100 transition-opacity duration-300"
-                        />
-                        <title>{layer.artist.name}</title>
-                    </g>
-                ))}
-            </svg>
+        <div className="w-full h-full min-h-[300px] flex flex-col">
+            <div className="flex-1 relative w-full h-full min-h-[250px]">
+                <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="w-full h-full block">
+                    {layers.map((layer, i) => (
+                        <g key={layer.artist.id} className="group">
+                            <path
+                                d={layer.path}
+                                fill={colors[i % colors.length]}
+                                className="opacity-70 group-hover:opacity-100 transition-all duration-300 stroke-[var(--color-bg)] stroke-1"
+                            />
+                            <title>{layer.artist.name}</title>
+                        </g>
+                    ))}
+                </svg>
+            </div>
 
-            {/* Legend */}
-            <div className="absolute top-2 right-2 flex flex-col gap-1 bg-black/40 p-2 rounded backdrop-blur-md">
+            {/* Scrollable Legend for Mobile responsiveness */}
+            <div className="mt-4 flex flex-wrap gap-2 justify-center max-h-[60px] overflow-y-auto px-2">
                 {topArtists.map((artist, i) => (
-                    <div key={artist.id} className="flex items-center gap-2 text-[10px] text-white">
+                    <div key={artist.id} className="flex items-center gap-1.5 px-2 py-1 bg-[var(--color-bg-secondary)] rounded-full text-[10px] sm:text-xs text-[var(--color-fg-secondary)] border border-[var(--color-bg-tertiary)]">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: colors[i % colors.length] }} />
-                        {artist.name}
+                        <span className="truncate max-w-[80px] sm:max-w-none">{artist.name}</span>
                     </div>
                 ))}
             </div>
