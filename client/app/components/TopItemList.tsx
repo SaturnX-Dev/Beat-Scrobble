@@ -63,8 +63,12 @@ export default function TopItemList<T extends Item>({ data, separators, type, cl
         <div className={`grid ${defaultGridCols[type]} gap-3 sm:gap-4 w-full max-w-full ${className}`}>
             {data.items.map((item, index) => {
                 const key = `${type}-${item.id}`;
+                // Limit stagger to first 10 items for performance
+                const staggerClass = index < 10 ? `stagger-${Math.min(Math.floor(index / 2) + 1, 5)}` : '';
                 return (
-                    <ItemCard item={item} type={type} key={key} index={index} />
+                    <div key={key} className={`animate-entry ${staggerClass}`}>
+                        <ItemCard item={item} type={type} index={index} />
+                    </div>
                 );
             })}
         </div>

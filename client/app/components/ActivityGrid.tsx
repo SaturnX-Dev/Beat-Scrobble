@@ -77,13 +77,13 @@ export default function ActivityGrid({
         flow: "row" as const
       };
     } else if (rangeState <= 31) {
-      // Month view: 4 weeks approx, full width stretch
+      // Month view: 4 weeks approx, standard grid
       const cols = Math.ceil(count / 7);
       return {
         columns: cols,
         rows: 7,
-        cellClass: "flex-1 aspect-square", // Flex stretch
-        gap: "gap-1",
+        cellClass: "w-8 h-8 sm:w-10 sm:h-10", // Fixed reasonable size
+        gap: "gap-2",
         flow: "column" as const
       };
     } else {
@@ -139,7 +139,7 @@ export default function ActivityGrid({
     };
 
   return (
-    <div className="w-full flex flex-col gap-2 sm:gap-3">
+    <div className="w-full flex flex-col gap-2 sm:gap-3 animate-entry">
       {configurable && (
         <div className="flex justify-end">
           <ActivityOptsSelector
@@ -169,7 +169,7 @@ export default function ActivityGrid({
                   space={6}
                   extraClasses="z-50"
                   inner={
-                    <div className="flex flex-col gap-0.5 min-w-[80px]">
+                    <div className="w-full flex flex-col gap-2 sm:gap-3 animate-entry">
                       <span className="font-bold text-[var(--color-primary)] text-xs">
                         {item.listens} {item.listens === 1 ? 'play' : 'plays'}
                       </span>
@@ -226,6 +226,6 @@ export default function ActivityGrid({
         </div>
         <span className="text-[9px] text-[var(--color-fg-tertiary)] font-medium opacity-50 uppercase tracking-widest">More</span>
       </div>
-    </div>
+    </div >
   );
 }

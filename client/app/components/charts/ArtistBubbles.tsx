@@ -100,9 +100,21 @@ export default function ArtistBubbles({ items, maxItems = 15 }: ArtistBubblesPro
     }
 
     return (
-        <div className="relative w-full aspect-square max-h-[350px] bg-[var(--color-bg-secondary)]/30 rounded-2xl overflow-hidden">
+        <div className="relative w-full aspect-square max-h-[350px] bg-[var(--color-bg-secondary)]/30 rounded-2xl overflow-hidden group/container">
             {/* Ambient glow background */}
             <div className="absolute inset-0 bg-gradient-radial from-[var(--color-primary)]/5 to-transparent" />
+
+            <style>{`
+                @keyframes coin-entry {
+                    0% { transform: scale(0); opacity: 0; }
+                    50% { transform: scale(1.1); }
+                    70% { transform: scale(0.95); }
+                    100% { transform: scale(1); opacity: 1; }
+                }
+                .bubble-entry {
+                    animation: coin-entry 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+            `}</style>
 
             <svg viewBox="0 0 100 100" className="w-full h-full">
                 <defs>
@@ -111,63 +123,76 @@ export default function ArtistBubbles({ items, maxItems = 15 }: ArtistBubblesPro
                             <circle cx={b.x} cy={b.y} r={b.size * 0.45 / 2} />
                         </clipPath>
                     ))}
+                    {bubbles.map(b => b.image ? (
+                        <pattern key={`img-pattern-${b.id}`} id={`img-pattern-${b.id}`} patternUnits="userSpaceOnUse" width="100" height="100">
+                            <image
+                                href={imageUrl(b.image, "large")}
+                                x={b.x - (b.size * 0.45 / 2)}
+                                y={b.y - (b.size * 0.45 / 2)}
+                                width={b.size * 0.45}
+                                height={b.size * 0.45}
+                                preserveAspectRatio="xMidYMid slice"
+                            />
+                        </pattern>
+                    ) : null)}
                 </defs>
 
                 {bubbles.map((bubble, index) => {
                     const isHovered = hoveredId === bubble.id;
                     const scale = isHovered ? 1.15 : 1;
                     const r = (bubble.size * 0.45 / 2) * scale;
+                    // Add slight delay based on index for staggered entry
+                    const delay = index * 50;
 
                     return (
-                        <g key={bubble.id}>
-                            {/* Glow ring on hover */}
-                            {isHovered && (
+                        <g
+                            key={bubble.id}
+                            style={{ animationDelay: `${delay}ms`, transformBox: 'fill-box', transformOrigin: 'center' }}
+                            className="bubble-entry opacity-0"
+                        >
+                            <Link to={`/artist/${bubble.id}`}>
+                                {/* Shadow/Glow behind */}
                                 <circle
                                     cx={bubble.x}
                                     cy={bubble.y}
-                                    r={r + 2}
-                                    fill="none"
-                                    stroke="var(--color-primary)"
-                                    strokeWidth="1"
-                                    opacity="0.6"
-                                    className="animate-pulse"
+                                    r={r}
+                                    fill="black"
+                                    opacity="0.2"
+                                    className="transition-all duration-300"
+                                    style={{
+                                        filter: 'blur(3px)',
+                                        transform: isHovered ? 'translateY(2px) scale(1.05)' : 'translateY(1px)'
+                                    }}
                                 />
-                            )}
 
-                            {/* Main circle */}
-                            <Link to={`/artist/${bubble.id}`}>
+                                {/* Main Bubble Circle */}
                                 <circle
                                     cx={bubble.x}
                                     cy={bubble.y}
                                     r={r}
                                     fill={bubble.image ? `url(#img-pattern-${bubble.id})` : "var(--color-bg-tertiary)"}
                                     stroke="var(--color-bg-secondary)"
-                                    strokeWidth="2"
-                                    className="transition-all duration-200 cursor-pointer group-hover:stroke-[var(--color-primary)] group-hover:stroke-4"
+                                    strokeWidth="1.5"
+                                    className="transition-all duration-300 ease-spring cursor-pointer"
                                     style={{
-                                        filter: isHovered ? 'drop-shadow(0 0 8px var(--color-primary))' : 'none'
+                                        filter: isHovered ? 'brightness(1.1) contrast(1.1)' : 'none',
+                                        transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
                                     }}
                                     onMouseEnter={() => setHoveredId(bubble.id)}
                                     onMouseLeave={() => setHoveredId(null)}
                                 />
-                                {/* Image */}
-                                {bubble.image && (
-                                    <image
-                                        href={imageUrl(bubble.image, "small")}
-                                        x={bubble.x - r}
-                                        y={bubble.y - r}
-                                        width={r * 2}
-                                        height={r * 2}
-                                        clipPath={`url(#clip-${bubble.id})`}
-                                        className="transition-all duration-200"
-                                        style={{
-                                            transform: `scale(${scale})`,
-                                            transformOrigin: `${bubble.x}px ${bubble.y}px`
-                                        }}
-                                        onMouseEnter={() => setHoveredId(bubble.id)}
-                                        onMouseLeave={() => setHoveredId(null)}
-                                    />
-                                )}
+
+                                {/* Inner Border / Highlight */}
+                                <circle
+                                    cx={bubble.x}
+                                    cy={bubble.y}
+                                    r={r}
+                                    fill="none"
+                                    stroke="white"
+                                    strokeWidth="1"
+                                    opacity={isHovered ? 0.3 : 0.1}
+                                    className="pointer-events-none transition-opacity duration-300"
+                                />
                             </Link>
                         </g>
                     );
@@ -176,13 +201,15 @@ export default function ArtistBubbles({ items, maxItems = 15 }: ArtistBubblesPro
 
             {/* Tooltip */}
             {hoveredId && bubbles.find(b => b.id === hoveredId) && (
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[var(--color-bg-secondary)]/95 backdrop-blur-sm border border-[var(--color-bg-tertiary)] rounded-lg px-3 py-2 shadow-xl z-20">
-                    <p className="text-sm font-bold text-[var(--color-fg)]">
-                        {bubbles.find(b => b.id === hoveredId)?.name}
-                    </p>
-                    <p className="text-xs text-[var(--color-primary)]">
-                        {bubbles.find(b => b.id === hoveredId)?.count.toLocaleString()} plays
-                    </p>
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-[var(--color-bg-secondary)]/90 backdrop-blur border border-[var(--color-bg-tertiary)] rounded-full px-4 py-2 shadow-xl z-20 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div className="flex flex-col items-center">
+                        <span className="text-sm font-bold text-[var(--color-fg)] whitespace-nowrap">
+                            {bubbles.find(b => b.id === hoveredId)?.name}
+                        </span>
+                        <span className="text-[10px] uppercase tracking-wider text-[var(--color-primary)] font-bold">
+                            {bubbles.find(b => b.id === hoveredId)?.count.toLocaleString()} plays
+                        </span>
+                    </div>
                 </div>
             )}
         </div>

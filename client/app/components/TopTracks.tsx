@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getTopTracks, type getItemsArgs } from "api/api";
 import { Link } from "react-router";
-import RankedTrackRow from "./RankedTrackRow";
-import RankedTrackRowSkeleton from "./skeletons/RankedTrackRowSkeleton";
+import TopItemList from "./TopItemList";
 import EmptyState from "./EmptyState";
 
 interface Props {
@@ -31,9 +30,7 @@ const TopTracks = (props: Props) => {
     return (
       <div className="w-full space-y-2">
         <h2 className="mb-4">Top Tracks</h2>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <RankedTrackRowSkeleton key={i} />
-        ))}
+        <TopItemList type="track" isLoading={true} limit={props.limit} />
       </div>
     );
   }
@@ -70,13 +67,7 @@ const TopTracks = (props: Props) => {
             description="Keep listening to see your favorites here."
           />
         ) : (
-          data.items.map((track, i) => (
-            <RankedTrackRow
-              key={track.id}
-              track={track}
-              rank={i + 1}
-            />
-          ))
+          <TopItemList type="track" data={data} limit={props.limit} />
         )}
       </div>
     </div>
