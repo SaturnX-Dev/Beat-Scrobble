@@ -29,12 +29,18 @@ const ArtistBubbles = memo(function ArtistBubbles({ items, maxItems = 15 }: Arti
     // Stable hash for dependency array
     const currentItemsHash = JSON.stringify(displayItems.map(i => i.id));
 
-    // Monitor resize to determine readiness
+    // Store dimensions in ref to avoid reading DOM in physics loop (causes 0,0 bug)
+    const dimensionsRef = useRef({ width: 0, height: 0 });
+
+    // Monitor resize to determine readiness and keep dimensions updated
     useEffect(() => {
         if (!containerRef.current) return;
         const observer = new ResizeObserver((entries) => {
             const entry = entries[0];
-            if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+            const { width, height } = entry.contentRect;
+
+            if (width > 0 && height > 0) {
+                dimensionsRef.current = { width, height };
                 setIsReady(true);
             }
         });
@@ -74,6 +80,10 @@ const ArtistBubbles = memo(function ArtistBubbles({ items, maxItems = 15 }: Arti
         const minSize = 40;
         const maxSize = 90;
 
+        // Use valid dimensions for initial spawn
+        const initialWidth = dimensionsRef.current.width || 300;
+        const initialHeight = dimensionsRef.current.height || 300;
+
         // Create Physics Bodies
         const bodies = displayItems.map((item) => {
             const normalizedCount = item.listen_count / maxCount;
@@ -81,10 +91,8 @@ const ArtistBubbles = memo(function ArtistBubbles({ items, maxItems = 15 }: Arti
             const radius = size / 2;
 
             // Random initial position near center but spread out
-            const safeWidth = containerRef.current?.clientWidth || 300;
-            const safeHeight = containerRef.current?.clientHeight || 300;
-            const x = safeWidth / 2 + (Math.random() - 0.5) * 50;
-            const y = safeHeight / 2 + (Math.random() - 0.5) * 50;
+            const x = initialWidth / 2 + (Math.random() - 0.5) * 50;
+            const y = initialHeight / 2 + (Math.random() - 0.5) * 50;
 
             const body = Bodies.circle(x, y, radius, {
                 restitution: 0.9,
@@ -102,10 +110,13 @@ const ArtistBubbles = memo(function ArtistBubbles({ items, maxItems = 15 }: Arti
         // --- Walls ---
         let walls: Matter.Body[] = [];
         const updateWalls = () => {
-            if (!containerRef.current) return;
+            // Use cached dimensions to avoid 0-width collapse
+            const width = dimensionsRef.current.width;
+            const height = dimensionsRef.current.height;
+
+            if (width <= 0 || height <= 0) return;
+
             Composite.remove(world, walls);
-            const width = containerRef.current.clientWidth;
-            const height = containerRef.current.clientHeight;
             const wallThickness = 100;
             walls = [
                 Bodies.rectangle(width / 2, -wallThickness / 2, width * 2, wallThickness, { isStatic: true, render: { visible: false } }),
@@ -117,10 +128,16 @@ const ArtistBubbles = memo(function ArtistBubbles({ items, maxItems = 15 }: Arti
         };
         updateWalls();
 
-        const resizeObserver = new ResizeObserver(() => {
-            updateWalls();
-            // Wake up bodies on resize
-            bodies.forEach(b => Matter.Sleeping.set(b, false));
+        // Secondary observer for this specific instance to update walls on resize
+        const resizeObserver = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            const { width, height } = entry.contentRect;
+            if (width > 0 && height > 0) {
+                dimensionsRef.current = { width, height };
+                updateWalls();
+                // Wake up bodies on resize
+                bodies.forEach(b => Matter.Sleeping.set(b, false));
+            }
         });
         resizeObserver.observe(containerRef.current);
 
@@ -165,11 +182,15 @@ const ArtistBubbles = memo(function ArtistBubbles({ items, maxItems = 15 }: Arti
             const hoveredBody = Query.point(bodies, mouse.position)[0];
             setHoveredId(hoveredBody ? (hoveredBody as any).plugin.item.id : null);
 
+            // Use cached dimensions for center point
+            const cx = dimensionsRef.current.width / 2;
+            const cy = dimensionsRef.current.height / 2;
+
+            if (cx === 0 || cy === 0) return; // Skip force if dimensions invalid
+
             // Gentle ambient motion to keep them alive
             bodies.forEach(body => {
                 // Push them towards center if they drift too far
-                const cx = containerRef.current!.clientWidth / 2;
-                const cy = containerRef.current!.clientHeight / 2;
                 const dist = Math.sqrt(Math.pow(body.position.x - cx, 2) + Math.pow(body.position.y - cy, 2));
 
                 // Very subtle attraction to center
@@ -210,11 +231,14 @@ const ArtistBubbles = memo(function ArtistBubbles({ items, maxItems = 15 }: Arti
             if (sceneRef.current) {
                 Matter.Runner.stop(sceneRef.current.runner);
                 Matter.Engine.clear(sceneRef.current.engine);
-                if (sceneRef.current.renderLoop) cancelAnimationFrame(sceneRef.current.renderLoop);
+                Matter.Composite.clear(sceneRef.current.engine.world, false, true);
+                if (sceneRef.current.renderLoop) {
+                    cancelAnimationFrame(sceneRef.current.renderLoop);
+                }
             }
             sceneRef.current = null;
         };
-    }, [currentItemsHash, navigate]); // Removed dependencies that change often
+    }, [currentItemsHash, navigate, isReady]);
 
     if (!displayItems.length) {
         return (
