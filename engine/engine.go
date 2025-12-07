@@ -111,6 +111,8 @@ func Run(
 		EnableCAA:      !cfg.CoverArtArchiveDisabled(),
 		EnableDeezer:   !cfg.DeezerDisabled(),
 		EnableSubsonic: cfg.SubsonicEnabled(),
+		EnableSpotify:  true,
+		DB:             store,
 	})
 	l.Info().Msg("Engine: Image sources initialized")
 

@@ -98,7 +98,7 @@ export default function Profile() {
     // Top Artists Query - more for bubbles view
     const { data: topArtistsData } = useQuery({
         queryKey: ['profile-top-artists', period],
-        queryFn: () => getTopArtists({ limit: 15, period, page: 1 })
+        queryFn: () => getTopArtists({ limit: 25, period, page: 1 })
     });
 
     // Top Albums Query - more for quilt view
@@ -174,24 +174,27 @@ export default function Profile() {
                 <main className="flex-1 overflow-y-auto bg-transparent px-4 py-6 md:py-12 pb-24 hide-scrollbar">
                     <div className="max-w-7xl mx-auto">
                         {/* Header with Banner */}
-                        <div className="relative mb-8 rounded-2xl overflow-hidden bg-[var(--color-bg-secondary)]/60 backdrop-blur-md border border-[var(--color-bg-tertiary)]">
-                            {/* Banner Image - Full width/height container */}
-                            <div className="w-full h-[250px] sm:h-[350px] bg-[var(--color-bg-tertiary)] relative">
+                        {/* Header with Banner - Full Card Background Style */}
+                        <div className="relative mb-8 rounded-3xl overflow-hidden border border-[var(--color-bg-tertiary)] shadow-2xl">
+                            {/* Full Background Image Layer */}
+                            <div className="absolute inset-0 z-0">
                                 {backgroundImage ? (
                                     <img
                                         src={backgroundImage}
                                         alt="Profile Banner"
-                                        className="w-full h-full object-cover object-center"
+                                        className="w-full h-full object-cover object-center opacity-80 scale-105"
                                     />
                                 ) : (
-                                    <div className="w-full h-full bg-gradient-to-r from-[var(--color-primary)]/20 to-[var(--color-accent)]/20" />
+                                    <div className="w-full h-full bg-gradient-to-br from-[var(--color-primary)]/30 via-[var(--color-bg-secondary)] to-[var(--color-accent)]/30" />
                                 )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-secondary)] via-transparent to-transparent opacity-90" />
+                                {/* Gradient Overlay for text readability */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-bg-secondary)] via-[var(--color-bg-secondary)]/40 to-black/20" />
+                                <div className="absolute inset-0 bg-[var(--color-bg-secondary)]/30 backdrop-blur-[2px]" />
                             </div>
 
-                            {/* Profile Info (Overlapping Banner) */}
-                            <div className="relative px-6 pb-6 -mt-16 sm:-mt-20 flex flex-col items-center text-center">
-                                <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-[var(--color-bg-secondary)] p-1.5 mb-4 shadow-xl">
+                            {/* Profile Info */}
+                            <div className="relative z-10 pt-[180px] sm:pt-[240px] px-6 pb-8 flex flex-col items-center text-center">
+                                <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-full p-1.5 mb-4 shadow-2xl bg-[var(--color-bg-secondary)]/50 backdrop-blur-md border border-[var(--color-bg-tertiary)]">
                                     <div className="w-full h-full rounded-full overflow-hidden bg-[var(--color-bg-tertiary)] relative">
                                         {profileImage ? (
                                             <img
@@ -207,8 +210,8 @@ export default function Profile() {
                                     </div>
                                 </div>
 
-                                <h1 className="text-3xl sm:text-4xl font-bold text-[var(--color-fg)] mb-2">{user?.username}</h1>
-                                <p className="text-[var(--color-fg-secondary)] text-sm md:text-base max-w-lg mx-auto mb-4">
+                                <h1 className="text-3xl sm:text-5xl font-black text-[var(--color-fg)] mb-2 drop-shadow-lg tracking-tight">{user?.username}</h1>
+                                <p className="text-[var(--color-fg-secondary)] text-sm md:text-base max-w-lg mx-auto mb-6 font-medium drop-shadow-md">
                                     Complete statistics, trends, and insights about your listening habits
                                 </p>
 
@@ -216,7 +219,7 @@ export default function Profile() {
                                 <div className="flex items-center justify-center gap-3">
                                     <button
                                         onClick={handleShare}
-                                        className="flex items-center gap-2 px-4 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dim)] text-white rounded-xl text-sm font-medium transition-all"
+                                        className="flex items-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dim)] text-white rounded-full text-sm font-bold shadow-lg shadow-[var(--color-primary)]/20 transition-all hover:scale-105 active:scale-95"
                                     >
                                         <Share2 size={16} />
                                         Share Profile
@@ -224,7 +227,7 @@ export default function Profile() {
                                     {showRecapButton && (
                                         <button
                                             onClick={() => setRecapOpen(true)}
-                                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl text-sm font-medium transition-all"
+                                            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-full text-sm font-bold shadow-lg shadow-purple-500/20 transition-all hover:scale-105 active:scale-95"
                                         >
                                             <Gift size={16} />
                                             {new Date().getFullYear()} Recap
@@ -234,25 +237,22 @@ export default function Profile() {
 
                                 {/* Share URL popup */}
                                 {shareUrl && (
-                                    <div className="mt-4 p-4 bg-[var(--color-bg-secondary)] rounded-xl border border-[var(--color-bg-tertiary)] max-w-md mx-auto">
+                                    <div className="mt-6 p-4 bg-[var(--color-bg-secondary)]/90 backdrop-blur-xl rounded-xl border border-[var(--color-bg-tertiary)] max-w-md mx-auto animate-in fade-in slide-in-from-bottom-2">
                                         <p className="text-xs text-[var(--color-fg-secondary)] mb-2">Share this link:</p>
                                         <div className="flex gap-2">
                                             <input
                                                 type="text"
                                                 value={shareUrl}
                                                 readOnly
-                                                className="flex-1 bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-lg px-3 py-2 text-sm"
+                                                className="flex-1 bg-[var(--color-bg)]/50 border border-[var(--color-bg-tertiary)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[var(--color-primary)]"
                                             />
                                             <button
                                                 onClick={copyShareUrl}
-                                                className="px-3 py-2 bg-[var(--color-primary)] text-white rounded-lg"
+                                                className="px-3 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-dim)] text-white rounded-lg transition-colors"
                                             >
                                                 {copied ? <Check size={16} /> : <Copy size={16} />}
                                             </button>
                                         </div>
-                                        <p className="text-[10px] text-[var(--color-fg-tertiary)] mt-2">
-                                            Configure your hostname in Settings → Sharing
-                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -463,7 +463,7 @@ export default function Profile() {
                                         Bubble size represents play count. Click to view artist.
                                     </p>
                                     {topArtistsData?.items && topArtistsData.items.length > 0 ? (
-                                        <ArtistBubbles items={topArtistsData.items} maxItems={12} />
+                                        <ArtistBubbles items={topArtistsData.items} maxItems={20} />
                                     ) : (
                                         <div className="h-64 flex items-center justify-center text-[var(--color-fg-tertiary)]">
                                             No artist data available

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useEffect, useRef, useState, useMemo, memo } from "react";
+import { useNavigate } from "react-router";
 import { imageUrl } from "api/api";
 import Matter from "matter-js";
 
@@ -15,159 +15,206 @@ interface ArtistBubblesProps {
     maxItems?: number;
 }
 
-export default function ArtistBubbles({ items, maxItems = 15 }: ArtistBubblesProps) {
+const ArtistBubbles = memo(function ArtistBubbles({ items, maxItems = 15 }: ArtistBubblesProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const sceneRef = useRef<any>(null); // To store engine/runner cleanup info
+    const sceneRef = useRef<any>(null);
     const bubbleRefs = useRef<{ [key: number]: SVGGElement | null }>({});
     const navigate = useNavigate();
     const [hoveredId, setHoveredId] = useState<number | null>(null);
+    const [isReady, setIsReady] = useState(false);
 
-    // Initial data setup
-    const displayItems = items.slice(0, maxItems);
-    const maxCount = Math.max(...displayItems.map(i => i.listen_count), 1);
-    const minSize = 40; // increased min size for better visibility
-    const maxSize = 90;
+    const displayItems = useMemo(() => items.slice(0, maxItems), [items, maxItems]);
+    const maxCount = useMemo(() => Math.max(...displayItems.map(i => i.listen_count), 1), [displayItems]);
+
+    // Stable hash for dependency array
+    const currentItemsHash = JSON.stringify(displayItems.map(i => i.id));
+
+    // Monitor resize to determine readiness
+    useEffect(() => {
+        if (!containerRef.current) return;
+        const observer = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+                setIsReady(true);
+            }
+        });
+        observer.observe(containerRef.current);
+        return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
-        if (!containerRef.current || !displayItems.length) return;
+        // Only run if we have data AND the container has valid size
+        if (!containerRef.current || !displayItems.length || !isReady) return;
 
-        // --- Physics Setup ---
+        // Cleanup previous instance if it exists (safety check)
+        if (sceneRef.current) {
+            Matter.Runner.stop(sceneRef.current.runner);
+            Matter.Engine.clear(sceneRef.current.engine);
+            Matter.Composite.clear(sceneRef.current.engine.world, false, true);
+            if (sceneRef.current.renderLoop) {
+                cancelAnimationFrame(sceneRef.current.renderLoop);
+            }
+        }
+
         const Engine = Matter.Engine,
-            Render = Matter.Render,
             Runner = Matter.Runner,
             Bodies = Matter.Bodies,
             Composite = Matter.Composite,
             Mouse = Matter.Mouse,
             MouseConstraint = Matter.MouseConstraint,
-            Events = Matter.Events;
+            Events = Matter.Events,
+            Query = Matter.Query;
 
         const engine = Engine.create();
         const world = engine.world;
-
-        // Disable gravity for "floating" effect, or keep it very low
         engine.gravity.y = 0;
         engine.gravity.x = 0;
 
-        const containerWidth = containerRef.current.clientWidth;
-        const containerHeight = containerRef.current.clientHeight;
+        // Min/Max size for bubbles
+        const minSize = 40;
+        const maxSize = 90;
 
-        // Walls to keep bubbles in
-        const wallThickness = 60;
-        const walls = [
-            Bodies.rectangle(containerWidth / 2, -wallThickness / 2, containerWidth * 2, wallThickness, { isStatic: true, render: { visible: false } }), // Top
-            Bodies.rectangle(containerWidth / 2, containerHeight + wallThickness / 2, containerWidth * 2, wallThickness, { isStatic: true, render: { visible: false } }), // Bottom
-            Bodies.rectangle(containerWidth + wallThickness / 2, containerHeight / 2, wallThickness, containerHeight * 2, { isStatic: true, render: { visible: false } }), // Right
-            Bodies.rectangle(-wallThickness / 2, containerHeight / 2, wallThickness, containerHeight * 2, { isStatic: true, render: { visible: false } }) // Left
-        ];
-        Composite.add(world, walls);
-
-        // Artist Bubbles
-        const bodies = displayItems.map((item, index) => {
+        // Create Physics Bodies
+        const bodies = displayItems.map((item) => {
             const normalizedCount = item.listen_count / maxCount;
             const size = minSize + normalizedCount * (maxSize - minSize);
             const radius = size / 2;
 
-            // Random initial position within bounds
-            const x = Math.random() * (containerWidth - 100) + 50;
-            const y = Math.random() * (containerHeight - 100) + 50;
+            // Random initial position near center but spread out
+            const safeWidth = containerRef.current?.clientWidth || 300;
+            const safeHeight = containerRef.current?.clientHeight || 300;
+            const x = safeWidth / 2 + (Math.random() - 0.5) * 50;
+            const y = safeHeight / 2 + (Math.random() - 0.5) * 50;
 
             const body = Bodies.circle(x, y, radius, {
-                restitution: 0.9, // Bounciness
+                restitution: 0.9,
                 friction: 0.005,
-                frictionAir: 0.02, // Air resistance for floating feel
+                frictionAir: 0.02,
                 density: 0.04,
                 label: `artist-${item.id}`
             });
-
-            // Store original radius for hover scaling later if needed
             (body as any).plugin = { item, radius };
-
             return body;
         });
 
         Composite.add(world, bodies);
 
-        // Mouse Interaction
+        // --- Walls ---
+        let walls: Matter.Body[] = [];
+        const updateWalls = () => {
+            if (!containerRef.current) return;
+            Composite.remove(world, walls);
+            const width = containerRef.current.clientWidth;
+            const height = containerRef.current.clientHeight;
+            const wallThickness = 100;
+            walls = [
+                Bodies.rectangle(width / 2, -wallThickness / 2, width * 2, wallThickness, { isStatic: true, render: { visible: false } }),
+                Bodies.rectangle(width / 2, height + wallThickness / 2, width * 2, wallThickness, { isStatic: true, render: { visible: false } }),
+                Bodies.rectangle(width + wallThickness / 2, height / 2, wallThickness, height * 2, { isStatic: true, render: { visible: false } }),
+                Bodies.rectangle(-wallThickness / 2, height / 2, wallThickness, height * 2, { isStatic: true, render: { visible: false } })
+            ];
+            Composite.add(world, walls);
+        };
+        updateWalls();
+
+        const resizeObserver = new ResizeObserver(() => {
+            updateWalls();
+            // Wake up bodies on resize
+            bodies.forEach(b => Matter.Sleeping.set(b, false));
+        });
+        resizeObserver.observe(containerRef.current);
+
+        // --- Mouse Interaction ---
         const mouse = Mouse.create(containerRef.current);
+        // Important: prevent Matter from capturing scroll events or interfering with other interactions
+        mouse.element.removeEventListener("mousewheel", (mouse as any).mousewheel);
+        mouse.element.removeEventListener("DOMMouseScroll", (mouse as any).mousewheel);
+
         const mouseConstraint = MouseConstraint.create(engine, {
             mouse: mouse,
             constraint: {
-                stiffness: 0.2,
+                stiffness: 0.1,
                 render: { visible: false }
             }
         });
+        Composite.add(world, mouseConstraint);
 
-        // Double click detection variables
-        let lastClickTime = 0;
-        let lastClickedBodyId: number | null = null;
+        // Click Logic
+        let isDragging = false;
+        Events.on(mouseConstraint, "startdrag", () => { isDragging = true; });
+        Events.on(mouseConstraint, "enddrag", () => {
+            // Small delay to ensure mouseup doesn't trigger click immediately after drag
+            setTimeout(() => { isDragging = false; }, 100);
+        });
 
-        // Custom double click logic using Matter events
-        Events.on(mouseConstraint, "mousedown", (event) => {
-            const body = mouseConstraint.body;
-            if (body) {
-                const now = Date.now();
-                if (lastClickedBodyId === body.id && now - lastClickTime < 300) {
-                    // Double click detected!
-                    const itemId = (body as any).plugin?.item?.id;
-                    if (itemId) {
-                        navigate(`/artist/${itemId}`);
+        Events.on(mouseConstraint, "mouseup", (event) => {
+            if (!isDragging) {
+                // Check if we actually clicked a body
+                const clickedBodies = Query.point(bodies, event.mouse.position);
+                if (clickedBodies.length > 0) {
+                    const item = (clickedBodies[0] as any).plugin?.item;
+                    if (item) {
+                        navigate(`/artist/${item.id}`);
                     }
                 }
-                lastClickedBodyId = body.id;
-                lastClickTime = now;
             }
         });
 
-        // Handle hovering via checking mouse position vs bodies for tooltip
+        // Loop for Hover & Ambient Motion
         Events.on(engine, "beforeUpdate", () => {
-            // Add gentle ambient motion
+            const hoveredBody = Query.point(bodies, mouse.position)[0];
+            setHoveredId(hoveredBody ? (hoveredBody as any).plugin.item.id : null);
+
+            // Gentle ambient motion to keep them alive
             bodies.forEach(body => {
-                // Push gently towards center if too far out (soft bounds helper) or just random noise
-                // Actually frictionAir handles the slowing down, let's just add slight random force for "floating"
-                if (Math.random() < 0.05) {
-                    Matter.Body.applyForce(body, body.position, {
-                        x: (Math.random() - 0.5) * 0.0005,
-                        y: (Math.random() - 0.5) * 0.0005
-                    });
-                }
+                // Push them towards center if they drift too far
+                const cx = containerRef.current!.clientWidth / 2;
+                const cy = containerRef.current!.clientHeight / 2;
+                const dist = Math.sqrt(Math.pow(body.position.x - cx, 2) + Math.pow(body.position.y - cy, 2));
+
+                // Very subtle attraction to center
+                Matter.Body.applyForce(body, body.position, {
+                    x: (cx - body.position.x) * 1e-6,
+                    y: (cy - body.position.y) * 1e-6
+                });
             });
         });
 
-        Composite.add(world, mouseConstraint);
-
-        // Sync Physics with DOM
         const runner = Runner.create();
+        Runner.run(runner, engine);
 
-        // Render loop to update DOM elements
-        let animationFrameId: number = 0;
-
+        // Sync DOM with Physics
         const updateDOM = () => {
+            // Only update if component is still mounted/valid
+            if (!sceneRef.current) return;
+
             bodies.forEach(body => {
                 const itemId = (body as any).plugin.item.id;
                 const el = bubbleRefs.current[itemId];
                 if (el) {
                     const { x, y } = body.position;
-                    // Update group transform
-                    el.setAttribute('transform', `translate(${x}, ${y})`);
+                    // Provide a translation but ensure it's valid
+                    if (!isNaN(x) && !isNaN(y)) {
+                        el.setAttribute('transform', `translate(${x}, ${y})`);
+                    }
                 }
             });
-            animationFrameId = requestAnimationFrame(updateDOM);
+            sceneRef.current.renderLoop = requestAnimationFrame(updateDOM);
         };
-
-        Runner.run(runner, engine);
         updateDOM();
 
-        // Cleanup
-        sceneRef.current = { engine, runner, animationFrameId };
+        sceneRef.current = { engine, runner, renderLoop: 0 }; // store loop id later
 
         return () => {
-            Runner.stop(runner);
-            Engine.clear(engine);
-            cancelAnimationFrame(animationFrameId);
-            Composite.clear(world, false, true);
+            resizeObserver.disconnect();
+            if (sceneRef.current) {
+                Matter.Runner.stop(sceneRef.current.runner);
+                Matter.Engine.clear(sceneRef.current.engine);
+                if (sceneRef.current.renderLoop) cancelAnimationFrame(sceneRef.current.renderLoop);
+            }
+            sceneRef.current = null;
         };
-    }, [displayItems, maxItems, navigate]);
-
+    }, [currentItemsHash, navigate]); // Removed dependencies that change often
 
     if (!displayItems.length) {
         return (
@@ -180,18 +227,17 @@ export default function ArtistBubbles({ items, maxItems = 15 }: ArtistBubblesPro
     return (
         <div
             ref={containerRef}
-            className="relative w-full aspect-square max-h-[400px] bg-[var(--color-bg-secondary)]/30 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing"
+            className="relative w-full aspect-square max-h-[400px] bg-[var(--color-bg-secondary)]/30 rounded-2xl overflow-hidden cursor-grab active:cursor-grabbing touch-none"
         >
-            {/* Ambient glow background */}
             <div className="absolute inset-0 bg-gradient-radial from-[var(--color-primary)]/5 to-transparent pointer-events-none" />
 
-            <svg className="w-full h-full pointer-events-none">
+            <svg className="w-full h-full select-none" style={{ pointerEvents: 'none' }}>
                 <defs>
-                    {/* Definitions for patterns/images */}
                     {displayItems.map(item => {
-                        const normalizedCount = item.listen_count / maxCount;
-                        const size = minSize + normalizedCount * (maxSize - minSize);
-                        const radius = size / 2;
+                        const maxC = Math.max(...displayItems.map(i => i.listen_count), 1);
+                        const minS = 40, maxS = 90;
+                        const norm = item.listen_count / maxC;
+                        const size = minS + norm * (maxS - minS);
 
                         return (
                             <pattern
@@ -218,52 +264,42 @@ export default function ArtistBubbles({ items, maxItems = 15 }: ArtistBubblesPro
 
                 {displayItems.map((item) => {
                     const normalizedCount = item.listen_count / maxCount;
-                    const size = minSize + normalizedCount * (maxSize - minSize);
+                    const size = 40 + normalizedCount * (90 - 40);
                     const radius = size / 2;
 
                     return (
                         <g
                             key={item.id}
                             ref={(el) => { bubbleRefs.current[item.id] = el; }}
-                        // Initial position off-screen or rendered by physics immediately
                         >
-                            {/* Shadow/Glow */}
                             <circle
                                 r={radius}
                                 fill="black"
                                 opacity="0.2"
                                 style={{ filter: 'blur(3px)', transform: 'translateY(2px)' }}
                             />
-
-                            {/* Main Bubble */}
                             <circle
                                 r={radius}
                                 fill={item.image ? `url(#img-pattern-${item.id})` : "var(--color-bg-tertiary)"}
                                 stroke="var(--color-bg-secondary)"
                                 strokeWidth="2"
-                                className="transition-all duration-300 pointer-events-auto"
+                                className="transition-all duration-300"
                                 style={{
                                     filter: hoveredId === item.id ? 'brightness(1.1)' : 'none'
                                 }}
-                                onMouseEnter={() => setHoveredId(item.id)}
-                                onMouseLeave={() => setHoveredId(null)}
                             />
-
-                            {/* Inner shine/highlight */}
                             <circle
                                 r={radius}
                                 fill="none"
                                 stroke="white"
                                 strokeWidth="1"
                                 opacity="0.15"
-                                className="pointer-events-none"
                             />
                         </g>
                     );
                 })}
             </svg>
 
-            {/* Tooltip Overlay */}
             {hoveredId && displayItems.find(b => b.id === hoveredId) && (
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[var(--color-bg-secondary)]/90 backdrop-blur border border-[var(--color-bg-tertiary)] rounded-full px-4 py-2 shadow-xl z-20 pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <div className="flex flex-col items-center">
@@ -278,4 +314,6 @@ export default function ArtistBubbles({ items, maxItems = 15 }: ArtistBubblesPro
             )}
         </div>
     );
-}
+});
+
+export default ArtistBubbles;

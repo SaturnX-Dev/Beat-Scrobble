@@ -7,7 +7,9 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/spotify"
 	"github.com/google/uuid"
 )
 
@@ -16,6 +18,8 @@ type ImageSource struct {
 	deezerC         *DeezerClient
 	subsonicEnabled bool
 	subsonicC       *SubsonicClient
+	spotifyEnabled  bool
+	spotifyP        *SpotifyProvider
 	caaEnabled      bool
 }
 type ImageSourceOpts struct {
@@ -23,6 +27,8 @@ type ImageSourceOpts struct {
 	EnableCAA      bool
 	EnableDeezer   bool
 	EnableSubsonic bool
+	EnableSpotify  bool
+	DB             db.DB
 }
 
 var once sync.Once
@@ -55,15 +61,38 @@ func Initialize(opts ImageSourceOpts) {
 			imgsrc.subsonicEnabled = true
 			imgsrc.subsonicC = NewSubsonicClient()
 		}
+		if opts.EnableSpotify && opts.DB != nil {
+			imgsrc.spotifyEnabled = true
+			// assuming user ID 1 for now, or we could pass it in opts if needed
+			client := spotify.NewClient(opts.DB, 1)
+			imgsrc.spotifyP = NewSpotifyProvider(client)
+		}
 	})
 }
 
 func Shutdown() {
-	imgsrc.deezerC.Shutdown()
+	if imgsrc.deezerC != nil {
+		imgsrc.deezerC.Shutdown()
+	}
 }
 
 func GetArtistImage(ctx context.Context, opts ArtistImageOpts) (string, error) {
 	l := logger.FromContext(ctx)
+
+	// 1. Try Spotify first (User Preference)
+	if imgsrc.spotifyEnabled {
+		// Use the first alias (usually the main artist name)
+		if len(opts.Aliases) > 0 {
+			img, err := imgsrc.spotifyP.GetArtistImage(ctx, opts.Aliases[0])
+			if err != nil {
+				l.Debug().Err(err).Msg("Spotify artist image fetch failed, falling back")
+			} else if img != "" {
+				return img, nil
+			}
+		}
+	}
+
+	// 2. Try Subsonic
 	if imgsrc.subsonicEnabled {
 		img, err := imgsrc.subsonicC.GetArtistImage(ctx, opts.Aliases[0])
 		if err != nil {
@@ -74,6 +103,8 @@ func GetArtistImage(ctx context.Context, opts ArtistImageOpts) (string, error) {
 		}
 		l.Debug().Msg("Could not find artist image from Subsonic")
 	}
+
+	// 3. Try Deezer
 	if imgsrc.deezerC != nil {
 		img, err := imgsrc.deezerC.GetArtistImages(ctx, opts.Aliases)
 		if err != nil {
@@ -81,11 +112,24 @@ func GetArtistImage(ctx context.Context, opts ArtistImageOpts) (string, error) {
 		}
 		return img, nil
 	}
-	l.Warn().Msg("GetArtistImage: No image providers are enabled")
+	l.Warn().Msg("GetArtistImage: No image providers are enabled or found image")
 	return "", nil
 }
+
 func GetAlbumImage(ctx context.Context, opts AlbumImageOpts) (string, error) {
 	l := logger.FromContext(ctx)
+
+	// 1. Try Spotify first
+	if imgsrc.spotifyEnabled && len(opts.Artists) > 0 {
+		img, err := imgsrc.spotifyP.GetAlbumImage(ctx, opts.Artists[0], opts.Album)
+		if err != nil {
+			l.Debug().Err(err).Msg("Spotify album image fetch failed, falling back")
+		} else if img != "" {
+			return img, nil
+		}
+	}
+
+	// 2. Try Subsonic
 	if imgsrc.subsonicEnabled {
 		img, err := imgsrc.subsonicC.GetAlbumImage(ctx, opts.Artists[0], opts.Album)
 		if err != nil {
@@ -96,31 +140,35 @@ func GetAlbumImage(ctx context.Context, opts AlbumImageOpts) (string, error) {
 		}
 		l.Debug().Msg("Could not find album cover from Subsonic")
 	}
+
+	// 3. Try CAA (Cover Art Archive)
 	if imgsrc.caaEnabled {
 		l.Debug().Msg("Attempting to find album image from CoverArtArchive")
 		if opts.ReleaseMbzID != nil && *opts.ReleaseMbzID != uuid.Nil {
 			url := fmt.Sprintf(caaBaseUrl+"/release/%s/front", opts.ReleaseMbzID.String())
 			resp, err := http.DefaultClient.Head(url)
 			if err != nil {
-				return "", err
+				l.Debug().Err(err).Msg("CAA HEAD request failed")
+			} else {
+				if resp.StatusCode == 200 {
+					return url, nil
+				}
 			}
-			if resp.StatusCode == 200 {
-				return url, nil
-			}
-			l.Debug().Str("url", url).Str("status", resp.Status).Msg("Could not find album cover from CoverArtArchive with MusicBrainz release ID")
 		}
 		if opts.ReleaseGroupMbzID != nil && *opts.ReleaseGroupMbzID != uuid.Nil {
 			url := fmt.Sprintf(caaBaseUrl+"/release-group/%s/front", opts.ReleaseGroupMbzID.String())
 			resp, err := http.DefaultClient.Head(url)
 			if err != nil {
-				return "", err
+				l.Debug().Err(err).Msg("CAA HEAD request failed")
+			} else {
+				if resp.StatusCode == 200 {
+					return url, nil
+				}
 			}
-			if resp.StatusCode == 200 {
-				return url, nil
-			}
-			l.Debug().Str("url", url).Str("status", resp.Status).Msg("Could not find album cover from CoverArtArchive with MusicBrainz release group ID")
 		}
 	}
+
+	// 4. Try Deezer
 	if imgsrc.deezerEnabled {
 		l.Debug().Msg("Attempting to find album image from Deezer")
 		img, err := imgsrc.deezerC.GetAlbumImages(ctx, opts.Artists, opts.Album)
@@ -129,6 +177,7 @@ func GetAlbumImage(ctx context.Context, opts AlbumImageOpts) (string, error) {
 		}
 		return img, nil
 	}
-	l.Warn().Msg("GetAlbumImage: No image providers are enabled")
+
+	l.Warn().Msg("GetAlbumImage: No image providers are enabled or found image")
 	return "", nil
 }
