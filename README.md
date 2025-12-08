@@ -76,11 +76,11 @@ cd client && npm install && npm run build
 
 ### 🎯 Core Platform
 | Feature | Description |
-|---------|-------------|
-| **ListenBrainz Compatible** | Works with any LB-compatible scrobbler |
-| **Multi-Source Import** | Spotify, Last.fm, ListenBrainz, Maloja |
-| **Relay Mode** | Forward scrobbles to other services |
-| **Full Data Ownership** | Self-hosted, your data stays yours |
+| :--- | :--- |
+| **🔗 ListenBrainz Compatible** | Seamless integration with any LB-compatible scrobbler |
+| **📥 Multi-Source Import** | One-click import from Spotify, Last.fm, ListenBrainz, and Maloja |
+| **📡 Relay Mode** | Automatically forward your scrobbles to other services |
+| **🔐 Full Data Ownership** | Self-hosted architecture; your data stays 100% yours |
 
 ---
 
@@ -102,14 +102,14 @@ Get witty, personalized AI reviews of your tracks and listening habits.
 <summary><b>🎵 AI Playlists (7 Types)</b></summary>
 
 | Playlist | Description |
-|----------|-------------|
-| **Mood Mix** | Tracks matching a specific mood |
-| **Genre Dive** | Deep exploration of a genre |
-| **Discover Weekly** | New music based on your taste |
-| **Time Capsule** | Throwback to a past era |
-| **Artist Radio** | Similar artists to your favorites |
-| **Decade Mix** | Best of a specific decade |
-| **Hidden Gems** | Underplayed tracks you might love |
+| :--- | :--- |
+| **🎭 Mood Mix** | Curated tracks perfectly matching a specific emotional tone |
+| **🎸 Genre Dive** | Deep exploration into the nuances of specific genres |
+| **💡 Discover Weekly** | Fresh new music recommendations based on your taste |
+| **⏳ Time Capsule** | A nostalgic throwback to a randomly selected past era |
+| **📻 Artist Radio** | Continuous mix of similar artists to your favorites |
+| **📅 Decade Mix** | The absolute best tracks from a specific decade |
+| **💎 Hidden Gems** | Underplayed tracks in your library that deserve more love |
 
 </details>
 
@@ -132,45 +132,45 @@ Beat Scrobble offers **15+ interactive visualizations** to explore your listenin
 #### 🗓️ Activity & History
 
 | Visualization | Description |
-|---------------|-------------|
-| **Activity Grid** | GitHub-style heatmap showing your listening intensity by day. Darker squares = more listens. Hover for exact counts. Responsive design adapts to screen size. |
-| **Timeline View** | Infinite-scroll chronological history with album art thumbnails. **Swipe-to-delete** support with premium animations and portal-based confirmation modals. |
-| **Listening Sessions** | Smart grouping of consecutive listens into "sessions" with duration and track counts. |
+| :--- | :--- |
+| **🧩 Activity Grid** | GitHub-style heatmap showing listening intensity. Darker = more listens. |
+| **📜 Timeline View** | Infinite-scroll chronological history with art thumbnails and **swipe-to-delete**. |
+| **🎧 Listening Sessions** | Smart grouping of consecutive listens into sessions with duration analysis. |
 
 #### 📈 Rankings & Charts
 
 | Visualization | Description |
-|---------------|-------------|
-| **TopListChart** | Horizontal bar chart showing your top tracks/albums/artists. Bar width proportional to play count. Animated entrance. |
-| **ListeningTrends** | SVG area chart showing how your listening volume evolves over time. Supports day/week/month granularity. |
-| **The Wall** | Grid layout of your top 50 artists with cover images. Hover to see play counts. Instagram-style aesthetic. |
+| :--- | :--- |
+| **📊 TopListChart** | Animated horizontal bar chart for top tracks/albums/artists. |
+| **📈 ListeningTrends** | SVG area chart showing volume evolution over time (Day/Week/Month). |
+| **🧱 The Wall** | Aesthetic grid layout of top 50 artists with hover stats. |
 
 #### 🎨 Creative Visualizations
 
 | Visualization | Description |
-|---------------|-------------|
-| **ArtistBubbles** | Interactive circle-packing diagram. Bubble size = play count. Click to explore artist. Physics-based animations. |
-| **AlbumQuilt** | Mosaic collage of your top album covers. Hover for glow effect and album info. Sizes vary by popularity. |
-| **StreamGraph** | "Battle of the bands" - stacked area waves showing how your top artists compete over time. Smooth D3.js animations. |
-| **Genre Cloud** | Tag cloud generated from your top artists' genres. Larger text = more common genre. Click to filter. |
+| :--- | :--- |
+| **🫧 ArtistBubbles** | Physics-based circle-packing diagram. Size = Play Count. |
+| **🖼️ AlbumQuilt** | Mosaic collage of top album covers with glow effects. |
+| **🌊 StreamGraph** | Stacked area waves showing artist popularity battles over time. |
+| **☁️ Genre Cloud** | Word cloud of your top genres. Larger text = Higher frequency. |
 
 #### 📉 Data Insights
 
 | Visualization | Description |
-|---------------|-------------|
-| **ScatterPlot** | Dot plot showing when you listen: X-axis = time of day, Y-axis = day of week. Reveals your listening patterns (morning person? night owl?). |
-| **Music Decades** | Retro-styled striped bar chart showing distribution of your music by release decade. 60s, 70s, 80s... |
-| **Music Ratio** | Radial/donut chart breaking down your library: unique tracks vs albums vs artists. Shows your collection diversity. |
-| **Listening Fingerprint** | Radar/spider chart creating a visual "fingerprint" of your listening personality. Experimental feature based on audio features (energy, danceability, valence). |
+| :--- | :--- |
+| **📉 ScatterPlot** | Time-of-day vs Day-of-week analysis of your listening habits. |
+| **🕹️ Music Decades** | Retro striped bar chart showing distribution by release decade. |
+| **🍩 Music Ratio** | Radial breakdown of unique tracks vs albums vs artists. |
+| **🧬 Listening Fingerprint** | Radar chart visualizing audio features (Energy, Danceability, etc). |
 
 #### 🎯 Dashboard Features
 
 | Feature | Description |
-|---------|-------------|
-| **Control Room** | Your home dashboard combining Now Playing card, key metrics (total listens, unique artists, listening time), and mini-charts in one glanceable view. |
-| **Yearly Recap** | Spotify Wrapped-style annual summary. Auto-popups during December. Shows top artists, albums, tracks, total listening time, and fun statistics for the year. |
-| **Period Filters** | All visualizations support filtering by: Today, This Week, This Month, This Year, All Time. Instant refresh. |
-| **Now Playing** | Real-time display of currently playing track with album art, AI critique button, and quick actions. |
+| :--- | :--- |
+| **🎛️ Control Room** | Unified dashboard with Now Playing, metrics, and mini-charts. |
+| **🎁 Yearly Recap** | "Spotify Wrapped" style annual summary with shareable stats. |
+| **📅 Period Filters** | Instant filtering: Today, Week, Month, Year, All Time. |
+| **▶️ Now Playing** | Real-time player with AI critique and quick actions. |
 
 
 
@@ -179,14 +179,14 @@ Beat Scrobble offers **15+ interactive visualizations** to explore your listenin
 ### 🎨 Premium UI & Customization
 
 | Feature | Description |
-|---------|-------------|
-| **Mobile-First** | Optimized bottom nav, responsive layouts |
-| **32+ Aura Styles** | Dynamic visual effects behind cards |
-| **Auto Day/Night** | Time-based automatic theme switching |
-| **Custom Colors** | Personalize 10 UI elements |
-| **Custom Backgrounds** | Upload images or looping videos |
-| **Profile Images** | Personal profile pictures |
-| **Glassmorphism** | Modern glass card aesthetics |
+| :--- | :--- |
+| **📱 Mobile-First** | Optimized bottom nav and responsive layouts for any device |
+| **✨ Aura Styles** | 32+ dynamic visual effects and gradients behind cards |
+| **🌗 Auto Theme** | Smart time-based automatic Day/Night theme switching |
+| **🎨 Custom Colors** | Granular control over 10+ UI color elements |
+| **🖼️ Backgrounds** | Support for custom uploaded images or looping video backgrounds |
+| **👤 Profile Images** | Personalized profile pictures for social identity |
+| **💎 Glassmorphism** | Modern, sleek glass card aesthetics with blur effects |
 
 ### Built-in Themes
 Midnight, Snow, Ocean, Forest, Sunset, Neon, Retro, Minimal, and more...
@@ -198,13 +198,13 @@ Midnight, Snow, Ocean, Forest, Sunset, Neon, Retro, Minimal, and more...
 Enrich your library with comprehensive Spotify metadata.
 
 | Feature | Description |
-|---------|-------------|
-| **Artist Metadata** | Genres, popularity, followers, bio |
-| **Album Metadata** | Genres, popularity, release date, label |
-| **Track Metadata** | Popularity, BPM, Key, Energy, Danceability, Mood, Acousticness, Instrumentalness, Speechiness, Liveness |
-| **Audio Features Grid** | Visual display on track pages showing all audio features |
-| **Bulk Fetch Terminal** | SSE-powered progress updates with batch processing |
-| **Metadata Export/Import** | Independent backup of all Spotify metadata (separate from main backup) |
+| :--- | :--- |
+| **🎤 Artist Metadata** | Genres, popularity scores, follower counts, and bio |
+| **💿 Album Metadata** | Genres, popularity, release details, and record labels |
+| **🎼 Track Metadata** | BPM, Key, Energy, Danceability, Mood, Acousticness, etc. |
+| **🎚️ Audio Grid** | Visual breakdown of track features on every track page |
+| **📡 Fetch Terminal** | Real-time SSE-powered bulk metadata fetching terminal |
+| **💾 Import/Export** | Independent backup/restore for your Spotify metadata mapping |
 
 **Data Display:**
 - **Artist Page**: Genres badges, popularity %, followers count, bio
@@ -216,6 +216,7 @@ Enrich your library with comprehensive Spotify metadata.
 - **Background (Stealth):** Spawns a silent worker to process the *entire library* (pages 2+) with intelligent rate limiting (1.5s/batch) to avoid API bans.
 - **Global Notifications:** Premium UI alerts notify you when background sync completes via real-time heartbeat system.
 - **Batches:** 50 items/batch. Fallback to search for missing IDs.
+- **Auto-Search & Link:** Tracks without a Spotify ID are automatically searched and linked during metadata refresh.
 
 **Setup:**
 1. Create app at [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
@@ -250,23 +251,23 @@ Beat Scrobble is engineered for speed with millions of scrobbles:
 
 ### Backend Optimizations
 | Optimization | Impact |
-|--------------|--------|
-| **Materialized Views** | Pre-aggregated daily/monthly/yearly stats |
-| **Full-Text Search** | tsvector with triggers for instant search |
-| **Compound Indexes** | `(user_id, listened_at)` for fast queries |
-| **User Isolation** | All queries filtered by `user_id` |
-| **Gzip Compression** | 10x smaller API responses |
-| **Connection Pooling** | Tuned pgx pool settings |
-| **Background Workers** | Async imports via Go channels |
+| :--- | :--- |
+| **📦 Materialized Views** | Pre-aggregated stats for instant reporting |
+| **🔍 Full-Text Search** | tsvector w/ triggers for <10ms search results |
+| **⚡ Compound Indexes** | Optimized `(user_id, listened_at)` lookups |
+| **🛡️ User Isolation** | Row-level security logic via `user_id` filters |
+| **🗜️ Gzip Compression** | 10x smaller API JSON payloads |
+| **🎱 Connection Pooling** | Tuned pgx pool for high-concurrency |
+| **🧵 Async Workers** | Go channels for non-blocking background imports |
 
 ### Frontend Optimizations
 | Optimization | Impact |
-|--------------|--------|
-| **Virtualization** | Only visible list items rendered |
-| **Code Splitting** | React.lazy for heavy routes |
-| **Optimistic Updates** | Instant UI feedback |
-| **Persistent Cache** | TanStack Query to localStorage |
-| **Lazy Images** | Load on viewport entry |
+| :--- | :--- |
+| **🚄 Virtualization** | Efficient rendering of massive lists (10k+ items) |
+| **✂️ Code Splitting** | `React.lazy` implementation for fast initial load |
+| **⚡ Optimistic UI** | Instant feedback before server confirmation |
+| **💾 Persistent Cache** | TanStack Query syncing to localStorage |
+| **🖼️ Lazy Images** | IntersectionObserver for viewport-only loading |
 
 ### Docker Image
 - **Alpine-based** - ~50MB (vs 500MB+ with Debian)
@@ -280,13 +281,13 @@ Beat Scrobble is engineered for speed with millions of scrobbles:
 ### Environment Variables
 
 | Variable | Description | Default |
-|----------|-------------|---------|
-| `BEAT_SCROBBLE_DATABASE_URL` | PostgreSQL connection | Required |
-| `BEAT_SCROBBLE_ALLOWED_HOSTS` | Allowed hosts (comma-sep) | `localhost` |
-| `BEAT_SCROBBLE_PORT` | Server port | `4110` |
-| `OPENAI_API_KEY` | OpenRouter API key | - |
-| `SPOTIFY_CLIENT_ID` | Spotify app ID | - |
-| `SPOTIFY_CLIENT_SECRET` | Spotify app secret | - |
+| :--- | :--- | :--- |
+| `BEAT_SCROBBLE_DATABASE_URL` | PostgreSQL connection string | **Required** |
+| `BEAT_SCROBBLE_ALLOWED_HOSTS` | Comma-separated allowed hosts | `localhost` |
+| `BEAT_SCROBBLE_PORT` | Application server port | `4110` |
+| `OPENAI_API_KEY` | Key for AI features (OpenRouter) | `-` |
+| `SPOTIFY_CLIENT_ID` | Spotify application Client ID | `-` |
+| `SPOTIFY_CLIENT_SECRET` | Spotify application Client Secret | `-` |
 
 ---
 
@@ -302,12 +303,12 @@ Beat Scrobble is engineered for speed with millions of scrobbles:
 Beat Scrobble implements intelligent server-side caching to minimize API calls:
 
 | Feature | Refresh Interval | Condition |
-|---------|------------------|-----------|
-| **Now Playing Critique** | Forever | Only generates when you're viewing the app |
-| **Profile (Day)** | 4 hours | Only if new listens |
-| **Profile (Week)** | 3 days | Only if new listens |
-| **Profile (Month/Year/All)** | 7 days | Only if new listens |
-| **AI Playlists** | 7 days | Or manual regenerate |
+| :--- | :---: | :--- |
+| **📝 Now Playing** | Forever | Generated once per track, cached indefinitely |
+| **👤 Profile (Day)** | 4 hours | Updates only if new listens occur |
+| **👤 Profile (Week)** | 3 days | Updates only if new listens occur |
+| **👤 Profile (Long)** | 7 days | Updates only if new listens occur |
+| **🎶 AI Playlists** | 7 days | Regenerates weekly or on manual request |
 
 **Smart Features:**
 - ✅ **Presence Detection** - Critiques only generated when app is open (heartbeat every 20 sec)
@@ -323,12 +324,12 @@ Beat Scrobble implements intelligent server-side caching to minimize API calls:
 ### Supported Formats
 
 | Source | Format |
-|--------|--------|
-| Beat Scrobble | v1 (Legacy) & v2 (Full) |
-| Last.fm | CSV export |
-| ListenBrainz | JSON export |
-| Maloja | Native backup |
-| Spotify | Extended streaming history |
+| :--- | :--- |
+| **Beat Scrobble** | v1 (Legacy) & v2 (Full Backup) |
+| **Last.fm** | Official CSV Export |
+| **ListenBrainz** | Official JSON Export |
+| **Maloja** | Native JSON Backup |
+| **Spotify** | Extended Streaming History (JSON) |
 
 ### How to Import
 1. Go to **Settings → Backup**
@@ -344,51 +345,51 @@ Beat Scrobble implements intelligent server-side caching to minimize API calls:
 
 ### Public Endpoints
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/apis/web/v1/config` | Server config |
-| `GET` | `/apis/web/v1/health` | Health check |
-| `GET` | `/apis/web/v1/public/profile/{username}` | Public profile |
+| :--- | :--- | :--- |
+| **`GET`** | `/apis/web/v1/config` | Public server configuration |
+| **`GET`** | `/apis/web/v1/health` | Service health check status |
+| **`GET`** | `/apis/web/v1/public/profile/{username}` | Public user profile data |
 
 ### Authenticated
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/apis/web/v1/top-tracks` | Top tracks |
-| `GET` | `/apis/web/v1/top-albums` | Top albums |
-| `GET` | `/apis/web/v1/top-artists` | Top artists |
-| `GET` | `/apis/web/v1/listens` | Recent listens |
-| `GET` | `/apis/web/v1/stats` | User stats |
-| `GET` | `/apis/web/v1/yearly-recap` | Yearly summary |
+| :--- | :--- | :--- |
+| **`GET`** | `/apis/web/v1/top-tracks` | User's top tracks (time-boxed) |
+| **`GET`** | `/apis/web/v1/top-albums` | User's top albums (time-boxed) |
+| **`GET`** | `/apis/web/v1/top-artists` | User's top artists (time-boxed) |
+| **`GET`** | `/apis/web/v1/listens` | Recent listening history |
+| **`GET`** | `/apis/web/v1/stats` | Aggregated user statistics |
+| **`GET`** | `/apis/web/v1/yearly-recap` | Annual "Wrapped" summary data |
 
 ### AI
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/apis/web/v1/ai/critique` | Track critique |
-| `POST` | `/apis/web/v1/ai/profile-critique` | Profile analysis |
-| `POST` | `/apis/web/v1/ai/generate-playlist` | AI playlist |
-| `POST` | `/apis/web/v1/ai/clear-cache` | Clear all AI caches |
-| `GET` | `/apis/web/v1/ai/cache/export` | Export AI cache |
-| `POST` | `/apis/web/v1/ai/cache/import` | Import AI cache |
+| :--- | :--- | :--- |
+| **`POST`** | `/apis/web/v1/ai/critique` | Generate critique for a track |
+| **`POST`** | `/apis/web/v1/ai/profile-critique` | Generate profile personality analysis |
+| **`POST`** | `/apis/web/v1/ai/generate-playlist` | Create AI-curated playlist |
+| **`POST`** | `/apis/web/v1/ai/clear-cache` | Invalidate all AI caches |
+| **`GET`** | `/apis/web/v1/ai/cache/export` | Export AI cache database |
+| **`POST`** | `/apis/web/v1/ai/cache/import` | Import AI cache database |
 
 ### Spotify
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/apis/web/v1/spotify/configured` | Check if Spotify is configured |
-| `GET` | `/apis/web/v1/spotify/search` | Search Spotify catalog |
-| `POST` | `/apis/web/v1/spotify/fetch-metadata` | Fetch metadata for single item |
-| `GET` | `/apis/web/v1/spotify/bulk-fetch-sse` | SSE stream for bulk metadata fetch |
-| `GET` | `/apis/web/v1/spotify/export-metadata` | Export all Spotify metadata to JSON |
-| `POST` | `/apis/web/v1/spotify/import-metadata` | Import Spotify metadata from JSON |
+| :--- | :--- | :--- |
+| **`GET`** | `/apis/web/v1/spotify/configured` | Verify Spotify credentials status |
+| **`GET`** | `/apis/web/v1/spotify/search` | Search Spotify catalog |
+| **`POST`** | `/apis/web/v1/spotify/fetch-metadata` | Fetch/Update metadata for single item |
+| **`GET`** | `/apis/web/v1/spotify/bulk-fetch-sse` | SSE stream for bulk metadata fetch |
+| **`GET`** | `/apis/web/v1/spotify/export-metadata` | Export Spotify mappings to JSON |
+| **`POST`** | `/apis/web/v1/spotify/import-metadata` | Import Spotify mappings from JSON |
 
 ### Presence (for smart caching)
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/apis/web/v1/presence/ping` | Heartbeat (auto-called every 20s) |
+| :--- | :--- | :--- |
+| **`POST`** | `/apis/web/v1/presence/ping` | Client heartbeat (every 20s) |
 
 ### ListenBrainz Compatible
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/apis/listenbrainz/1/submit-listens` | Submit scrobbles |
-| `GET` | `/apis/listenbrainz/1/validate-token` | Validate token |
+| :--- | :--- | :--- |
+| **`POST`** | `/apis/listenbrainz/1/submit-listens` | Submit new scrobbles (LB API) |
+| **`GET`** | `/apis/listenbrainz/1/validate-token` | Verify user token validity |
 
 </details>
 

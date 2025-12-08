@@ -26,6 +26,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 export default function Track() {
   const { track, album } = useLoaderData();
   const [period, setPeriod] = useState("week");
+  const [refreshing, setRefreshing] = useState(false);
 
   return (
     <MediaLayout
@@ -37,6 +38,7 @@ export default function Track() {
       imgItemId={track.album_id}
       spotifyId={track.spotify_id}
       mergeFunc={mergeTracks}
+      refreshing={refreshing}
       mergeCleanerFunc={(r, id) => {
         r.albums = [];
         r.artists = [];
@@ -68,7 +70,7 @@ export default function Track() {
           }
 
           {/* Spotify Audio Features */}
-          {track.tempo > 0 && (
+          {(track.tempo > 0 || track.spotify_id) && (
             <div className="w-full mt-4 p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
               <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] uppercase tracking-wider mb-3 flex items-center gap-2">
                 <span className="text-green-500">♫</span> Audio Features
@@ -78,30 +80,30 @@ export default function Track() {
               </h4>
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                  <div className="text-lg font-bold text-[var(--color-primary)]">{Math.round(track.tempo)}</div>
+                  <div className="text-lg font-bold text-[var(--color-primary)]">{track.tempo ? Math.round(track.tempo) : "-"}</div>
                   <div className="text-[10px] text-[var(--color-fg-secondary)]">BPM</div>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
                   <div className="text-lg font-bold text-[var(--color-accent)]">
-                    {["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"][track.key] || "?"}
-                    {track.mode === 1 ? "" : "m"}
+                    {typeof track.key === 'number' ? (["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"][track.key] || "?") : "-"}
+                    {track.mode === 1 ? "" : track.mode === 0 ? "m" : ""}
                   </div>
                   <div className="text-[10px] text-[var(--color-fg-secondary)]">Key</div>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                  <div className="text-lg font-bold text-yellow-500">{Math.round(track.energy * 100)}%</div>
+                  <div className="text-lg font-bold text-yellow-500">{track.energy ? Math.round(track.energy * 100) : "0"}%</div>
                   <div className="text-[10px] text-[var(--color-fg-secondary)]">Energy</div>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                  <div className="text-lg font-bold text-pink-500">{Math.round(track.danceability * 100)}%</div>
+                  <div className="text-lg font-bold text-pink-500">{track.danceability ? Math.round(track.danceability * 100) : "0"}%</div>
                   <div className="text-[10px] text-[var(--color-fg-secondary)]">Dance</div>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                  <div className="text-lg font-bold text-blue-500">{Math.round(track.valence * 100)}%</div>
+                  <div className="text-lg font-bold text-blue-500">{track.valence ? Math.round(track.valence * 100) : "0"}%</div>
                   <div className="text-[10px] text-[var(--color-fg-secondary)]">Mood</div>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                  <div className="text-lg font-bold text-orange-500">{Math.round(track.acousticness * 100)}%</div>
+                  <div className="text-lg font-bold text-orange-500">{track.acousticness ? Math.round(track.acousticness * 100) : "0"}%</div>
                   <div className="text-[10px] text-[var(--color-fg-secondary)]">Acoustic</div>
                 </div>
                 {track.instrumentalness > 0.1 && (
@@ -145,12 +147,14 @@ export default function Track() {
         </div>
       }
       onRefreshMetadata={async () => {
-          try {
-            await fetchSpotifyMetadata(track.id, "track", track.spotify_id);
-            window.location.reload();
-          } catch (e) {
-            alert("Failed to refresh: " + (e instanceof Error ? e.message : String(e)));
-          }
+        setRefreshing(true);
+        try {
+          await fetchSpotifyMetadata(track.id, "track", track.spotify_id);
+          window.location.reload();
+        } catch (e) {
+          setRefreshing(false);
+          alert("Failed to refresh: " + (e instanceof Error ? e.message : String(e)));
+        }
       }}
 
     >

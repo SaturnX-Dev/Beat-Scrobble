@@ -373,9 +373,69 @@ func SpotifyFetchMetadataHandler(store db.DB) http.HandlerFunc {
 			}
 
 		case "track":
-			if spotifyID == "" {
-				utils.WriteError(w, "spotify_id is required", http.StatusBadRequest)
-				return
+			// If we don't have an ID, we try to find it first
+			if spotifyID == "" || spotifyID == "undefined" {
+				l.Info().Msg("SpotifyID missing for track, attempting to search...")
+
+				// 1. Get Track Details from DB
+				track, err := store.GetTrack(ctx, db.GetTrackOpts{
+					ID:     int32(id),
+					UserID: user.ID,
+				})
+				if err != nil {
+					l.Error().Err(err).Msg("Failed to get track from DB")
+					utils.WriteError(w, "track not found", http.StatusNotFound)
+					return
+				}
+
+				// 2. Search Spotify
+				var query string
+				// If we have artist IDs, we should ideally fetch the artist name too,
+				// but for now, let's use the track title and hope for the best or fetch artists.
+				// Actually, GetTrack returns *models.Track which should have Artists populated if the query does it.
+				// Let's check models.Track definition or just fetch artists.
+
+				artists, err := store.GetArtistsForTrack(ctx, int32(id))
+				if err == nil && len(artists) > 0 {
+					query = fmt.Sprintf("track:%s artist:%s", track.Title, artists[0].Name)
+				} else {
+					query = fmt.Sprintf("track:%s", track.Title)
+				}
+
+				l.Debug().Str("query", query).Msg("Searching Spotify for track")
+
+				searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=track&limit=1", url.QueryEscape(query))
+				req, _ := http.NewRequest("GET", searchURL, nil)
+				req.Header.Set("Authorization", "Bearer "+token)
+				respSearch, err := httpClient.Do(req)
+				if err != nil {
+					l.Error().Err(err).Msg("Spotify search failed")
+					utils.WriteError(w, "spotify search failed", http.StatusInternalServerError)
+					return
+				}
+				defer respSearch.Body.Close()
+
+				var searchResp struct {
+					Tracks struct {
+						Items []struct {
+							ID string `json:"id"`
+						} `json:"items"`
+					} `json:"tracks"`
+				}
+				if err := json.NewDecoder(respSearch.Body).Decode(&searchResp); err != nil {
+					l.Error().Err(err).Msg("Failed to decode search response")
+					utils.WriteError(w, "spotify search response error", http.StatusInternalServerError)
+					return
+				}
+
+				if len(searchResp.Tracks.Items) == 0 {
+					l.Warn().Str("track", track.Title).Msg("No match found on Spotify")
+					utils.WriteError(w, "track not found on spotify", http.StatusNotFound)
+					return
+				}
+
+				spotifyID = searchResp.Tracks.Items[0].ID
+				l.Info().Str("title", track.Title).Str("new_id", spotifyID).Msg("Found Spotify ID for track")
 			}
 
 			// 1. Fetch Track Details
