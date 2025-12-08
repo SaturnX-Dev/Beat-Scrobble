@@ -398,6 +398,18 @@ type Track = {
   album?: string;
   popularity?: number;
   spotify_id?: string;
+  // Audio Features from Spotify
+  danceability?: number;
+  energy?: number;
+  key?: number;
+  loudness?: number;
+  mode?: number;
+  speechiness?: number;
+  acousticness?: number;
+  instrumentalness?: number;
+  liveness?: number;
+  valence?: number;
+  tempo?: number;
 };
 type Artist = {
   id: number;
@@ -413,6 +425,7 @@ type Artist = {
   bio?: string;
   popularity?: number;
   spotify_id?: string;
+  followers?: number;
 };
 type Album = {
   id: number;
@@ -428,6 +441,7 @@ type Album = {
   release_date?: string;
   popularity?: number;
   spotify_id?: string;
+  label?: string;
 };
 type Alias = {
   id: number;

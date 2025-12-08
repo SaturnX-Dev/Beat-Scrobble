@@ -187,6 +187,9 @@ export default function Artist() {
           {showMetadata && artist.popularity !== undefined && artist.popularity !== null && (
             <div className="mt-2 text-xs text-[var(--color-fg-tertiary)]">
               Popularity: {artist.popularity}%
+              {artist.followers !== undefined && artist.followers > 0 && (
+                <span className="ml-2">· {artist.followers.toLocaleString()} followers</span>
+              )}
             </div>
           )}
 

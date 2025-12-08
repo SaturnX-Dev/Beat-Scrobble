@@ -107,6 +107,7 @@ export default function Album() {
           {showMetadata && album.popularity !== undefined && (
             <p className="text-xs text-[var(--color-fg-tertiary)]">
               Popularity: {album.popularity}%
+              {album.label && <span className="ml-2">· {album.label}</span>}
             </p>
           )}
         </div>

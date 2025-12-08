@@ -72,8 +72,11 @@ export default function Track() {
             <div className="w-full mt-4 p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
               <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] uppercase tracking-wider mb-3 flex items-center gap-2">
                 <span className="text-green-500">♫</span> Audio Features
+                {track.popularity !== undefined && track.popularity > 0 && (
+                  <span className="text-[var(--color-fg-tertiary)] font-normal ml-auto">{track.popularity}% popularity</span>
+                )}
               </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
                   <div className="text-lg font-bold text-[var(--color-primary)]">{Math.round(track.tempo)}</div>
                   <div className="text-[10px] text-[var(--color-fg-secondary)]">BPM</div>
@@ -91,7 +94,7 @@ export default function Track() {
                 </div>
                 <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
                   <div className="text-lg font-bold text-pink-500">{Math.round(track.danceability * 100)}%</div>
-                  <div className="text-[10px] text-[var(--color-fg-secondary)]">Danceability</div>
+                  <div className="text-[10px] text-[var(--color-fg-secondary)]">Dance</div>
                 </div>
                 <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
                   <div className="text-lg font-bold text-blue-500">{Math.round(track.valence * 100)}%</div>
@@ -101,6 +104,24 @@ export default function Track() {
                   <div className="text-lg font-bold text-orange-500">{Math.round(track.acousticness * 100)}%</div>
                   <div className="text-[10px] text-[var(--color-fg-secondary)]">Acoustic</div>
                 </div>
+                {track.instrumentalness > 0.1 && (
+                  <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
+                    <div className="text-lg font-bold text-purple-500">{Math.round(track.instrumentalness * 100)}%</div>
+                    <div className="text-[10px] text-[var(--color-fg-secondary)]">Instrumental</div>
+                  </div>
+                )}
+                {track.speechiness > 0.1 && (
+                  <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
+                    <div className="text-lg font-bold text-teal-500">{Math.round(track.speechiness * 100)}%</div>
+                    <div className="text-[10px] text-[var(--color-fg-secondary)]">Speech</div>
+                  </div>
+                )}
+                {track.liveness > 0.3 && (
+                  <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
+                    <div className="text-lg font-bold text-red-500">{Math.round(track.liveness * 100)}%</div>
+                    <div className="text-[10px] text-[var(--color-fg-secondary)]">Live</div>
+                  </div>
+                )}
               </div>
             </div>
           )}
