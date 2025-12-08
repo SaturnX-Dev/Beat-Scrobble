@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router";
-import { mergeTracks, type Album, type Track } from "api/api";
+import { mergeTracks, fetchSpotifyMetadata, type Album, type Track } from "api/api";
 import LastPlays from "~/components/LastPlays";
 import PeriodSelector from "~/components/PeriodSelector";
 import MediaLayout from "./MediaLayout";
@@ -141,6 +141,22 @@ export default function Track() {
             >
               View Album
             </Link>
+            <button
+              onClick={async () => {
+                if (confirm("Refresh metadata from Spotify?")) {
+                  try {
+                    await fetchSpotifyMetadata(track.id, "track", track.spotify_id);
+                    window.location.reload();
+                  } catch (e) {
+                    alert("Failed to refresh: " + (e instanceof Error ? e.message : String(e)));
+                  }
+                }
+              }}
+              className="px-4 py-2 bg-transparent border border-[var(--color-fg-tertiary)] text-[var(--color-fg-secondary)] rounded-lg hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-fg)] transition-smooth text-sm font-medium flex items-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" /><path d="M16 21h5v-5" /></svg>
+              Refresh
+            </button>
           </div>
         </div>
       }

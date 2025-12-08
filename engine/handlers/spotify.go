@@ -788,7 +788,16 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 					default:
 					}
 
-					searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=album&limit=1", url.QueryEscape(album.Title))
+					// Improved Search Query: album:{name} artist:{artist}
+					var query string
+					if len(album.Artists) > 0 {
+						// Clean artist name (remove "feat." etc if necessary, but Spotify handles it well usually)
+						query = fmt.Sprintf("album:%s artist:%s", album.Title, album.Artists[0].Name)
+					} else {
+						query = fmt.Sprintf("album:%s", album.Title)
+					}
+
+					searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=album&limit=1", url.QueryEscape(query))
 					req, _ := http.NewRequest("GET", searchURL, nil)
 					req = req.WithContext(ctx)
 					req.Header.Set("Authorization", "Bearer "+token)
@@ -930,7 +939,15 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 					default:
 					}
 
-					searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=track&limit=1", url.QueryEscape(track.Title))
+					// Improved Search Query: track:{title} artist:{artist}
+					var query string
+					if len(track.Artists) > 0 {
+						query = fmt.Sprintf("track:%s artist:%s", track.Title, track.Artists[0].Name)
+					} else {
+						query = fmt.Sprintf("track:%s", track.Title)
+					}
+
+					searchURL := fmt.Sprintf("https://api.spotify.com/v1/search?q=%s&type=track&limit=1", url.QueryEscape(query))
 					req, _ := http.NewRequest("GET", searchURL, nil)
 					req = req.WithContext(ctx)
 					req.Header.Set("Authorization", "Bearer "+token)

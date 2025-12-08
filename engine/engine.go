@@ -15,7 +15,6 @@ import (
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/worker"
-	"github.com/SaturnX-Dev/Beat-Scrobble/internal/catalog"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db/psql"
@@ -206,8 +205,8 @@ func Run(
 	// 	}
 	// }()
 
-	l.Info().Msg("Engine: Pruning orphaned images")
-	go catalog.PruneOrphanedImages(logger.NewContext(l), store)
+	// l.Info().Msg("Engine: Pruning orphaned images")
+	// go catalog.PruneOrphanedImages(logger.NewContext(l), store)
 
 	l.Info().Msg("Engine: Initialization finished")
 	quit := make(chan os.Signal, 1)
