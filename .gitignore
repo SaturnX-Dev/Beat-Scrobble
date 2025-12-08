@@ -11,23 +11,10 @@ run.sh
 # Roadmap interno
 BEAT_SCROBBLE_ROADMAP.md
 
-# Binarios
-*.exe
-*.dll
-*.so
-*.dylib
-api
-app
-
-# IDE
-.idea/
-*.swp
-*.swo
 
 # Archivos de configuración local
 .env
 .env.local
-*.local
 
 # Logs y cache
 *.log
