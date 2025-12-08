@@ -6,7 +6,7 @@ pgdata/
 # Archivos de desarrollo personal (no para usuarios)
 docker-compose.dev.yml
 docker-compose.prod.yml
-run.sh is kept for development but not pushed
+run.sh
 
 # Roadmap interno
 BEAT_SCROBBLE_ROADMAP.md
