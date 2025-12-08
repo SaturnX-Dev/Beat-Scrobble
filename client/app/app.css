@@ -438,11 +438,6 @@ body {
   touch-action: manipulation;
 }
 
-/* Prevent horizontal overflow globally */
-* {
-  max-width: 100%;
-}
-
 main {
   overflow-x: hidden;
   max-width: 100vw;
@@ -886,8 +881,8 @@ button.default:hover {
     height: 2rem;
   }
 
-  /* Smaller buttons */
-  button {
+  /* Smaller buttons - exclude mobile navbar buttons */
+  button:not(.mobile-nav-button) {
     font-size: 0.75rem;
     padding: 0.375rem 0.5rem;
   }
@@ -972,7 +967,7 @@ button.default:hover {
     padding: 0.5rem;
   }
 
-  button {
+  button:not(.mobile-nav-button) {
     font-size: 0.75rem;
     padding: 0.375rem 0.5rem;
   }

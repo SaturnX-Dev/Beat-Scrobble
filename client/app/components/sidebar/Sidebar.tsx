@@ -71,8 +71,6 @@ export default function Sidebar() {
                     <SidebarSettings onClick={() => setSettingsOpen(true)} />
                 </div>
             </div>
-
-            {/* Desktop Sidebar - Vertical Left */}
         </>
     );
 }

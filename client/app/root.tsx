@@ -111,9 +111,9 @@ export default function App() {
           >
             <SpotifyProvider>
               <GlobalBackground />
+              <MobileNavBar />
               <div className="flex-col flex sm:flex-row min-h-screen relative z-10">
                 <Sidebar />
-                <MobileNavBar />
                 <div className="flex flex-col items-center mx-auto w-full ml-0 pb-20 sm:pb-0 sm:ml-20 transition-all duration-300">
                   <Outlet />
                 </div>

@@ -56,10 +56,10 @@ export default function YearlyRecapModal({ open, setOpen, year }: Props) {
         enabled: open,
     });
 
-    // Auto-advance steps for animation effect
+    // Auto-advance steps for animation effect (20 seconds per slide)
     useEffect(() => {
         if (open && recapData && step < 5) {
-            const timer = setTimeout(() => setStep(s => s + 1), 800);
+            const timer = setTimeout(() => setStep(s => s + 1), 20000);
             return () => clearTimeout(timer);
         }
     }, [open, recapData, step]);
