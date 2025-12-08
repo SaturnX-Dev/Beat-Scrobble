@@ -1073,6 +1073,9 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 			}
 
 			send("complete", map[string]interface{}{"success": true, "processed": processed, "failed": failed})
+
+			// Start background fetch for the rest of the library (Pages 2+)
+			StartFullLibraryFetch(ctx, store, user)
 		}()
 
 		// Consumer Loop: Write to SSE stream

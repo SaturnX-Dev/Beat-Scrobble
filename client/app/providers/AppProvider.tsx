@@ -1,6 +1,7 @@
 // NOTE: React 17+ no requiere `import React from 'react'` para JSX.
 import { getCfg, type User } from "api/api";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import NotificationModal from "app/components/modals/NotificationModal";
 
 interface AppContextType {
   user: User | null | undefined;
@@ -31,6 +32,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     useState<boolean>(false);
   const [homeItems, setHomeItems] = useState<number>(0);
 
+  const [notification, setNotification] = useState<{ type: "success" | "error" | "info"; title: string; message: string } | null>(null);
+
   const setUsername = (value: string) => {
     if (!user) {
       return;
@@ -57,6 +60,25 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         setDefaultTheme("yuu");
       }
     });
+
+    // Heartbeat Polling for Notifications
+    const interval = setInterval(() => {
+      fetch("/apis/web/v1/presence/ping", { method: "POST" })
+        .then(r => r.json())
+        .then(data => {
+          if (data.notifications && data.notifications.length > 0) {
+            const notif = data.notifications[0]; // Handle first one for now
+            setNotification({
+              type: notif.type === "success" ? "success" : "error",
+              title: "System Notification", // Customize based on ID ideally
+              message: notif.message
+            });
+          }
+        })
+        .catch(() => { });
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   // Block rendering the app until config is loaded
@@ -75,6 +97,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
+    <AppContext.Provider value={contextValue}>
+      {children}
+      {notification && (
+        <NotificationModal
+          type={notification.type}
+          title={notification.title}
+          message={notification.message}
+          onClose={() => setNotification(null)}
+        />
+      )}
+    </AppContext.Provider>
   );
 };

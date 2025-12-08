@@ -139,9 +139,7 @@ func bindRoutes(
 			r.Post("/spotify/import-metadata", handlers.ImportSpotifyMetadataHandler(db))
 
 			// Presence
-			r.Post("/presence/ping", func(w http.ResponseWriter, r *http.Request) {
-				w.WriteHeader(http.StatusOK)
-			})
+			r.Post("/presence/ping", handlers.PresencePingHandler(db))
 		})
 
 		// Public routes (no auth required)
