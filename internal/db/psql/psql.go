@@ -60,6 +60,10 @@ func New() (*Psql, error) {
 
 	goose.SetBaseFS(migrations.Files)
 
+	if err := goose.SetDialect("postgres"); err != nil {
+		return nil, fmt.Errorf("psql.New: failed to set goose dialect: %w", err)
+	}
+
 	if err := goose.Up(sqlDB, "."); err != nil {
 		return nil, fmt.Errorf("psql.New: goose failed: %w", err)
 	}

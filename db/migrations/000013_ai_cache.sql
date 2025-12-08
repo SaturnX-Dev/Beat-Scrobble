@@ -1,3 +1,4 @@
+-- +goose Up
 -- Migration: AI Cache System
 -- Smart caching for AI responses with change detection
 
@@ -41,3 +42,6 @@ COMMENT ON COLUMN ai_cache.cache_type IS 'Type: profile, nowplaying, playlist';
 COMMENT ON COLUMN ai_cache.prompt_hash IS 'MD5 hash of prompt for change detection';
 COMMENT ON COLUMN ai_cache.data_hash IS 'Hash of input data (stats, track info) for change detection';
 COMMENT ON TABLE user_presence IS 'Tracks active user sessions for Now Playing critique optimization';
+-- +goose Down
+DROP TABLE IF EXISTS user_presence;
+DROP TABLE IF EXISTS ai_cache;

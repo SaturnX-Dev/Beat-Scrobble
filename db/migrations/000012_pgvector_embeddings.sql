@@ -1,3 +1,4 @@
+-- +goose Up
 -- Migration: pgvector for Semantic Search
 -- Enables AI-powered "vibe-based" recommendations
 
@@ -70,6 +71,7 @@ WITH (lists = 50);
 -- ============================================
 
 -- Find similar tracks by embedding
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION find_similar_tracks(
     query_embedding vector(1536),
     limit_count INT DEFAULT 20,
@@ -87,8 +89,10 @@ BEGIN
     LIMIT limit_count;
 END;
 $$ LANGUAGE plpgsql;
+-- +goose StatementEnd
 
 -- Find similar artists by embedding
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION find_similar_artists(
     query_embedding vector(1536),
     limit_count INT DEFAULT 10
@@ -104,8 +108,10 @@ BEGIN
     LIMIT limit_count;
 END;
 $$ LANGUAGE plpgsql;
+-- +goose StatementEnd
 
 -- Find users with similar taste
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION find_similar_users(
     user_id_param INT,
     limit_count INT DEFAULT 10
@@ -132,6 +138,13 @@ BEGIN
     LIMIT limit_count;
 END;
 $$ LANGUAGE plpgsql;
+-- +goose StatementEnd
+
+-- +goose Down
+DROP TABLE IF EXISTS user_taste_embeddings;
+DROP TABLE IF EXISTS release_embeddings;
+DROP TABLE IF EXISTS artist_embeddings;
+DROP TABLE IF EXISTS track_embeddings;
 
 -- ============================================
 -- Comments

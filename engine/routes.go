@@ -33,11 +33,11 @@ func bindRoutes(
 			AllowedMethods: []string{"GET", "OPTIONS", "HEAD"},
 		}))
 	}
-	r.With(chimiddleware.RequestSize(5<<20)).
-		Get("/images/{size}/{filename}", handlers.ImageHandler(db))
-
 	// Enable Gzip compression with compression level 5 (balanced)
 	r.Use(chimiddleware.Compress(5))
+
+	r.With(chimiddleware.RequestSize(5<<20)).
+		Get("/images/{size}/{filename}", handlers.ImageHandler(db))
 
 	r.Route("/apis/web/v1", func(r chi.Router) {
 		r.Get("/config", handlers.GetCfgHandler())

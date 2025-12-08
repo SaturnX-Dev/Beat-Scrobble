@@ -1,3 +1,4 @@
+-- +goose Up
 -- Migration: Materialized Views for Dashboard Performance
 -- Creates pre-aggregated stats tables for instant dashboard loading
 
@@ -94,6 +95,7 @@ ON alltime_user_stats(user_id);
 -- ============================================
 -- Function to refresh all stats views
 -- ============================================
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION refresh_user_stats() RETURNS void AS $$
 BEGIN
     REFRESH MATERIALIZED VIEW CONCURRENTLY daily_user_stats;
@@ -102,6 +104,7 @@ BEGIN
     REFRESH MATERIALIZED VIEW CONCURRENTLY alltime_user_stats;
 END;
 $$ LANGUAGE plpgsql;
+-- +goose StatementEnd
 
 -- Comment for documentation
 COMMENT ON MATERIALIZED VIEW daily_user_stats IS 'Pre-aggregated daily listening stats per user for dashboard performance';

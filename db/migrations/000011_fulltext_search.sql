@@ -1,3 +1,4 @@
+-- +goose Up
 -- Migration: Full-Text Search Optimization
 -- Adds tsvector columns for fast fuzzy search on Artists, Albums, and Tracks
 
@@ -15,6 +16,7 @@ UPDATE artists SET search_vector = to_tsvector('simple', COALESCE(
 CREATE INDEX IF NOT EXISTS idx_artists_search ON artists USING GIN(search_vector);
 
 -- Trigger to auto-update on alias changes
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION update_artist_search_vector() RETURNS trigger AS $$
 BEGIN
     UPDATE artists 
@@ -25,6 +27,7 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+-- +goose StatementEnd
 
 DROP TRIGGER IF EXISTS trg_artist_alias_search ON artist_aliases;
 CREATE TRIGGER trg_artist_alias_search
@@ -45,6 +48,7 @@ UPDATE releases SET search_vector = to_tsvector('simple', COALESCE(
 CREATE INDEX IF NOT EXISTS idx_releases_search ON releases USING GIN(search_vector);
 
 -- Trigger
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION update_release_search_vector() RETURNS trigger AS $$
 BEGIN
     UPDATE releases 
@@ -55,6 +59,7 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+-- +goose StatementEnd
 
 DROP TRIGGER IF EXISTS trg_release_alias_search ON release_aliases;
 CREATE TRIGGER trg_release_alias_search
@@ -75,6 +80,7 @@ UPDATE tracks SET search_vector = to_tsvector('simple', COALESCE(
 CREATE INDEX IF NOT EXISTS idx_tracks_search ON tracks USING GIN(search_vector);
 
 -- Trigger
+-- +goose StatementBegin
 CREATE OR REPLACE FUNCTION update_track_search_vector() RETURNS trigger AS $$
 BEGIN
     UPDATE tracks 
@@ -85,11 +91,17 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+-- +goose StatementEnd
 
 DROP TRIGGER IF EXISTS trg_track_alias_search ON track_aliases;
 CREATE TRIGGER trg_track_alias_search
 AFTER INSERT OR UPDATE OR DELETE ON track_aliases
 FOR EACH ROW EXECUTE FUNCTION update_track_search_vector();
+
+-- +goose Down
+ALTER TABLE tracks DROP COLUMN IF EXISTS search_vector;
+ALTER TABLE releases DROP COLUMN IF EXISTS search_vector;
+ALTER TABLE artists DROP COLUMN IF EXISTS search_vector;
 
 -- ============================================
 -- Comments
