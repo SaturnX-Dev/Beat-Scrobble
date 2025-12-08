@@ -537,7 +537,7 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 
 			httpClient := &http.Client{Timeout: 10 * time.Second}
 			var processed, failed int
-			totalSteps := 300 // default
+			totalSteps := 400 // includes audio features phase
 
 			// 1. Artists
 			send("log", map[string]string{"message": "Fetching Top 100 Artists..."})
@@ -951,6 +951,105 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 					progress := float64(200+processed+failed) / float64(totalSteps) * 100
 					send("progress", map[string]interface{}{"percent": progress, "processed": processed, "failed": failed})
 					time.Sleep(150 * time.Millisecond) // Longer delay for search
+				}
+			}
+
+			// 4. Fetch Audio Features for all tracks with SpotifyID
+			send("log", map[string]string{"message": "Fetching Audio Features..."})
+
+			// Collect all track SpotifyIDs from the database
+			allTracksResp, err := store.GetTopTracksPaginated(ctx, db.GetItemsOpts{
+				Period: db.PeriodAllTime,
+				Limit:  500,
+				Page:   1,
+			})
+			if err == nil {
+				var audioFeatureIDs []string
+				var audioFeatureTracks []*models.Track
+
+				for _, track := range allTracksResp.Items {
+					if track.SpotifyID != "" && track.Tempo == 0 { // Only fetch if we don't have audio features yet
+						audioFeatureIDs = append(audioFeatureIDs, track.SpotifyID)
+						audioFeatureTracks = append(audioFeatureTracks, track)
+					}
+				}
+
+				totalAudioBatches := (len(audioFeatureIDs) + 99) / 100
+				send("log", map[string]string{"message": fmt.Sprintf("Found %d tracks needing audio features (%d batches)", len(audioFeatureIDs), totalAudioBatches)})
+
+				// Batch fetch audio features (100 at a time)
+				for i := 0; i < len(audioFeatureIDs); i += 100 {
+					select {
+					case <-ctx.Done():
+						return
+					default:
+					}
+
+					end := i + 100
+					if end > len(audioFeatureIDs) {
+						end = len(audioFeatureIDs)
+					}
+					batchIDs := audioFeatureIDs[i:end]
+					batchNum := (i / 100) + 1
+
+					send("log", map[string]string{"message": fmt.Sprintf("Audio features batch %d/%d (%d tracks)", batchNum, totalAudioBatches, len(batchIDs))})
+
+					u := "https://api.spotify.com/v1/audio-features?ids=" + strings.Join(batchIDs, ",")
+					req, _ := http.NewRequest("GET", u, nil)
+					req = req.WithContext(ctx)
+					req.Header.Set("Authorization", "Bearer "+token)
+					resp, err := httpClient.Do(req)
+
+					if err == nil && resp.StatusCode == http.StatusOK {
+						var audioResp struct {
+							AudioFeatures []struct {
+								ID               string  `json:"id"`
+								Danceability     float64 `json:"danceability"`
+								Energy           float64 `json:"energy"`
+								Key              int     `json:"key"`
+								Loudness         float64 `json:"loudness"`
+								Mode             int     `json:"mode"`
+								Speechiness      float64 `json:"speechiness"`
+								Acousticness     float64 `json:"acousticness"`
+								Instrumentalness float64 `json:"instrumentalness"`
+								Liveness         float64 `json:"liveness"`
+								Valence          float64 `json:"valence"`
+								Tempo            float64 `json:"tempo"`
+							} `json:"audio_features"`
+						}
+						if json.NewDecoder(resp.Body).Decode(&audioResp) == nil {
+							for j, af := range audioResp.AudioFeatures {
+								if af.ID == "" {
+									continue
+								}
+								targetTrack := audioFeatureTracks[i+j]
+								err = store.UpdateTrackMetadata(ctx, db.UpdateTrackMetadataParams{
+									ID:               targetTrack.ID,
+									Danceability:     pgtype.Float8{Float64: af.Danceability, Valid: true},
+									Energy:           pgtype.Float8{Float64: af.Energy, Valid: true},
+									Key:              pgtype.Int4{Int32: int32(af.Key), Valid: true},
+									Loudness:         pgtype.Float8{Float64: af.Loudness, Valid: true},
+									Mode:             pgtype.Int4{Int32: int32(af.Mode), Valid: true},
+									Speechiness:      pgtype.Float8{Float64: af.Speechiness, Valid: true},
+									Acousticness:     pgtype.Float8{Float64: af.Acousticness, Valid: true},
+									Instrumentalness: pgtype.Float8{Float64: af.Instrumentalness, Valid: true},
+									Liveness:         pgtype.Float8{Float64: af.Liveness, Valid: true},
+									Valence:          pgtype.Float8{Float64: af.Valence, Valid: true},
+									Tempo:            pgtype.Float8{Float64: af.Tempo, Valid: true},
+								})
+								if err == nil {
+									processed++
+								} else {
+									failed++
+								}
+							}
+						}
+						resp.Body.Close()
+					}
+
+					progress := float64(300+processed+failed) / float64(totalSteps) * 100
+					send("progress", map[string]interface{}{"percent": progress, "processed": processed, "failed": failed})
+					time.Sleep(200 * time.Millisecond) // Rate limit for audio features
 				}
 			}
 

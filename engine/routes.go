@@ -135,6 +135,8 @@ func bindRoutes(
 			r.Post("/spotify/fetch-metadata", handlers.SpotifyFetchMetadataHandler(db))
 
 			r.Get("/spotify/bulk-fetch-sse", handlers.SpotifyBulkFetchSSEHandler(db))
+			r.Get("/spotify/export-metadata", handlers.ExportSpotifyMetadataHandler(db))
+			r.Post("/spotify/import-metadata", handlers.ImportSpotifyMetadataHandler(db))
 
 			// Presence
 			r.Post("/presence/ping", func(w http.ResponseWriter, r *http.Request) {

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
+import { useEffect, useState, type ReactNode } from "react";
 import { average } from "color.js";
 import { imageUrl, type SearchResponse } from "api/api";
 import ImageDropHandler from "~/components/ImageDropHandler";
@@ -23,8 +24,8 @@ interface Props {
     imgItemId: number
     mergeFunc: MergeFunc
     mergeCleanerFunc: MergeSearchCleanerFunc
-    children: React.ReactNode
-    subContent: React.ReactNode
+    children: ReactNode
+    subContent: ReactNode
     onRefreshMetadata?: () => void
     refreshing?: boolean
     spotifyId?: string

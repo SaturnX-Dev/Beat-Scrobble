@@ -1,9 +1,10 @@
+// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
 import {
 	useFetcher,
 	useLocation,
 	useNavigate,
 } from "react-router"
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { average } from "color.js"
 import { imageUrl, type PaginatedResponse } from "api/api"
 import PeriodSelector from "~/components/PeriodSelector"
@@ -17,7 +18,7 @@ interface ChartLayoutProps<T> {
 		page: number
 		onNext: () => void
 		onPrev: () => void
-	}) => React.ReactNode
+	}) => ReactNode
 }
 
 export default function ChartLayout<T>({

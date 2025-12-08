@@ -13,8 +13,10 @@ type Album struct {
 	TimeListened   int64          `json:"time_listened"`
 	FirstListen    int64          `json:"first_listen"`
 	// Spotify metadata
-	Genres      []string `json:"genres,omitempty"`
-	ReleaseDate string   `json:"release_date,omitempty"`
-	Popularity  int      `json:"popularity,omitempty"`
-	SpotifyID   string   `json:"spotify_id,omitempty"`
+	Genres               []string `json:"genres,omitempty"`
+	ReleaseDate          string   `json:"release_date,omitempty"`
+	Popularity           int      `json:"popularity,omitempty"`
+	SpotifyID            string   `json:"spotify_id,omitempty"`
+	Label                string   `json:"label,omitempty"`
+	ReleaseDatePrecision string   `json:"release_date_precision,omitempty"`
 }

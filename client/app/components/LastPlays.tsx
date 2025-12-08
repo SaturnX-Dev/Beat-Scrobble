@@ -15,6 +15,7 @@ import { useAppContext } from "~/providers/AppProvider";
 import TrackRow from "./TrackRow";
 import TrackRowSkeleton from "./skeletons/TrackRowSkeleton";
 import EmptyState from "./EmptyState";
+import SwipeableListItem from "./SwipeableListItem";
 
 interface Props {
   limit: number;
@@ -129,13 +130,23 @@ export default function LastPlays(props: Props) {
           />
         ) : (
           listens.map((item) => (
-            <TrackRow
-              key={`last_listen_${item.time}`}
-              listen={item}
-              showArtist={!props.hideArtists}
-              canDelete={!!user}
-              onDelete={handleDelete}
-            />
+            user ? (
+              <SwipeableListItem
+                key={`last_listen_${item.time}`}
+                onDelete={() => handleDelete(item)}
+              >
+                <TrackRow
+                  listen={item}
+                  showArtist={!props.hideArtists}
+                />
+              </SwipeableListItem>
+            ) : (
+              <TrackRow
+                key={`last_listen_${item.time}`}
+                listen={item}
+                showArtist={!props.hideArtists}
+              />
+            )
           ))
         )}
       </div>

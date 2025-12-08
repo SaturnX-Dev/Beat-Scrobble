@@ -1,5 +1,6 @@
+// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
 import { getCfg, type User } from "api/api";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 interface AppContextType {
   user: User | null | undefined;
@@ -21,7 +22,7 @@ export const useAppContext = () => {
   return context;
 };
 
-export const AppProvider = ({ children }: { children: React.ReactNode }) => {
+export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [defaultTheme, setDefaultTheme] = useState<string | undefined>(
     undefined

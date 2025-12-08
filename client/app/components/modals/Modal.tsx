@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import ReactDOM from 'react-dom';
 import { X } from 'lucide-react';
 
@@ -12,7 +13,7 @@ export function Modal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
   maxW?: number;
   h?: number;
   className?: string;

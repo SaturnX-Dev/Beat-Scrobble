@@ -1,4 +1,5 @@
-import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
+import { useRef, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react';
 
 interface VirtualListOptions {
     itemCount: number;
@@ -113,7 +114,7 @@ export function useVirtualList({
 interface VirtualListProps<T> {
     items: T[];
     itemHeight: number;
-    renderItem: (item: T, index: number) => React.ReactNode;
+    renderItem: (item: T, index: number) => ReactNode;
     className?: string;
     overscan?: number;
 }

@@ -1,4 +1,5 @@
-import { lazy, Suspense } from 'react';
+// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
+import { lazy, Suspense, type LazyExoticComponent, type ComponentType, type ReactNode } from 'react';
 
 // Lazy-loaded route components for code splitting
 // These routes are heavier and don't need to be in the initial bundle
@@ -34,8 +35,8 @@ export function RouteLoadingFallback() {
 
 // Wrapper for lazy routes with Suspense
 export function withSuspense<P extends object>(
-    LazyComponent: React.LazyExoticComponent<React.ComponentType<P>>,
-    fallback: React.ReactNode = <RouteLoadingFallback />
+    LazyComponent: LazyExoticComponent<ComponentType<P>>,
+    fallback: ReactNode = <RouteLoadingFallback />
 ) {
     return function SuspenseWrapper(props: P) {
         return (

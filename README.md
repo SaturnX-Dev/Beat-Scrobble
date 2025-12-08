@@ -195,16 +195,33 @@ Midnight, Snow, Ocean, Forest, Sunset, Neon, Retro, Minimal, and more...
 
 ### 🎵 Spotify Integration
 
+Enrich your library with comprehensive Spotify metadata.
+
 | Feature | Description |
 |---------|-------------|
-| **Metadata Fetching** | Genres, popularity, release dates |
-| **Audio Features** | BPM, Key, Energy, Danceability, Mood |
-| **Image Search** | Replace album/artist images from Spotify |
-| **Bulk Fetch** | SSE-powered progress updates |
+| **Artist Metadata** | Genres, popularity, followers, bio |
+| **Album Metadata** | Genres, popularity, release date, label |
+| **Track Metadata** | Popularity, BPM, Key, Energy, Danceability, Mood, Acousticness, Instrumentalness, Speechiness, Liveness |
+| **Audio Features Grid** | Visual display on track pages showing all audio features |
+| **Bulk Fetch Terminal** | SSE-powered progress updates with batch processing |
+| **Metadata Export/Import** | Independent backup of all Spotify metadata (separate from main backup) |
+
+**Data Display:**
+- **Artist Page**: Genres badges, popularity %, followers count, bio
+- **Album Page**: Genres badges, popularity %, release date, label
+- **Track Page**: Audio features grid showing BPM, Key, Energy, Danceability, Mood, Acoustic, Instrumental, Speech, Live
+
+**Bulk Fetch Optimization:**
+- Artists: Batches of 50 via `/artists?ids=`
+- Albums: Batches of 20 via `/albums?ids=`
+- Tracks: Batches of 50 via `/tracks?ids=`
+- Fallback: Individual search queries for items without Spotify ID
 
 **Setup:**
 1. Create app at [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
-2. Enter Client ID & Secret in Settings → Spotify
+2. Enter Client ID & Secret in Settings → APIs → Spotify
+3. Click "Open Fetch Terminal" for bulk metadata fetch
+4. Use "Import/Export Metadata" section to backup/restore metadata
 
 ---
 
@@ -351,6 +368,16 @@ Beat Scrobble implements intelligent server-side caching to minimize API calls:
 | `POST` | `/apis/web/v1/ai/clear-cache` | Clear all AI caches |
 | `GET` | `/apis/web/v1/ai/cache/export` | Export AI cache |
 | `POST` | `/apis/web/v1/ai/cache/import` | Import AI cache |
+
+### Spotify
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/apis/web/v1/spotify/configured` | Check if Spotify is configured |
+| `GET` | `/apis/web/v1/spotify/search` | Search Spotify catalog |
+| `POST` | `/apis/web/v1/spotify/fetch-metadata` | Fetch metadata for single item |
+| `GET` | `/apis/web/v1/spotify/bulk-fetch-sse` | SSE stream for bulk metadata fetch |
+| `GET` | `/apis/web/v1/spotify/export-metadata` | Export all Spotify metadata to JSON |
+| `POST` | `/apis/web/v1/spotify/import-metadata` | Import Spotify metadata from JSON |
 
 ### Presence (for smart caching)
 | Method | Endpoint | Description |

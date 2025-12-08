@@ -2,36 +2,16 @@ import { Link } from "react-router";
 import { type Listen, type Track } from "api/api";
 import { timeSince } from "~/utils/utils";
 import ArtistLinks from "./ArtistLinks";
-import { Trash2 } from "lucide-react";
 import CardAura from "./CardAura";
 
 interface Props {
     listen: Listen;
     showArtist?: boolean;
-    onDelete?: (listen: Listen) => void;
-    canDelete?: boolean;
 }
 
-export default function TrackRow({ listen, showArtist = true, onDelete, canDelete = false }: Props) {
+export default function TrackRow({ listen, showArtist = true }: Props) {
     return (
         <div className="group relative flex items-center gap-4 p-3 rounded-xl border border-transparent hover:border-[var(--color-bg-tertiary)]/50 hover:bg-[var(--color-bg-secondary)]/40 transition-all duration-200 hover:scale-[1.005] hover:shadow-sm">
-
-            {/* Delete Action (Left) */}
-            <div className="w-[18px] flex justify-center">
-                {canDelete && onDelete && (
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onDelete(listen);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 transition-all duration-200 text-[var(--color-fg-tertiary)] hover:text-[var(--color-error)] hover:scale-110 p-1 rounded-full hover:bg-[var(--color-error)]/10"
-                        aria-label="Delete scrobble"
-                        title="Delete this scrobble"
-                    >
-                        <Trash2 size={14} />
-                    </button>
-                )}
-            </div>
 
             {/* Time */}
             <div className="text-xs text-[var(--color-fg-tertiary)] whitespace-nowrap min-w-[60px]" title={new Date(listen.time).toLocaleString()}>
@@ -60,3 +40,4 @@ export default function TrackRow({ listen, showArtist = true, onDelete, canDelet
         </div>
     );
 }
+

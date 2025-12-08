@@ -1,8 +1,9 @@
-import React, { type PropsWithChildren, useEffect, useState, useRef } from 'react';
+// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
+import { type PropsWithChildren, useEffect, useState, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 interface Props {
-    inner: React.ReactNode
+    inner: ReactNode
     position: string
     space: number
     extraClasses?: string

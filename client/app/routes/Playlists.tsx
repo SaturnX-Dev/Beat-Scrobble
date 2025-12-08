@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
+import { useState, useEffect, type ReactNode } from "react";
 import { Link } from "react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Music, Download, RefreshCw, ExternalLink, Sparkles, Clock, Heart, Disc, Radio, Calendar, Gem, Zap } from "lucide-react";
@@ -17,7 +18,7 @@ interface Playlist {
     id: string;
     name: string;
     description: string;
-    icon: React.ReactNode;
+    icon: ReactNode;
     tracks: Track[];
     lastGenerated: string;
     color: string;

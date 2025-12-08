@@ -17,6 +17,7 @@ type Artist struct {
 	Bio        string   `json:"bio,omitempty"`
 	Popularity int      `json:"popularity,omitempty"`
 	SpotifyID  string   `json:"spotify_id,omitempty"`
+	Followers  int      `json:"followers,omitempty"`
 }
 
 type SimpleArtist struct {

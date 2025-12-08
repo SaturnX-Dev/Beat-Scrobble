@@ -235,6 +235,62 @@ export default function SpotifySettings() {
                 )}
             </div>
 
+            {/* Import/Export Metadata */}
+            <details className="p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
+                <summary className="font-semibold text-[var(--color-fg)] cursor-pointer flex items-center gap-2">
+                    <span>Import / Export Metadata</span>
+                </summary>
+                <div className="mt-4 flex flex-col gap-3">
+                    <p className="text-xs text-[var(--color-fg-tertiary)]">
+                        Export your Spotify metadata (genres, popularity, audio features) to backup or transfer to another instance.
+                    </p>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const { exportSpotifyMetadata } = await import("api/api");
+                                    const blob = await exportSpotifyMetadata();
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement("a");
+                                    a.href = url;
+                                    a.download = "beat_scrobble_spotify_metadata.json";
+                                    a.click();
+                                    URL.revokeObjectURL(url);
+                                } catch (e) {
+                                    console.error(e);
+                                    alert("Failed to export metadata");
+                                }
+                            }}
+                            className="flex-1 px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white font-medium hover:bg-[var(--color-primary-dim)] transition-all text-sm"
+                        >
+                            Export Metadata
+                        </button>
+                        <label className="flex-1 px-4 py-2 rounded-lg bg-[var(--color-bg-tertiary)] text-[var(--color-fg)] font-medium hover:bg-[var(--color-bg)] transition-all cursor-pointer text-center text-sm">
+                            Import Metadata
+                            <input
+                                type="file"
+                                accept=".json"
+                                className="hidden"
+                                onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    try {
+                                        const { importSpotifyMetadata } = await import("api/api");
+                                        const result = await importSpotifyMetadata(file);
+                                        alert(`Imported!\nArtists: ${result.artists_updated}\nAlbums: ${result.albums_updated}\nTracks: ${result.tracks_updated}`);
+                                    } catch (err) {
+                                        console.error(err);
+                                        alert("Failed to import metadata");
+                                    }
+                                    e.target.value = "";
+                                }}
+                            />
+                        </label>
+                    </div>
+                </div>
+            </details>
+
+
             {/* Display Options */}
             <div className="p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
                 <h3 className="font-semibold text-[var(--color-fg)] mb-4">Display Options</h3>

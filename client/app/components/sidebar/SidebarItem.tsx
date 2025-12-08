@@ -1,4 +1,5 @@
-import React from "react";
+// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
+import { type ReactNode } from "react";
 import Popup from "../Popup";
 import { Link } from "react-router";
 import { type LucideIcon } from "lucide-react";
@@ -9,10 +10,10 @@ interface Props {
     isActive?: boolean;
     keyHint?: string;
     onClick?: () => void;
-    children?: React.ReactNode;
+    children?: ReactNode;
     name?: string;
     space?: number;
-    modal?: React.ReactNode;
+    modal?: ReactNode;
 }
 
 export default function SidebarItem({

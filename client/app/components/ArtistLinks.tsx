@@ -1,4 +1,5 @@
-import React from 'react';
+// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
+// Solo importa hooks específicos si los necesitas (useState, useEffect, etc.)
 import { Link } from 'react-router';
 
 type Artist = {
@@ -10,7 +11,7 @@ type ArtistLinksProps = {
   artists: Artist[];
 };
 
-const ArtistLinks: React.FC<ArtistLinksProps> = ({ artists }) => {
+export default function ArtistLinks({ artists }: ArtistLinksProps) {
   return (
     <>
       {artists.map((artist, index) => (
@@ -21,6 +22,5 @@ const ArtistLinks: React.FC<ArtistLinksProps> = ({ artists }) => {
       ))}
     </>
   );
-};
+}
 
-export default ArtistLinks;

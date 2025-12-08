@@ -1,7 +1,8 @@
-import React, { useState } from "react"
+// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
+import { useState, type ReactNode } from "react"
 
 type Props = {
-    children: React.ReactNode
+    children: ReactNode
     onClick: () => void
     loading?: boolean
     disabled?: boolean

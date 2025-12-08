@@ -106,19 +106,6 @@ export default function TimelineView({
                                         </div>
                                     )}
                                 </div>
-
-                                {/* Delete Action */}
-                                {user && onDelete && (
-                                    <div className="flex flex-col items-end gap-2 opacity-0 group-hover:opacity-100 transition-smooth">
-                                        <button
-                                            onClick={() => handleDelete(item)}
-                                            className="p-2 text-[var(--color-fg-tertiary)] hover:text-[var(--color-error)] hover:bg-[var(--color-bg-tertiary)] rounded-full transition-smooth"
-                                            title="Delete Scrobble"
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </div>

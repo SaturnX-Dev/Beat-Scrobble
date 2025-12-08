@@ -349,6 +349,21 @@ function bulkFetchSpotifyMetadata(): Promise<{ success: boolean; processed: numb
   );
 }
 
+function exportSpotifyMetadata(): Promise<Blob> {
+  return request(`/apis/web/v1/spotify/export-metadata`).then(r => r.blob());
+}
+
+function importSpotifyMetadata(file: File): Promise<{ message: string; artists_updated: number; albums_updated: number; tracks_updated: number }> {
+  return file.text().then(text =>
+    request(`/apis/web/v1/spotify/import-metadata`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: text,
+    }).then(r => r.json())
+  );
+}
+
+
 export {
   getLastListens,
   getTopTracks,
@@ -384,6 +399,8 @@ export {
   getSpotifyConfigured,
   fetchSpotifyMetadata,
   bulkFetchSpotifyMetadata,
+  exportSpotifyMetadata,
+  importSpotifyMetadata,
 };
 type Track = {
   id: number;
