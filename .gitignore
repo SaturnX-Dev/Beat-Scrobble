@@ -1,23 +1,6 @@
-# Directorios de prueba y dependencias
-test_config_dir/
-node_modules/
-pgdata/
-
-# Archivos de desarrollo personal (no para usuarios)
 docker-compose.dev.yml
 docker-compose.prod.yml
 run.sh
-
-# Roadmap interno
 BEAT_SCROBBLE_ROADMAP.md
 
 
-# Archivos de configuración local
-.env
-.env.local
-
-# Logs y cache
-*.log
-.cache/
-dist/
-build/

@@ -1,4 +1,4 @@
-import { Link, useLocation } from "@react-router/react";
+import { Link, useLocation } from "react-router";
 import { Home, List, Search, MoreHorizontal, Music, User, Settings2, ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import SettingsModal from "./modals/SettingsModal";
@@ -27,7 +27,7 @@ export default function MobileNavBar({ className }: Props) {
         <div className={`fixed bottom-0 left-0 right-0 z-50 bg-[var(--color-bg-secondary)] border-t border-[var(--color-bg-tertiary)] pb-safe-area ${className}`}>
             <SettingsModal open={settingsOpen} setOpen={setSettingsOpen} />
             <SearchModal open={searchOpen} setOpen={setSearchOpen} />
-            
+
             <nav className="flex items-center justify-around h-16 px-2">
                 <Link to="/" className={`flex flex-col items-center gap-1 transition-colors ${isActive("/") ? "text-[var(--color-primary)]" : "text-[var(--color-fg-secondary)]"}`}>
                     <Home size={22} />
@@ -60,11 +60,11 @@ export default function MobileNavBar({ className }: Props) {
 
                 <div className="flex flex-col items-center gap-1">
                     <button
-                         onClick={() => setSettingsOpen(true)}
-                         className={`flex flex-col items-center gap-1 transition-colors ${settingsOpen ? "text-[var(--color-primary)]" : "text-[var(--color-fg-secondary)]"}`}
+                        onClick={() => setSettingsOpen(true)}
+                        className={`flex flex-col items-center gap-1 transition-colors ${settingsOpen ? "text-[var(--color-primary)]" : "text-[var(--color-fg-secondary)]"}`}
                     >
-                         <Settings2 size={22} />
-                         <span className="text-[10px] font-medium">Config</span>
+                        <Settings2 size={22} />
+                        <span className="text-[10px] font-medium">Config</span>
                     </button>
                 </div>
             </nav>
