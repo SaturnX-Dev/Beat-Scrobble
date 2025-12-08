@@ -326,13 +326,13 @@ func TestImportBeatScrobble(t *testing.T) {
 	_, err = store.GetTrack(ctx, db.GetTrackOpts{Title: "GIRI GIRI", ArtistIDs: []int32{artist.ID}})
 	require.NoError(t, err)
 
-	count, err := store.CountTracks(ctx, db.PeriodAllTime)
+	count, err := store.CountTracks(ctx, 1, db.PeriodAllTime)
 	require.NoError(t, err)
 	assert.EqualValues(t, 4, count)
-	count, err = store.CountAlbums(ctx, db.PeriodAllTime)
+	count, err = store.CountAlbums(ctx, 1, db.PeriodAllTime)
 	require.NoError(t, err)
 	assert.EqualValues(t, 3, count)
-	count, err = store.CountArtists(ctx, db.PeriodAllTime)
+	count, err = store.CountArtists(ctx, 1, db.PeriodAllTime)
 	require.NoError(t, err)
 	assert.EqualValues(t, 6, count)
 
