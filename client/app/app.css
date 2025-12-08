@@ -2109,3 +2109,8 @@ body.has-custom-background::before {
   z-index: -1;
   pointer-events: none;
 }
+
+/* Safe Area Utilities */
+.pb-safe-area {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
