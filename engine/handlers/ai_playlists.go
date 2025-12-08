@@ -144,11 +144,13 @@ func GenerateAIPlaylistHandler(store db.DB) http.HandlerFunc {
 
 		// Get user's listening context using paginated methods
 		topArtistsResp, _ := store.GetTopArtistsPaginated(ctx, db.GetItemsOpts{
+			UserID: int(user.ID),
 			Limit:  10,
 			Page:   1,
 			Period: db.PeriodMonth,
 		})
 		topTracksResp, _ := store.GetTopTracksPaginated(ctx, db.GetItemsOpts{
+			UserID: int(user.ID),
 			Limit:  10,
 			Page:   1,
 			Period: db.PeriodMonth,

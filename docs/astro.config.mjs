@@ -24,6 +24,8 @@ export default defineConfig({
             { label: 'Importing Data', slug: 'guides/importing' },
             { label: 'Setting up the Scrobbler', slug: 'guides/scrobbler' },
             { label: 'Editing Data', slug: 'guides/editing' },
+            { label: 'Spotify Metadata', slug: 'guides/spotify' },
+            { label: 'AI Analysis', slug: 'guides/ai' },
           ],
         },
         {

@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
@@ -14,6 +15,7 @@ func GetListenActivityHandler(store db.DB) func(w http.ResponseWriter, r *http.R
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		l := logger.FromContext(ctx)
+		user := middleware.GetUserFromContext(ctx)
 
 		l.Debug().Msg("GetListenActivityHandler: Received request to retrieve listen activity")
 
@@ -105,6 +107,7 @@ func GetListenActivityHandler(store db.DB) func(w http.ResponseWriter, r *http.R
 		}
 
 		opts := db.ListenActivityOpts{
+			UserID:   int32(user.ID),
 			Step:     step,
 			Range:    _range,
 			Month:    month,

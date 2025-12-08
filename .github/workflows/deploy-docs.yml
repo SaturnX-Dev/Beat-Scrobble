@@ -1,6 +1,12 @@
 name: Deploy Docs to GitHub Pages
 
 on:
+  # Trigger on push to main branch targeting the docs folder
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+  # Allow manual trigger
   workflow_dispatch:
 
 permissions:
@@ -10,7 +16,7 @@ permissions:
 
 concurrency:
   group: "pages"
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -19,25 +25,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - name: Install, Build, and Upload Astro Site
+        uses: withastro/action@v2
         with:
-          node-version: "20"
-          cache: 'yarn'
-          cache-dependency-path: docs/yarn.lock
-
-      - name: Install dependencies
-        working-directory: ./docs
-        run: yarn install
-
-      - name: Build
-        working-directory: ./docs
-        run: yarn build
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./docs/dist
+            path: ./docs               # Root of your Astro project
+            node-version: 20           # Node version
+            package-manager: yarn      # Package manager
+            # 'dist' is the default output folder for Astro, the action handles it auto-magically
 
   deploy:
     environment:

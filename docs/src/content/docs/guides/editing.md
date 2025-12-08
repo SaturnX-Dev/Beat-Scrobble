@@ -1,14 +1,22 @@
 ---
 title: Editing Data
-description: How to edit artist, album, and track information in your Koito instance.
+description: How to edit artist, album, and track information in your Beat Scrobble instance.
 ---
 
-In order to start editing information on your Koito instance, you need to be logged in. See the [Setting up the Scrobber](/guides/scrobbler) guide if you need to log in for the first time.
+In order to start editing information on your Beat Scrobble instance, you need to be logged in. See the [Setting up the Scrobber](/guides/scrobbler) guide if you need to log in for the first time.
+
+### Spotify Metadata
+Beat Scrobble automatically fetches metadata from Spotify, but sometimes it might miss a track or you might want to force an update.
+You can use the **Refresh Metadata** button on any **Track** page to pull the latest audio features (BPM, Key, Energy), popularity, and images directly from Spotify.
+
+:::caution
+For this feature to work, you MUST have configured your **Spotify Client ID** and **Client Secret** in the Admin Settings.
+:::
 
 Once logged in, navigate to the page of the item you want to edit. For this example, we will use the fantastic Korean dream pop group [OurR](https://www.youtube.com/watch?v=USHrBJRmF-o).
 When you are logged in and on an artist, album, or track page, you will see the editing options on the top right.
 
-![A Koito page for the band OurR, showing the editing options](../../../assets/ourr.png)
+![A Beat Scrobble page for the band OurR, showing the editing options](../../../assets/ourr.png)
 
 #### Editing Aliases
 
@@ -25,11 +33,11 @@ To set an alias as primary, click the "Set Primary" option next to the alias. Do
 
 To delete an alias, just click on the delete button.
 
-Koito uses aliases for not only the UI, but also for matching artists, albums, and tracks submitted to the scrobbler, and for searching. So if you are like me and listen to a lot of
+Beat Scrobble uses aliases for not only the UI, but also for matching artists, albums, and tracks submitted to the scrobbler, and for searching. So if you are like me and listen to a lot of
 music from countries with non-latin script, adding aliases makes it easy to search for those items.
 
 :::note
-Koito uses MusicBrainz IDs to find additional aliases for artists and albums, if your music server provides them. Additional track aliases have to be added manually.
+Beat Scrobble uses MusicBrainz IDs to find additional aliases for artists and albums, if your music server provides them. Additional track aliases have to be added manually.
 :::
 
 #### Editing Images
@@ -41,11 +49,11 @@ The other way to replace images is using the Replace Image option, which is the 
 ![a menu with an option to link an image, or click on a suggested album cover](../../../assets/replace_image.png)
 
 Opening the Replace Image menu, we can either provide a link to the image we want to use, or, in this case, we can see a suggested image is provided. The image suggestions are provided by
-Cover Art Archive, and only work for albums that have an associated MusicBrainz ID. Koito gets these IDs from your scrobbler, if its provides them. If not, you can always use a local image or provide a link.
+Cover Art Archive, and only work for albums that have an associated MusicBrainz ID. Beat Scrobble gets these IDs from your scrobbler, if its provides them. If not, you can always use a local image or provide a link.
 
 #### Merging Items
 
-Koito allows you to merge two items, which means that all of that item's children (for artists: albums, tracks and listens; for albums: tracks and listens; etc.) will be assigned to
+Beat Scrobble allows you to merge two items, which means that all of that item's children (for artists: albums, tracks and listens; for albums: tracks and listens; etc.) will be assigned to
 a different item, and the old item will be removed.
 
 For this example, we will use the incredible track [Tsumugu](https://www.youtube.com/watch?v=NDwqZIXOvKw) by the Japanese artist とた (Tota). Here we can see there two versions of the track,
