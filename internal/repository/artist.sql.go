@@ -85,7 +85,7 @@ SELECT
 FROM artists_with_name a
 LEFT JOIN artist_aliases aa ON a.id = aa.artist_id
 WHERE a.id = $1
-GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id
+GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id, a.followers
 `
 
 type GetArtistRow struct {
@@ -149,7 +149,7 @@ SELECT
 FROM artists_with_name a
 LEFT JOIN artist_aliases aa ON a.id = aa.artist_id
 WHERE a.musicbrainz_id = $1
-GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id
+GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id, a.followers
 `
 
 type GetArtistByMbzIDRow struct {
@@ -195,7 +195,7 @@ WITH artist_with_aliases AS (
   WHERE a.id IN (
     SELECT aa2.artist_id FROM artist_aliases aa2 WHERE aa2.alias = $1
   )
-  GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id
+  GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id, a.followers
 )
 SELECT id, musicbrainz_id, image, image_source, genres, bio, popularity, spotify_id, followers, name, aliases FROM artist_with_aliases
 `
@@ -240,7 +240,7 @@ SELECT
 FROM artists_with_name a
 LEFT JOIN artist_releases ar ON a.id = ar.artist_id
 WHERE ar.release_id = $1
-GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id, ar.is_primary
+GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id, ar.is_primary, a.followers
 `
 
 type GetReleaseArtistsRow struct {
@@ -373,7 +373,7 @@ SELECT
 FROM artists_with_name a
 LEFT JOIN artist_tracks at ON a.id = at.artist_id
 WHERE at.track_id = $1
-GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id, at.is_primary
+GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id, at.is_primary, a.followers
 `
 
 type GetTrackArtistsRow struct {

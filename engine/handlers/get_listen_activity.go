@@ -18,51 +18,75 @@ func GetListenActivityHandler(store db.DB) func(w http.ResponseWriter, r *http.R
 		l.Debug().Msg("GetListenActivityHandler: Received request to retrieve listen activity")
 
 		rangeStr := r.URL.Query().Get("range")
-		_range, err := strconv.Atoi(rangeStr)
-		if err != nil {
-			l.Debug().AnErr("error", err).Msg("GetListenActivityHandler: Invalid range parameter")
-			utils.WriteError(w, "invalid range parameter", http.StatusBadRequest)
-			return
+		var _range int
+		if rangeStr != "" {
+			var err error
+			_range, err = strconv.Atoi(rangeStr)
+			if err != nil {
+				l.Debug().AnErr("error", err).Msg("GetListenActivityHandler: Invalid range parameter")
+				utils.WriteError(w, "invalid range parameter", http.StatusBadRequest)
+				return
+			}
 		}
 
 		monthStr := r.URL.Query().Get("month")
-		month, err := strconv.Atoi(monthStr)
-		if err != nil {
-			l.Debug().AnErr("error", err).Msg("GetListenActivityHandler: Invalid month parameter")
-			utils.WriteError(w, "invalid month parameter", http.StatusBadRequest)
-			return
+		var month int
+		if monthStr != "" {
+			var err error
+			month, err = strconv.Atoi(monthStr)
+			if err != nil {
+				l.Debug().AnErr("error", err).Msg("GetListenActivityHandler: Invalid month parameter")
+				utils.WriteError(w, "invalid month parameter", http.StatusBadRequest)
+				return
+			}
 		}
 
 		yearStr := r.URL.Query().Get("year")
-		year, err := strconv.Atoi(yearStr)
-		if err != nil {
-			l.Debug().AnErr("error", err).Msg("GetListenActivityHandler: Invalid year parameter")
-			utils.WriteError(w, "invalid year parameter", http.StatusBadRequest)
-			return
+		var year int
+		if yearStr != "" {
+			var err error
+			year, err = strconv.Atoi(yearStr)
+			if err != nil {
+				l.Debug().AnErr("error", err).Msg("GetListenActivityHandler: Invalid year parameter")
+				utils.WriteError(w, "invalid year parameter", http.StatusBadRequest)
+				return
+			}
 		}
 
 		artistIdStr := r.URL.Query().Get("artist_id")
-		artistId, err := strconv.Atoi(artistIdStr)
-		if err != nil {
-			l.Debug().AnErr("error", err).Msg("GetListenActivityHandler: Invalid artist ID parameter")
-			utils.WriteError(w, "invalid artist ID parameter", http.StatusBadRequest)
-			return
+		var artistId int
+		if artistIdStr != "" {
+			var err error
+			artistId, err = strconv.Atoi(artistIdStr)
+			if err != nil {
+				l.Debug().AnErr("error", err).Msg("GetListenActivityHandler: Invalid artist ID parameter")
+				utils.WriteError(w, "invalid artist ID parameter", http.StatusBadRequest)
+				return
+			}
 		}
 
 		albumIdStr := r.URL.Query().Get("album_id")
-		albumId, err := strconv.Atoi(albumIdStr)
-		if err != nil {
-			l.Debug().AnErr("error", err).Msg("GetListenActivityHandler: Invalid album ID parameter")
-			utils.WriteError(w, "invalid album ID parameter", http.StatusBadRequest)
-			return
+		var albumId int
+		if albumIdStr != "" {
+			var err error
+			albumId, err = strconv.Atoi(albumIdStr)
+			if err != nil {
+				l.Debug().AnErr("error", err).Msg("GetListenActivityHandler: Invalid album ID parameter")
+				utils.WriteError(w, "invalid album ID parameter", http.StatusBadRequest)
+				return
+			}
 		}
 
 		trackIdStr := r.URL.Query().Get("track_id")
-		trackId, err := strconv.Atoi(trackIdStr)
-		if err != nil {
-			l.Debug().AnErr("error", err).Msg("GetListenActivityHandler: Invalid track ID parameter")
-			utils.WriteError(w, "invalid track ID parameter", http.StatusBadRequest)
-			return
+		var trackId int
+		if trackIdStr != "" {
+			var err error
+			trackId, err = strconv.Atoi(trackIdStr)
+			if err != nil {
+				l.Debug().AnErr("error", err).Msg("GetListenActivityHandler: Invalid track ID parameter")
+				utils.WriteError(w, "invalid track ID parameter", http.StatusBadRequest)
+				return
+			}
 		}
 
 		var step db.StepInterval

@@ -51,13 +51,23 @@ func importBeatScrobbleData(ctx context.Context, store db.DB, r io.Reader) error
 
 	l.Info().Msgf("Beginning data import for user: %s (format v%s)", data.User, data.Version)
 
+	// Resolve UserID
+	var userID int32 = 1 // Default fallback
+	foundUser, err := store.GetUserByUsername(ctx, data.User)
+	if err == nil && foundUser != nil {
+		userID = int32(foundUser.ID)
+		l.Info().Msgf("importBeatScrobbleData: Export user '%s' matched to local user ID %d", data.User, userID)
+	} else {
+		l.Warn().Msgf("importBeatScrobbleData: Export user '%s' not found locally, falling back to User ID 1. This may cause data to be hidden if you are logged in as a different user.", data.User)
+	}
+
 	// For v2 format, restore preferences and theme
 	if data.Version == "2" {
 		// Restore preferences if present
 		if data.Preferences != nil && len(data.Preferences) > 0 {
 			prefsBytes, err := json.Marshal(data.Preferences)
 			if err == nil {
-				err = store.SaveUserPreferences(ctx, 1, prefsBytes) // UserID 1 (default user)
+				err = store.SaveUserPreferences(ctx, userID, prefsBytes)
 				if err != nil {
 					l.Warn().Err(err).Msg("importBeatScrobbleData: Failed to restore preferences")
 				} else {
@@ -68,7 +78,7 @@ func importBeatScrobbleData(ctx context.Context, store db.DB, r io.Reader) error
 
 		// Restore theme if present
 		if len(data.Theme) > 0 && string(data.Theme) != "null" && string(data.Theme) != "{}" {
-			err = store.SaveUserTheme(ctx, 1, data.Theme) // UserID 1 (default user)
+			err = store.SaveUserTheme(ctx, userID, data.Theme)
 			if err != nil {
 				l.Warn().Err(err).Msg("importBeatScrobbleData: Failed to restore theme")
 			} else {
@@ -191,7 +201,7 @@ func importBeatScrobbleData(ctx context.Context, store db.DB, r io.Reader) error
 		err = store.SaveListen(ctx, db.SaveListenOpts{
 			TrackID: track.ID,
 			Time:    data.Listens[i].ListenedAt,
-			UserID:  1,
+			UserID:  userID,
 		})
 		if err != nil {
 			return fmt.Errorf("ImportBeatScrobbleFile: %w", err)

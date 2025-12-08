@@ -43,9 +43,8 @@ func bindRoutes(
 		r.Get("/config", handlers.GetCfgHandler())
 
 		r.Group(func(r chi.Router) {
-			if cfg.LoginGate() {
-				r.Use(middleware.ValidateSession(db))
-			}
+			// Always enforce session validation for API routes
+			r.Use(middleware.ValidateSession(db))
 			r.Get("/artist", handlers.GetArtistHandler(db))
 			r.Get("/artists", handlers.GetArtistsForItemHandler(db))
 			r.Get("/album", handlers.GetAlbumHandler(db))
@@ -136,6 +135,11 @@ func bindRoutes(
 			r.Post("/spotify/fetch-metadata", handlers.SpotifyFetchMetadataHandler(db))
 
 			r.Get("/spotify/bulk-fetch-sse", handlers.SpotifyBulkFetchSSEHandler(db))
+
+			// Presence
+			r.Post("/presence/ping", func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusOK)
+			})
 		})
 
 		// Public routes (no auth required)

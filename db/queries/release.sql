@@ -48,7 +48,7 @@ JOIN artist_releases ar ON r.id = ar.release_id
 WHERE l.user_id = $6 
   AND ar.artist_id = $5
   AND l.listened_at BETWEEN $1 AND $2
-GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id
+GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.label, r.release_date_precision
 ORDER BY listen_count DESC, r.id
 LIMIT $3 OFFSET $4;
 
@@ -65,7 +65,7 @@ FROM listens l
 JOIN tracks t ON l.track_id = t.id
 JOIN releases_with_title r ON t.release_id = r.id
 WHERE l.user_id = $5 AND l.listened_at BETWEEN $1 AND $2
-GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id
+GROUP BY r.id, r.title, r.musicbrainz_id, r.various_artists, r.image, r.image_source, r.genres, r.release_date, r.popularity, r.spotify_id, r.label, r.release_date_precision
 ORDER BY listen_count DESC, r.id
 LIMIT $3 OFFSET $4;
 

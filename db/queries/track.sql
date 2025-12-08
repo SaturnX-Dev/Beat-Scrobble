@@ -33,7 +33,7 @@ FROM tracks_with_title t
 JOIN artist_tracks at ON at.track_id = t.id
 WHERE t.title = $1
   AND at.artist_id = ANY($2::int[])
-GROUP BY t.id, t.title, t.musicbrainz_id, t.duration, t.release_id, t.popularity, t.spotify_id
+GROUP BY t.id, t.title, t.musicbrainz_id, t.duration, t.release_id, t.popularity, t.spotify_id, t.danceability, t.energy, t.key, t.loudness, t.mode, t.speechiness, t.acousticness, t.instrumentalness, t.liveness, t.valence, t.tempo
 HAVING COUNT(DISTINCT at.artist_id) = cardinality($2::int[]);
 
 -- name: GetTopTracksPaginated :many
