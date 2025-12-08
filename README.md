@@ -134,7 +134,7 @@ Beat Scrobble offers **15+ interactive visualizations** to explore your listenin
 | Visualization | Description |
 |---------------|-------------|
 | **Activity Grid** | GitHub-style heatmap showing your listening intensity by day. Darker squares = more listens. Hover for exact counts. Responsive design adapts to screen size. |
-| **Timeline View** | Infinite-scroll chronological history with album art thumbnails. Click any listen to jump to the track page. |
+| **Timeline View** | Infinite-scroll chronological history with album art thumbnails. **Swipe-to-delete** support with premium animations and portal-based confirmation modals. |
 | **Listening Sessions** | Smart grouping of consecutive listens into "sessions" with duration and track counts. |
 
 #### 📈 Rankings & Charts
@@ -211,11 +211,11 @@ Enrich your library with comprehensive Spotify metadata.
 - **Album Page**: Genres badges, popularity %, release date, label
 - **Track Page**: Audio features grid showing BPM, Key, Energy, Danceability, Mood, Acoustic, Instrumental, Speech, Live
 
-**Bulk Fetch Optimization:**
-- Artists: Batches of 50 via `/artists?ids=`
-- Albums: Batches of 20 via `/albums?ids=`
-- Tracks: Batches of 50 via `/tracks?ids=`
-- Fallback: Individual search queries for items without Spotify ID
+**Bulk Fetch Optimization (Hybrid Architecture):**
+- **Foreground (Fast):** Immediately fetches Top 100 Artists, Albums, and Tracks for instant dashboard population.
+- **Background (Stealth):** Spawns a silent worker to process the *entire library* (pages 2+) with intelligent rate limiting (1.5s/batch) to avoid API bans.
+- **Global Notifications:** Premium UI alerts notify you when background sync completes via real-time heartbeat system.
+- **Batches:** 50 items/batch. Fallback to search for missing IDs.
 
 **Setup:**
 1. Create app at [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
