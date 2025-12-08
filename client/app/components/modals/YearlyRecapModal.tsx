@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Modal } from "./Modal";
 import { useQuery } from "@tanstack/react-query";
 import { Sparkles, Music, User, Disc, Clock, X, Share2, Download, TrendingUp, Calendar, Headphones, Check, Loader2 } from "lucide-react";
@@ -73,6 +73,38 @@ function useCountUp(end: number, duration: number = 2000, start: boolean = true)
     }, [end, duration, start]);
 
     return count;
+}
+
+// Memoized floating particles to prevent re-renders during counter animations
+const PARTICLE_CONFIG = Array.from({ length: 12 }, (_, i) => ({
+    id: i,
+    width: 3 + Math.random() * 5,
+    top: Math.random() * 100,
+    left: Math.random() * 100,
+    opacity: 0.3 + Math.random() * 0.4,
+    duration: 5 + Math.random() * 10,
+    delay: Math.random() * 5,
+}));
+
+function FloatingParticles() {
+    return (
+        <>
+            {PARTICLE_CONFIG.map((p) => (
+                <div
+                    key={p.id}
+                    className="absolute rounded-full bg-white will-change-transform"
+                    style={{
+                        width: `${p.width}px`,
+                        height: `${p.width}px`,
+                        top: `${p.top}%`,
+                        left: `${p.left}%`,
+                        opacity: p.opacity,
+                        animation: `float ${p.duration}s ease-in-out infinite ${p.delay}s`,
+                    }}
+                />
+            ))}
+        </>
+    );
 }
 
 export default function YearlyRecapModal({ open, setOpen, year }: Props) {
@@ -398,7 +430,7 @@ export default function YearlyRecapModal({ open, setOpen, year }: Props) {
             >
                 {/* Animated Background */}
                 <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    {/* Collage Images (blurred, low opacity) */}
+                    {/* Collage Images (blurred, low opacity) - using img for better loading */}
                     {recapData?.topArtist?.image && (
                         <div
                             className="absolute opacity-20"
@@ -407,13 +439,20 @@ export default function YearlyRecapModal({ open, setOpen, year }: Props) {
                                 right: '-5%',
                                 width: '200px',
                                 height: '200px',
-                                backgroundImage: `url(${imageUrl(recapData.topArtist.image, 'medium')})`,
-                                backgroundSize: 'cover',
                                 borderRadius: '50%',
-                                filter: 'blur(40px)',
-                                animation: 'float 12s ease-in-out infinite',
+                                overflow: 'hidden',
                             }}
-                        />
+                        >
+                            <img
+                                src={imageUrl(recapData.topArtist.image, 'medium')}
+                                alt=""
+                                className="w-full h-full object-cover"
+                                style={{
+                                    filter: 'blur(40px)',
+                                    animation: 'float 12s ease-in-out infinite',
+                                }}
+                            />
+                        </div>
                     )}
                     {recapData?.topAlbum?.image && (
                         <div
@@ -423,18 +462,25 @@ export default function YearlyRecapModal({ open, setOpen, year }: Props) {
                                 left: '-10%',
                                 width: '250px',
                                 height: '250px',
-                                backgroundImage: `url(${imageUrl(recapData.topAlbum.image, 'medium')})`,
-                                backgroundSize: 'cover',
                                 borderRadius: '30%',
-                                filter: 'blur(50px)',
-                                animation: 'float 15s ease-in-out infinite reverse',
+                                overflow: 'hidden',
                             }}
-                        />
+                        >
+                            <img
+                                src={imageUrl(recapData.topAlbum.image, 'medium')}
+                                alt=""
+                                className="w-full h-full object-cover"
+                                style={{
+                                    filter: 'blur(50px)',
+                                    animation: 'float 15s ease-in-out infinite reverse',
+                                }}
+                            />
+                        </div>
                     )}
 
                     {/* Glowing orbs */}
                     <div
-                        className="absolute rounded-full"
+                        className="absolute rounded-full will-change-transform"
                         style={{
                             width: '300px',
                             height: '300px',
@@ -445,7 +491,7 @@ export default function YearlyRecapModal({ open, setOpen, year }: Props) {
                         }}
                     />
                     <div
-                        className="absolute rounded-full"
+                        className="absolute rounded-full will-change-transform"
                         style={{
                             width: '200px',
                             height: '200px',
@@ -456,7 +502,7 @@ export default function YearlyRecapModal({ open, setOpen, year }: Props) {
                         }}
                     />
                     <div
-                        className="absolute rounded-full"
+                        className="absolute rounded-full will-change-transform"
                         style={{
                             width: '150px',
                             height: '150px',
@@ -467,21 +513,8 @@ export default function YearlyRecapModal({ open, setOpen, year }: Props) {
                         }}
                     />
 
-                    {/* Floating Particles */}
-                    {[...Array(12)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="absolute rounded-full bg-white"
-                            style={{
-                                width: `${3 + Math.random() * 5}px`,
-                                height: `${3 + Math.random() * 5}px`,
-                                top: `${Math.random() * 100}%`,
-                                left: `${Math.random() * 100}%`,
-                                opacity: 0.3 + Math.random() * 0.4,
-                                animation: `float ${5 + Math.random() * 10}s ease-in-out infinite ${Math.random() * 5}s`,
-                            }}
-                        />
-                    ))}
+                    {/* Floating Particles - memoized to prevent re-render issues */}
+                    <FloatingParticles />
                 </div>
 
                 {/* Progress bar */}

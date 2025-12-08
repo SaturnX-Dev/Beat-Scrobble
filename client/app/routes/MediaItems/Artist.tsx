@@ -54,9 +54,10 @@ export default function Artist() {
       // But for simplicity, let's just try.
       await fetchSpotifyMetadata(artist.id, "artist", artist.spotify_id);
       window.location.reload();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("Failed to refresh metadata. Ensure Spotify is configured.");
+      const msg = e instanceof Error ? e.message : "Ensure Spotify is configured.";
+      alert(`Failed to refresh metadata: ${msg}`);
     } finally {
       setRefreshing(false);
     }

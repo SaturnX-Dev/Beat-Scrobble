@@ -1,5 +1,5 @@
-// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
 import { useState, useRef, type ReactNode, type TouchEvent, type MouseEvent } from "react";
+import { createPortal } from "react-dom";
 import { Trash2 } from "lucide-react";
 
 interface SwipeableListItemProps {
@@ -97,9 +97,9 @@ export default function SwipeableListItem({ children, onDelete, disabled = false
             </div>
 
             {/* Confirmation Modal */}
-            {showConfirm && (
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-[var(--color-bg-secondary)] rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-[var(--color-bg-tertiary)] animate-in fade-in zoom-in-95 duration-200">
+            {showConfirm && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-[var(--color-bg-secondary)] rounded-2xl p-6 max-w-sm w-full shadow-2xl border border-[var(--color-bg-tertiary)] animate-in zoom-in-95 duration-200">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
                                 <Trash2 size={24} className="text-red-500" />
@@ -124,7 +124,8 @@ export default function SwipeableListItem({ children, onDelete, disabled = false
                             </button>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </>
     );

@@ -542,11 +542,17 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 			// 1. Artists
 			send("log", map[string]string{"message": "Fetching Top 100 Artists..."})
 			artistResp, err := store.GetTopArtistsPaginated(ctx, db.GetItemsOpts{
+				UserID: int(user.ID),
 				Period: db.PeriodAllTime,
 				Limit:  100,
 				Page:   1,
 			})
 			if err == nil {
+				send("log", map[string]string{"message": fmt.Sprintf("Database query returned %d artists", len(artistResp.Items))})
+				if len(artistResp.Items) == 0 {
+					send("log", map[string]string{"message": "WARN: No artists found in database. Have you imported listening history?"})
+				}
+
 				// Separate items that have SpotifyID vs those that need search
 				var idsToFetch []string
 				var itemsToFetch []*models.Artist
@@ -685,12 +691,18 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 			// 2. Process Top Albums
 			send("log", map[string]string{"message": "Fetching Top 100 Albums..."})
 			albumResp, err := store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{
+				UserID: int(user.ID),
 				Period: db.PeriodAllTime,
 				Limit:  100,
 				Page:   1,
 			})
 
 			if err == nil {
+				send("log", map[string]string{"message": fmt.Sprintf("Database query returned %d albums", len(albumResp.Items))})
+				if len(albumResp.Items) == 0 {
+					send("log", map[string]string{"message": "WARN: No albums found in database."})
+				}
+
 				// Separate albums with SpotifyID vs those that need search
 				var albumIDsToFetch []string
 				var albumsToFetch []*models.Album
@@ -829,11 +841,17 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 			// 3. Process Top Tracks
 			send("log", map[string]string{"message": "Fetching Top 100 Tracks..."})
 			trackResp, err := store.GetTopTracksPaginated(ctx, db.GetItemsOpts{
+				UserID: int(user.ID),
 				Period: db.PeriodAllTime,
 				Limit:  100,
 				Page:   1,
 			})
 			if err == nil {
+				send("log", map[string]string{"message": fmt.Sprintf("Database query returned %d tracks", len(trackResp.Items))})
+				if len(trackResp.Items) == 0 {
+					send("log", map[string]string{"message": "WARN: No tracks found in database."})
+				}
+
 				// Separate tracks with SpotifyID vs those that need search
 				var trackIDsToFetch []string
 				var tracksToFetch []*models.Track
@@ -959,6 +977,7 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 
 			// Collect all track SpotifyIDs from the database
 			allTracksResp, err := store.GetTopTracksPaginated(ctx, db.GetItemsOpts{
+				UserID: int(user.ID),
 				Period: db.PeriodAllTime,
 				Limit:  500,
 				Page:   1,

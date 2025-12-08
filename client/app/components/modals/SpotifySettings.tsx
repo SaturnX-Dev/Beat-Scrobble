@@ -61,6 +61,15 @@ export default function SpotifySettings() {
             await savePreference("spotify_client_secret", clientSecret);
             setMessage({ type: "success", text: "Spotify credentials saved successfully!" });
             setConfigured(clientId !== "" && clientSecret !== "");
+
+            // Auto-start fetch if configured
+            if (clientId !== "" && clientSecret !== "") {
+                setTerminalOpen(true);
+                // Small delay to allow state updates
+                setTimeout(() => {
+                    startFetch();
+                }, 500);
+            }
         } catch (e) {
             console.error(e);
             setMessage({ type: "error", text: "Failed to save Spotify credentials." });

@@ -1,8 +1,9 @@
+// NOTE: React 17+ no requiere `import React from 'react'` para JSX.
 import { Link } from "react-router";
-import { type Listen, type Track } from "api/api";
+import { type Listen } from "api/api";
 import { timeSince } from "~/utils/utils";
 import ArtistLinks from "./ArtistLinks";
-import CardAura from "./CardAura";
+import OptimizedImage from "./OptimizedImage";
 
 interface Props {
     listen: Listen;
@@ -11,11 +12,23 @@ interface Props {
 
 export default function TrackRow({ listen, showArtist = true }: Props) {
     return (
-        <div className="group relative flex items-center gap-4 p-3 rounded-xl border border-transparent hover:border-[var(--color-bg-tertiary)]/50 hover:bg-[var(--color-bg-secondary)]/40 transition-all duration-200 hover:scale-[1.005] hover:shadow-sm">
+        <div className="group relative flex items-center gap-3 p-2 rounded-xl bg-[var(--color-bg-secondary)]/50 hover:bg-[var(--color-bg-secondary)] transition-all duration-200 hover:shadow-sm">
 
-            {/* Time */}
-            <div className="text-xs text-[var(--color-fg-tertiary)] whitespace-nowrap min-w-[60px]" title={new Date(listen.time).toLocaleString()}>
-                {timeSince(new Date(listen.time))}
+            {/* Album Art */}
+            <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-[var(--color-bg-tertiary)] relative">
+                {listen.track.image ? (
+                    <OptimizedImage
+                        id={listen.track.image}
+                        size="small"
+                        alt={listen.track.album || 'Album'}
+                        className="w-full h-full object-cover"
+                        fill
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[var(--color-fg-tertiary)]">
+                        <span className="text-sm">♪</span>
+                    </div>
+                )}
             </div>
 
             {/* Track Info */}
@@ -33,11 +46,12 @@ export default function TrackRow({ listen, showArtist = true }: Props) {
                 )}
             </div>
 
-            {/* Subtle Aura on Hover */}
-            <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 overflow-hidden rounded-xl">
-                <div className="absolute -right-4 -top-10 w-24 h-24 bg-[var(--color-primary)]/5 blur-2xl rounded-full" />
+            {/* Time */}
+            <div className="text-xs text-[var(--color-fg-tertiary)] whitespace-nowrap" title={new Date(listen.time).toLocaleString()}>
+                {timeSince(new Date(listen.time))}
             </div>
         </div>
     );
 }
+
 
