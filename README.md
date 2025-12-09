@@ -271,7 +271,7 @@ Beat Scrobble is engineered for speed with millions of scrobbles:
 
 ### Docker Image
 - **Alpine-based** - ~50MB (vs 500MB+ with Debian)
-- **Non-root user** - Security hardened
+- **Non-root user** - Security hardened with PUID/PGID support
 - **Health checks** - Built-in `/health` endpoint
 
 ---
@@ -285,6 +285,8 @@ Beat Scrobble is engineered for speed with millions of scrobbles:
 | `BEAT_SCROBBLE_DATABASE_URL` | PostgreSQL connection string | **Required** |
 | `BEAT_SCROBBLE_ALLOWED_HOSTS` | Comma-separated allowed hosts | `localhost` |
 | `BEAT_SCROBBLE_PORT` | Application server port | `4110` |
+| `PUID` | User ID for permission handling (Synology/NAS) | `1000` |
+| `PGID` | Group ID for permission handling (Synology/NAS) | `1000` |
 | `OPENAI_API_KEY` | Key for AI features (OpenRouter) | `-` |
 | `SPOTIFY_CLIENT_ID` | Spotify application Client ID | `-` |
 | `SPOTIFY_CLIENT_SECRET` | Spotify application Client Secret | `-` |
