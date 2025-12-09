@@ -56,9 +56,11 @@ FROM alpine:3.19 AS final
 RUN apk add --no-cache \
 	vips \
 	ca-certificates \
-	tzdata
+	tzdata \
+	su-exec \
+	shadow
 
-# Create non-root user for security
+# Create non-root user for security (will be modified by entrypoint)
 RUN addgroup -g 1000 beatscrobble && \
 	adduser -u 1000 -G beatscrobble -s /bin/sh -D beatscrobble
 
@@ -71,11 +73,12 @@ COPY ./client/public ./client/public
 COPY ./assets ./assets
 COPY ./db ./db
 
+# Copy entrypoint script
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Set ownership
 RUN chown -R beatscrobble:beatscrobble /app
-
-# Switch to non-root user
-USER beatscrobble
 
 # Health check endpoint
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
@@ -83,5 +86,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
 
 EXPOSE 4110
 
-ENTRYPOINT ["./app"]
+ENTRYPOINT ["/entrypoint.sh"]
 
