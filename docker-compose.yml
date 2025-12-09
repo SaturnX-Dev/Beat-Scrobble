@@ -25,6 +25,7 @@ services:
       - BEAT_SCROBBLE_ALLOWED_HOSTS=*
     volumes:
       - ./config:/etc/beat_scrobble
+      - beat_scrobble_cache:/etc/beat_scrobble/image_cache
     depends_on:
       - beat-scrobble-db
     networks:
@@ -33,3 +34,6 @@ services:
 networks:
   beat-scrobble-net:
     driver: bridge
+
+volumes:
+  beat_scrobble_cache:

@@ -53,6 +53,7 @@ export default function ProfileCritique({ period }: Props) {
 
         fetch('/apis/web/v1/ai/profile-critique', {
             method: 'POST',
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ period })
         })
