@@ -72,6 +72,31 @@ cd client && npm install && npm run build
 
 ---
 
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    User[User] -->|HTTPS| Nginx[Nginx Reverse Proxy]
+    Nginx -->|Serving /| Client[React Client (SPA)]
+    Nginx -->|Proxy /apis| API[Go Backend API]
+    
+    subgraph "Backend Core"
+        API --> Engine[Engine / Router]
+        Engine --> Handlers[API Handlers]
+        Handlers --> Repo[Repository Layer]
+        Repo -->|SQL| DB[(PostgreSQL + pgvector)]
+    end
+    
+    subgraph "External Services"
+        Handlers -->|Auth & Metadata| Spotify[Spotify API]
+        Handlers -->|AI Generation| OpenRouter[OpenRouter AI]
+        Handlers -->|Scrobble Sync| LB[ListenBrainz]
+        Handlers -->|Metadata| MBZ[MusicBrainz]
+    end
+```
+
+---
+
 ## ✨ Features
 
 ### 🎯 Core Platform
@@ -342,58 +367,13 @@ Beat Scrobble implements intelligent server-side caching to minimize API calls:
 
 ## 🛠️ API Reference
 
-<details>
-<summary><b>View Full API Documentation</b></summary>
+See the complete [API Documentation](API_DOCUMENTATION.md) for detailed endpoint usage.
 
-### Public Endpoints
-| Method | Endpoint | Description |
+| Component | Base Path | Description |
 | :--- | :--- | :--- |
-| **`GET`** | `/apis/web/v1/config` | Public server configuration |
-| **`GET`** | `/apis/web/v1/health` | Service health check status |
-| **`GET`** | `/apis/web/v1/public/profile/{username}` | Public user profile data |
-
-### Authenticated
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| **`GET`** | `/apis/web/v1/top-tracks` | User's top tracks (time-boxed) |
-| **`GET`** | `/apis/web/v1/top-albums` | User's top albums (time-boxed) |
-| **`GET`** | `/apis/web/v1/top-artists` | User's top artists (time-boxed) |
-| **`GET`** | `/apis/web/v1/listens` | Recent listening history |
-| **`GET`** | `/apis/web/v1/stats` | Aggregated user statistics |
-| **`GET`** | `/apis/web/v1/yearly-recap` | Annual "Wrapped" summary data |
-
-### AI
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| **`POST`** | `/apis/web/v1/ai/critique` | Generate critique for a track |
-| **`POST`** | `/apis/web/v1/ai/profile-critique` | Generate profile personality analysis |
-| **`POST`** | `/apis/web/v1/ai/generate-playlist` | Create AI-curated playlist |
-| **`POST`** | `/apis/web/v1/ai/clear-cache` | Invalidate all AI caches |
-| **`GET`** | `/apis/web/v1/ai/cache/export` | Export AI cache database |
-| **`POST`** | `/apis/web/v1/ai/cache/import` | Import AI cache database |
-
-### Spotify
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| **`GET`** | `/apis/web/v1/spotify/configured` | Verify Spotify credentials status |
-| **`GET`** | `/apis/web/v1/spotify/search` | Search Spotify catalog |
-| **`POST`** | `/apis/web/v1/spotify/fetch-metadata` | Fetch/Update metadata for single item |
-| **`GET`** | `/apis/web/v1/spotify/bulk-fetch-sse` | SSE stream for bulk metadata fetch |
-| **`GET`** | `/apis/web/v1/spotify/export-metadata` | Export Spotify mappings to JSON |
-| **`POST`** | `/apis/web/v1/spotify/import-metadata` | Import Spotify mappings from JSON |
-
-### Presence (for smart caching)
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| **`POST`** | `/apis/web/v1/presence/ping` | Client heartbeat (every 20s) |
-
-### ListenBrainz Compatible
-| Method | Endpoint | Description |
-| :--- | :--- | :--- |
-| **`POST`** | `/apis/listenbrainz/1/submit-listens` | Submit new scrobbles (LB API) |
-| **`GET`** | `/apis/listenbrainz/1/validate-token` | Verify user token validity |
-
-</details>
+| **Web API** | `/apis/web/v1` | Core application endpoints (Auth, Data, AI) |
+| **ListenBrainz** | `/apis/listenbrainz/1` | Compatible scrobble submission endpoint |
+| **Static** | `/images`, `/profile-images` | Optimized asset delivery |
 
 ---
 
@@ -437,6 +417,8 @@ The included `nginx.conf` provides:
 
 - **Original Project**: [Koito](https://github.com/gabehf/koito) by Gabe Farrell
 - **Fork Maintainer**: [SaturnX-Dev](https://github.com/SaturnX-Dev)
+- **Contributors**: See [CREDITS.md](CREDITS.md) for full list.
+- **Roadmap**: Check [BEAT_SCROBBLE_ROADMAP.md](BEAT_SCROBBLE_ROADMAP.md) for future plans.
 
 ---
 
