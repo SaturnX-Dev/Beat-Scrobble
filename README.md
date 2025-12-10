@@ -38,26 +38,116 @@ docker compose -f docker-compose.prod.yml up -d
 
 ### Docker Compose (Simple)
 
+Ideal for quick deployment.
+
 ```yaml
 services:
   beat-scrobble:
     image: saturnxdev/beat-scrobble:latest
+    container_name: beat-scrobble
+    restart: unless-stopped
     ports:
       - "4110:4110"
     environment:
       - BEAT_SCROBBLE_DATABASE_URL=postgres://postgres:password@db:5432/beatscrobble
+      - BEAT_SCROBBLE_ALLOWED_HOSTS=localhost,127.0.0.1
     volumes:
       - ./data:/app/data
+      - ./config:/etc/beat_scrobble
     depends_on:
       - db
 
   db:
     image: pgvector/pgvector:pg16
+    container_name: beat-scrobble-db
+    restart: unless-stopped
     environment:
       POSTGRES_DB: beatscrobble
       POSTGRES_PASSWORD: password
     volumes:
       - ./db-data:/var/lib/postgresql/data
+```
+
+### Docker Compose (Complete / Advanced)
+
+Full configuration showcasing all available capabilities.
+
+```yaml
+services:
+  beat-scrobble:
+    image: saturnxdev/beat-scrobble:latest
+    container_name: beat-scrobble
+    restart: unless-stopped
+    ports:
+      - "4110:4110"
+    environment:
+      # --- Core Configuration ---
+      - BEAT_SCROBBLE_DATABASE_URL=postgres://postgres:password@db:5432/beatscrobble
+      - BEAT_SCROBBLE_LISTEN_PORT=4110
+      - BEAT_SCROBBLE_BIND_ADDR=0.0.0.0
+      - BEAT_SCROBBLE_ALLOWED_HOSTS=beatscrobble.local,localhost
+      - BEAT_SCROBBLE_CORS_ALLOWED_ORIGINS=http://beatscrobble.local,http://localhost:4110
+      - BEAT_SCROBBLE_CONFIG_DIR=/etc/beat_scrobble
+      
+      # --- Security & Auth ---
+      - BEAT_SCROBBLE_DEFAULT_USERNAME=admin
+      - BEAT_SCROBBLE_DEFAULT_PASSWORD=changeme
+      - BEAT_SCROBBLE_LOGIN_GATE=true          # If true, blocks public routes until login
+      - PUID=1000                              # User ID for file permissions
+      - PGID=1000                              # Group ID for file permissions
+
+      # --- External Services ---
+      - BEAT_SCROBBLE_MUSICBRAINZ_URL=https://musicbrainz.org
+      - BEAT_SCROBBLE_MUSICBRAINZ_RATE_LIMIT=1 # Requests per second
+      - BEAT_SCROBBLE_DISABLE_MUSICBRAINZ=false
+      - BEAT_SCROBBLE_DISABLE_COVER_ART_ARCHIVE=false
+      - BEAT_SCROBBLE_DISABLE_DEEZER=false
+      
+      # --- Performance ---
+      - BEAT_SCROBBLE_ENABLE_FULL_IMAGE_CACHE=true
+      - BEAT_SCROBBLE_THROTTLE_IMPORTS_MS=0    # Delay between import batches (0 = fast)
+      - BEAT_SCROBBLE_ENABLE_STRUCTURED_LOGGING=true
+      - BEAT_SCROBBLE_LOG_LEVEL=info           # debug, info, warn, error, fatal
+
+      # --- Relay Mode (ListenBrainz) ---
+      - BEAT_SCROBBLE_ENABLE_LBZ_RELAY=false
+      # - BEAT_SCROBBLE_LBZ_RELAY_URL=https://api.listenbrainz.org
+      # - BEAT_SCROBBLE_LBZ_RELAY_TOKEN=your_token_here
+
+      # --- Custom Import Logic ---
+      - BEAT_SCROBBLE_SKIP_IMPORT=false
+      - BEAT_SCROBBLE_FETCH_IMAGES_DURING_IMPORT=true
+      - BEAT_SCROBBLE_ARTIST_SEPARATORS_REGEX=\s+·\s+;;\s+feat\.\s+
+      # - BEAT_SCROBBLE_IMPORT_BEFORE_UNIX=1700000000
+      # - BEAT_SCROBBLE_IMPORT_AFTER_UNIX=1600000000
+
+      # --- Subsonic Integration ---
+      # - BEAT_SCROBBLE_SUBSONIC_URL=https://music.example.com
+      # - BEAT_SCROBBLE_SUBSONIC_PARAMS=u=user&t=token&s=salt&v=1.16.1&c=app
+      
+    volumes:
+      - ./data:/app/data
+      - ./config:/etc/beat_scrobble
+      - ./import:/etc/beat_scrobble/import    # Place files here for auto-import
+    depends_on:
+      - db
+
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: beat-scrobble-db
+    restart: unless-stopped
+    shm_size: 256mb                            # Recommended for larger databases
+    environment:
+      POSTGRES_DB: beatscrobble
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 ```
 
 ### Build from Source
