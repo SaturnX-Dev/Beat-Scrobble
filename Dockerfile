@@ -73,6 +73,9 @@ COPY ./client/public ./client/public
 COPY ./assets ./assets
 COPY ./db ./db
 
+# Create config directory
+RUN mkdir -p /etc/beat_scrobble && chown beatscrobble:beatscrobble /etc/beat_scrobble
+
 # Copy entrypoint script
 COPY ./entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
