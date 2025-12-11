@@ -10,12 +10,15 @@ ENV BUILD_TARGET=docker
 WORKDIR /client
 
 # Cache dependencies first
-COPY ./client/package.json ./client/package-lock.json ./
-RUN npm ci
+# Enable Corepack (includes pnpm)
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+COPY ./client/package.json ./client/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # Copy source and build
 COPY ./client .
-RUN npm run build
+RUN pnpm run build
 
 # ============================================
 # Stage 2: Go Backend Build
