@@ -86,6 +86,8 @@ type DB interface {
 	// Etc
 	ImageHasAssociation(ctx context.Context, image uuid.UUID) (bool, error)
 	GetImageSource(ctx context.Context, image uuid.UUID) (string, error)
+	GetAlbumByImage(ctx context.Context, image uuid.UUID) (*models.Album, error)
+	GetArtistByImage(ctx context.Context, image uuid.UUID) (*models.Artist, error)
 	AlbumsWithoutImages(ctx context.Context, from int32) ([]*models.Album, error)
 	GetExportPage(ctx context.Context, opts GetExportPageOpts) ([]*ExportItem, error)
 	// Theme

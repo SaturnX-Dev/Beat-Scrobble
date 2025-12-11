@@ -106,6 +106,24 @@ func ImportLastFMFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrainzCall
 				artistMbidMap = append(artistMbidMap, catalog.ArtistMbidMap{Artist: track.Artist.Text, Mbid: artistMbzID})
 			}
 
+			var imgURL string
+			// Try to find the best image (extralarge > large > medium)
+			// Last.fm usually returns them in order but we shouldn't rely on it
+			for _, img := range track.Images {
+				if img.Url == "" {
+					continue
+				}
+				if img.Size == "extralarge" {
+					imgURL = img.Url
+					break // Found best quality
+				}
+				if img.Size == "large" {
+					imgURL = img.Url
+				} else if img.Size == "medium" && imgURL == "" {
+					imgURL = img.Url
+				}
+			}
+
 			opts := catalog.SubmitListenOpts{
 				MbzCaller:          mbzc,
 				Artist:             track.Artist.Text,
@@ -121,6 +139,7 @@ func ImportLastFMFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrainzCall
 				UserID:             userID,
 				SkipCacheImage:     !cfg.FetchImagesDuringImport(),
 				DeduplicateFuzzy:   true,
+				ImageURL:           imgURL,
 			}
 			err = catalog.SubmitListen(ctx, store, opts)
 			if err != nil {

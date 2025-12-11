@@ -6,6 +6,7 @@ import {
   Scripts,
   ScrollRestoration,
   useRouteError,
+  useLocation,
 } from "react-router";
 import { type ReactNode } from "react";
 
@@ -87,6 +88,10 @@ export function Layout({ children }: { children: ReactNode }) {
 export default function App() {
   // Presence heartbeat for AI Now Playing optimization
   usePresenceHeartbeat();
+  const location = useLocation();
+
+  // Hide sidebar on auth pages and public profiles
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/onboarding' || location.pathname.startsWith('/u/');
 
   // Register service worker for PWA
   if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
@@ -112,10 +117,10 @@ export default function App() {
           >
             <SpotifyProvider>
               <GlobalBackground />
-              <MobileNavBar />
+              {!isAuthPage && <MobileNavBar />}
               <div className="flex-col flex sm:flex-row min-h-screen relative z-10">
-                <Sidebar />
-                <div className="flex flex-col items-center mx-auto w-full ml-0 pb-20 sm:pb-0 sm:ml-20 transition-all duration-300">
+                {!isAuthPage && <Sidebar />}
+                <div className={`flex flex-col items-center mx-auto w-full transition-all duration-300 ${isAuthPage ? 'ml-0 pb-0' : 'ml-0 pb-20 sm:pb-0 sm:ml-20'}`}>
                   <Outlet />
                 </div>
               </div>

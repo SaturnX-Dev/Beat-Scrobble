@@ -25,6 +25,7 @@ type AssociateAlbumOpts struct {
 	TrackName         string // required
 	Mbzc              mbz.MusicBrainzCaller
 	SkipCacheImage    bool
+	ImageURL          string
 }
 
 func AssociateAlbum(ctx context.Context, d db.DB, opts AssociateAlbumOpts) (*models.Album, error) {
@@ -127,11 +128,19 @@ func createOrUpdateAlbumWithMbzReleaseID(ctx context.Context, d db.DB, opts Asso
 
 		l.Debug().Msg("Searching for album images...")
 		var imgid uuid.UUID
-		imgUrl, err := images.GetAlbumImage(ctx, images.AlbumImageOpts{
-			Artists:      utils.UniqueIgnoringCase(slices.Concat(utils.FlattenMbzArtistCreditNames(release.ArtistCredit), utils.FlattenArtistNames(opts.Artists))),
-			Album:        release.Title,
-			ReleaseMbzID: &opts.ReleaseMbzID,
-		})
+		var imgUrl string
+		var err error
+
+		if opts.ImageURL != "" {
+			l.Debug().Msgf("Using provided image URL: %s", opts.ImageURL)
+			imgUrl = opts.ImageURL
+		} else {
+			imgUrl, err = images.GetAlbumImage(ctx, images.AlbumImageOpts{
+				Artists:      utils.UniqueIgnoringCase(slices.Concat(utils.FlattenMbzArtistCreditNames(release.ArtistCredit), utils.FlattenArtistNames(opts.Artists))),
+				Album:        release.Title,
+				ReleaseMbzID: &opts.ReleaseMbzID,
+			})
+		}
 
 		if err == nil && imgUrl != "" {
 			imgid = uuid.New()
@@ -220,11 +229,19 @@ func matchAlbumByTitle(ctx context.Context, d db.DB, opts AssociateAlbumOpts) (*
 		return nil, fmt.Errorf("matchAlbumByTitle: %w", err)
 	} else {
 		var imgid uuid.UUID
-		imgUrl, err := images.GetAlbumImage(ctx, images.AlbumImageOpts{
-			Artists:      utils.FlattenArtistNames(opts.Artists),
-			Album:        opts.ReleaseName,
-			ReleaseMbzID: &opts.ReleaseMbzID,
-		})
+		var imgUrl string
+		var err error
+
+		if opts.ImageURL != "" {
+			l.Debug().Msgf("Using provided image URL: %s", opts.ImageURL)
+			imgUrl = opts.ImageURL
+		} else {
+			imgUrl, err = images.GetAlbumImage(ctx, images.AlbumImageOpts{
+				Artists:      utils.FlattenArtistNames(opts.Artists),
+				Album:        opts.ReleaseName,
+				ReleaseMbzID: &opts.ReleaseMbzID,
+			})
+		}
 		if err == nil && imgUrl != "" {
 			imgid = uuid.New()
 			if !opts.SkipCacheImage {

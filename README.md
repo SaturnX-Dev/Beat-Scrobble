@@ -480,26 +480,13 @@ The included `nginx.conf` provides:
 
 ## 🏗️ Architecture
 
-```mermaid
-graph TD
-    User[User] -->|HTTPS| Nginx[Nginx Reverse Proxy]
-    Nginx -->|Serving /| Client[React Client 19]
-    Nginx -->|Proxy /apis| API[Go Backend API 1.24]
-    
-    subgraph "Backend Core"
-        API --> Engine[Engine / Router]
-        Engine --> Handlers[API Handlers]
-        Handlers --> Repo[Repository Layer]
-        Repo -->|SQL| DB[(PostgreSQL + pgvector)]
-        Engine --> Worker[Background Worker]
-    end
-    
-    subgraph "External Services"
-        Handlers -->|Auth & Metadata| Spotify[Spotify API]
-        Handlers -->|AI Generation| OpenRouter[OpenRouter AI]
-        Worker -->|Scrobble Sync| LB[ListenBrainz]
-    end
-```
+![Architecture](assets/architecture.png)
+
+### 🖼️ Image Loading Flow
+
+When images are missing or have invalid URLs, Beat Scrobble automatically searches external providers:
+
+![Image Loading Flow](assets/image_loading_flow.png)
 
 ---
 

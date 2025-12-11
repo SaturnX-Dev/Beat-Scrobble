@@ -2,6 +2,7 @@ import { globalStyle } from "@vanilla-extract/css";
 import { themeVars } from "./vars.css";
 
 export type Theme = {
+  // Core Colors (14)
   bg: string;
   bgSecondary: string;
   bgTertiary: string;
@@ -16,11 +17,117 @@ export type Theme = {
   warning: string;
   info: string;
   success: string;
+  // Borders (3)
+  border: string;
+  borderSecondary: string;
+  borderFocus: string;
+  // Shadows (3)
+  shadow: string;
+  shadowHover: string;
+  shadowGlow: string;
+  // Gradients (3)
+  gradientStart: string;
+  gradientEnd: string;
+  gradientAngle: string;
+  // Aura (3)
+  auraOpacity: string;
+  auraBlur: string;
+  auraSize: string;
+  // Typography (4)
+  fontPrimary: string;
+  fontSecondary: string;
+  headerWeight: string;
+  bodyWeight: string;
+  // Radius (3)
+  radiusSm: string;
+  radiusMd: string;
+  radiusLg: string;
+  // Animation (2)
+  transitionSpeed: string;
+  transitionEase: string;
+  // Links (3)
+  link: string;
+  linkHover: string;
+  linkActive: string;
+  // Overlay (3)
+  overlay: string;
+  overlayDim: string;
+  backdropBlur: string;
+  // Charts (6)
+  chart1: string;
+  chart2: string;
+  chart3: string;
+  chart4: string;
+  chart5: string;
+  chart6: string;
+  // Glass (2)
+  glassOpacity: string;
+  glassBorder: string;
 };
 
 export const THEME_KEYS = ["--color"];
 
-export const themes: Record<string, Theme> = {
+// Core theme properties (required)
+type CoreTheme = Pick<Theme,
+  'bg' | 'bgSecondary' | 'bgTertiary' | 'fg' | 'fgSecondary' | 'fgTertiary' |
+  'primary' | 'primaryDim' | 'accent' | 'accentDim' | 'error' | 'warning' | 'info' | 'success'
+>;
+
+// Generate default extended properties from core colors
+function generateDefaults(core: CoreTheme): Theme {
+  return {
+    ...core,
+    // Borders - derived from bg tertiary
+    border: core.bgTertiary,
+    borderSecondary: core.bgSecondary,
+    borderFocus: core.primary,
+    // Shadows - derived from bg
+    shadow: `${core.bg}40`,
+    shadowHover: `${core.bg}60`,
+    shadowGlow: `${core.primary}30`,
+    // Gradients - primary to accent
+    gradientStart: core.primary,
+    gradientEnd: core.accent,
+    gradientAngle: "135deg",
+    // Aura
+    auraOpacity: "0.3",
+    auraBlur: "100px",
+    auraSize: "60%",
+    // Typography
+    fontPrimary: "'Inter', 'Jost', sans-serif",
+    fontSecondary: "'Inter', sans-serif",
+    headerWeight: "700",
+    bodyWeight: "400",
+    // Radius
+    radiusSm: "0.375rem",
+    radiusMd: "0.75rem",
+    radiusLg: "1.5rem",
+    // Animation
+    transitionSpeed: "200ms",
+    transitionEase: "cubic-bezier(0.4, 0, 0.2, 1)",
+    // Links - derived from primary/accent
+    link: core.primary,
+    linkHover: core.accent,
+    linkActive: core.primaryDim,
+    // Overlay
+    overlay: `${core.bg}80`,
+    overlayDim: `${core.bg}B0`,
+    backdropBlur: "12px",
+    // Charts - spectrum of colors
+    chart1: core.primary,
+    chart2: core.accent,
+    chart3: core.success,
+    chart4: core.info,
+    chart5: core.warning,
+    chart6: core.error,
+    // Glass
+    glassOpacity: "0.3",
+    glassBorder: `${core.bgTertiary}40`,
+  };
+}
+
+// Define core themes (only the required 14 properties)
+const coreThemes: Record<string, CoreTheme> = {
   yuu: {
     bg: "#1e1816",
     bgSecondary: "#2f2623",
@@ -214,6 +321,38 @@ export const themes: Record<string, Theme> = {
     info: "#17A2B8",
   },
   // Modern Themes
+  modernDark: {
+    bg: "#000000",
+    bgSecondary: "#1c1c1e",
+    bgTertiary: "#2c2c2e",
+    fg: "#ffffff",
+    fgSecondary: "#8e8e93",
+    fgTertiary: "#48484a",
+    primary: "#0a84ff",
+    primaryDim: "#007aff",
+    accent: "#5e5ce6",
+    accentDim: "#5e5ce6",
+    error: "#ff453a",
+    warning: "#ff9f0a",
+    success: "#32d74b",
+    info: "#64d2ff",
+  },
+  modernLight: {
+    bg: "#f2f2f7",
+    bgSecondary: "#ffffff",
+    bgTertiary: "#e5e5ea",
+    fg: "#000000",
+    fgSecondary: "#8e8e93",
+    fgTertiary: "#c7c7cc",
+    primary: "#007aff",
+    primaryDim: "#007aff",
+    accent: "#5856d6",
+    accentDim: "#5856d6",
+    error: "#ff3b30",
+    warning: "#ff9500",
+    success: "#34c759",
+    info: "#5ac8fa",
+  },
   rose: {
     bg: "#1f1119",
     bgSecondary: "#2d1a25",
@@ -390,7 +529,404 @@ export const themes: Record<string, Theme> = {
     success: "#4ade80",
     info: "#60a5fa",
   },
+
+
+  // ✨ Premium Pastel Light (Cotton Candy Set)
+  cottonCandy: {
+    bg: "#FFF5F7",
+    bgSecondary: "#FFEFF3",
+    bgTertiary: "#FFE0E9",
+    fg: "#8A4B58",
+    fgSecondary: "#B57B89",
+    fgTertiary: "#D6AAB4",
+    primary: "#FF9EBB",
+    primaryDim: "#FF7CA3",
+    accent: "#FFC499",
+    accentDim: "#FFAC75",
+    error: "#FF8FA3",
+    warning: "#FFE08A",
+    success: "#A7F3D0",
+    info: "#BAE6FD",
+  },
+  macaroon: {
+    bg: "#FFF8F2",
+    bgSecondary: "#FFF0E6",
+    bgTertiary: "#FFDEC5",
+    fg: "#7C523E",
+    fgSecondary: "#A67C68",
+    fgTertiary: "#CCAAA0",
+    primary: "#FFB088",
+    primaryDim: "#FF905C",
+    accent: "#FDE68A",
+    accentDim: "#FCD34D",
+    error: "#FCA5A5",
+    warning: "#FDE047",
+    success: "#86EFAC",
+    info: "#93C5FD",
+  },
+  sorbet: {
+    bg: "#FEFCE8",
+    bgSecondary: "#FEF9C3",
+    bgTertiary: "#FEF08A",
+    fg: "#713F12",
+    fgSecondary: "#A16207",
+    fgTertiary: "#CA8A04",
+    primary: "#FDE047",
+    primaryDim: "#FACC15",
+    accent: "#86EFAC",
+    accentDim: "#4ADE80",
+    error: "#F87171",
+    warning: "#FBBF24",
+    success: "#4ADE80",
+    info: "#60A5FA",
+  },
+  matcha: {
+    bg: "#F0FDF4",
+    bgSecondary: "#DCFCE7",
+    bgTertiary: "#BBF7D0",
+    fg: "#14532D",
+    fgSecondary: "#166534",
+    fgTertiary: "#15803D",
+    primary: "#86EFAC",
+    primaryDim: "#4ADE80",
+    accent: "#67E8F9",
+    accentDim: "#22D3EE",
+    error: "#FCA5A5",
+    warning: "#FDE047",
+    success: "#86EFAC",
+    info: "#67E8F9",
+  },
+  glacier: {
+    bg: "#F0F9FF",
+    bgSecondary: "#E0F2FE",
+    bgTertiary: "#BAE6FD",
+    fg: "#0C4A6E",
+    fgSecondary: "#0369A1",
+    fgTertiary: "#0284C7",
+    primary: "#7DD3FC",
+    primaryDim: "#38BDF8",
+    accent: "#A78BFA",
+    accentDim: "#8B5CF6",
+    error: "#F87171",
+    warning: "#FBBF24",
+    success: "#4ADE80",
+    info: "#38BDF8",
+  },
+  lilac: {
+    bg: "#FAF5FF",
+    bgSecondary: "#F3E8FF",
+    bgTertiary: "#E9D5FF",
+    fg: "#581C87",
+    fgSecondary: "#6B21A8",
+    fgTertiary: "#7E22CE",
+    primary: "#C084FC",
+    primaryDim: "#A855F7",
+    accent: "#F472B6",
+    accentDim: "#EC4899",
+    error: "#F472B6",
+    warning: "#FDE047",
+    success: "#4ADE80",
+    info: "#60A5FA",
+  },
+
+  // ✨ Premium Dark Pastel (Cotton Candy Set)
+  velvet: {
+    bg: "#181416",
+    bgSecondary: "#241E21",
+    bgTertiary: "#332A2F",
+    fg: "#FCE7F3",
+    fgSecondary: "#FBCFE8",
+    fgTertiary: "#F9A8D4",
+    primary: "#F472B6",
+    primaryDim: "#EC4899",
+    accent: "#C084FC",
+    accentDim: "#A855F7",
+    error: "#FB7185",
+    warning: "#FCD34D",
+    success: "#86EFAC",
+    info: "#67E8F9",
+  },
+  embers: {
+    bg: "#181412",
+    bgSecondary: "#261E1A",
+    bgTertiary: "#362B25",
+    fg: "#FFEDD5",
+    fgSecondary: "#FED7AA",
+    fgTertiary: "#FDBA74",
+    primary: "#FB923C",
+    primaryDim: "#F97316",
+    accent: "#F472B6",
+    accentDim: "#EC4899",
+    error: "#EF4444",
+    warning: "#F59E0B",
+    success: "#10B981",
+    info: "#3B82F6",
+  },
+  firefly: {
+    bg: "#161610",
+    bgSecondary: "#212117",
+    bgTertiary: "#2E2E20",
+    fg: "#FEF9C3",
+    fgSecondary: "#FEF08A",
+    fgTertiary: "#FDE047",
+    primary: "#FACC15",
+    primaryDim: "#EAB308",
+    accent: "#A3E635",
+    accentDim: "#84CC16",
+    error: "#EF4444",
+    warning: "#EAB308",
+    success: "#22C55E",
+    info: "#3B82F6",
+  },
+  aurora: {
+    bg: "#0F1815",
+    bgSecondary: "#162420",
+    bgTertiary: "#1F332D",
+    fg: "#DCFCE7",
+    fgSecondary: "#BBF7D0",
+    fgTertiary: "#86EFAC",
+    primary: "#4ADE80",
+    primaryDim: "#22C55E",
+    accent: "#2DD4BF",
+    accentDim: "#14B8A6",
+    error: "#F87171",
+    warning: "#FBBF24",
+    success: "#4ADE80",
+    info: "#38BDF8",
+  },
+  abyss: {
+    bg: "#0F1720",
+    bgSecondary: "#162231",
+    bgTertiary: "#1E2E42",
+    fg: "#E0F2FE",
+    fgSecondary: "#BAE6FD",
+    fgTertiary: "#7DD3FC",
+    primary: "#60A5FA",
+    primaryDim: "#3B82F6",
+    accent: "#818CF8",
+    accentDim: "#6366F1",
+    error: "#F87171",
+    warning: "#FBBF24",
+    success: "#4ADE80",
+    info: "#60A5FA",
+  },
+  nebula: {
+    bg: "#14101A",
+    bgSecondary: "#1E1826",
+    bgTertiary: "#2A2136",
+    fg: "#F3E8FF",
+    fgSecondary: "#E9D5FF",
+    fgTertiary: "#D8B4FE",
+    primary: "#C084FC",
+    primaryDim: "#A855F7",
+    accent: "#F472B6",
+    accentDim: "#EC4899",
+    error: "#F87171",
+    warning: "#FBBF24",
+    success: "#4ADE80",
+    info: "#60A5FA",
+  },
+
+  // Pastel Themes (Marshmallow Set)
+  marshmallow: {
+    bg: "#FFF9F6",
+    bgSecondary: "#FFEFE6",
+    bgTertiary: "#FFDCC8",
+    fg: "#604038",
+    fgSecondary: "#8A6359",
+    fgTertiary: "#B38A7E",
+    primary: "#FFB7A2",
+    primaryDim: "#FF9276",
+    accent: "#FFD6A3",
+    accentDim: "#FBB56B",
+    error: "#F99797",
+    warning: "#FACC6B",
+    success: "#9FE3B4",
+    info: "#9FC9F5",
+  },
+  lagoon: {
+    bg: "#F4FBFF",
+    bgSecondary: "#E4F5FF",
+    bgTertiary: "#CBE8FF",
+    fg: "#184155",
+    fgSecondary: "#295F78",
+    fgTertiary: "#4D86A0",
+    primary: "#8ED7FF",
+    primaryDim: "#5DBFF5",
+    accent: "#A6F0E0",
+    accentDim: "#63D9C1",
+    error: "#F9A3B3",
+    warning: "#FDE47B",
+    success: "#82E9BC",
+    info: "#7FB6FF",
+  },
+  blossom: {
+    bg: "#FFF7FA",
+    bgSecondary: "#FFEAF3",
+    bgTertiary: "#FFD3E5",
+    fg: "#5F344A",
+    fgSecondary: "#8A5571",
+    fgTertiary: "#B17D97",
+    primary: "#FFB1D2",
+    primaryDim: "#F984B3",
+    accent: "#F9D0FF",
+    accentDim: "#E7A8FF",
+    error: "#F78CA8",
+    warning: "#FCD27F",
+    success: "#A5F0C9",
+    info: "#B3D8FF",
+  },
+  cloud: {
+    bg: "#F8FBFF",
+    bgSecondary: "#ECF2FF",
+    bgTertiary: "#DCE6FF",
+    fg: "#293042",
+    fgSecondary: "#4A546A",
+    fgTertiary: "#747E96",
+    primary: "#B8C8FF",
+    primaryDim: "#8EA5FF",
+    accent: "#CFE8FF",
+    accentDim: "#9BD0FF",
+    error: "#F79C9C",
+    warning: "#F9D577",
+    success: "#9BE3B0",
+    info: "#8BC5FF",
+  },
+  pistache: {
+    bg: "#F7FFF7",
+    bgSecondary: "#E8FAE7",
+    bgTertiary: "#D3F2D1",
+    fg: "#233526",
+    fgSecondary: "#415843",
+    fgTertiary: "#6A8469",
+    primary: "#B9F0B8",
+    primaryDim: "#89DC8A",
+    accent: "#F0F6B2",
+    accentDim: "#D9E37C",
+    error: "#F79B9B",
+    warning: "#F4D56F",
+    success: "#8BE0A0",
+    info: "#97D6CF",
+  },
+  mist: {
+    bg: "#FDFBFF",
+    bgSecondary: "#F3EEFF",
+    bgTertiary: "#E1D6FF",
+    fg: "#372F54",
+    fgSecondary: "#564C80",
+    fgTertiary: "#7B72A8",
+    primary: "#C3BCFF",
+    primaryDim: "#9D92FF",
+    accent: "#D4E5FF",
+    accentDim: "#A7C5FF",
+    error: "#F29BB4",
+    warning: "#FAD886",
+    success: "#A8E4CC",
+    info: "#A7C3FF",
+  },
+  // Dark pastel variants
+  marshmallowDark: {
+    bg: "#201618",
+    bgSecondary: "#2B1D20",
+    bgTertiary: "#3A272A",
+    fg: "#FEECE5",
+    fgSecondary: "#F7CEC0",
+    fgTertiary: "#E7AC98",
+    primary: "#FF9C80",
+    primaryDim: "#E46F52",
+    accent: "#FFC77C",
+    accentDim: "#E29A42",
+    error: "#F88383",
+    warning: "#F6C451",
+    success: "#6FD8A0",
+    info: "#76B9F0",
+  },
+  lagoonDark: {
+    bg: "#071821",
+    bgSecondary: "#0B232F",
+    bgTertiary: "#103346",
+    fg: "#DEF5FF",
+    fgSecondary: "#B7E3F7",
+    fgTertiary: "#8DCADE",
+    primary: "#5AC3F5",
+    primaryDim: "#2D99D6",
+    accent: "#5AD7C5",
+    accentDim: "#2EB59E",
+    error: "#F58698",
+    warning: "#F2C341",
+    success: "#4FD4A0",
+    info: "#5AAAF5",
+  },
+  blossomDark: {
+    bg: "#1C1016",
+    bgSecondary: "#261620",
+    bgTertiary: "#341F2D",
+    fg: "#FFE4F0",
+    fgSecondary: "#F9BDD7",
+    fgTertiary: "#EC91B8",
+    primary: "#F78DBD",
+    primaryDim: "#DB5F95",
+    accent: "#E8B4FF",
+    accentDim: "#C484F6",
+    error: "#F97098",
+    warning: "#F7B84F",
+    success: "#74DEB4",
+    info: "#8AB9FF",
+  },
+  cloudDark: {
+    bg: "#0D1018",
+    bgSecondary: "#151B24",
+    bgTertiary: "#1E2734",
+    fg: "#E4ECFF",
+    fgSecondary: "#C2CDE8",
+    fgTertiary: "#9BA8C8",
+    primary: "#8FA8FF",
+    primaryDim: "#637DFF",
+    accent: "#84C5FF",
+    accentDim: "#4FA4EF",
+    error: "#F47272",
+    warning: "#F3B94A",
+    success: "#68D39D",
+    info: "#71B5FF",
+  },
+  pistacheDark: {
+    bg: "#101812",
+    bgSecondary: "#17241B",
+    bgTertiary: "#223127",
+    fg: "#E7F8E4",
+    fgSecondary: "#C6E9BF",
+    fgTertiary: "#A0D396",
+    primary: "#8BDD8C",
+    primaryDim: "#57C461",
+    accent: "#CBD970",
+    accentDim: "#A9B54A",
+    error: "#F37979",
+    warning: "#E9BC45",
+    success: "#56D18A",
+    info: "#7DC9BC",
+  },
+  mistDark: {
+    bg: "#141322",
+    bgSecondary: "#1B1A30",
+    bgTertiary: "#242141",
+    fg: "#F1ECFF",
+    fgSecondary: "#D3CCF7",
+    fgTertiary: "#B1A8E5",
+    primary: "#A39AFF",
+    primaryDim: "#7C71F0",
+    accent: "#8FB3FF",
+    accentDim: "#628FEC",
+    error: "#F47EAE",
+    warning: "#F2C25A",
+    success: "#7DDAC6",
+    info: "#8FA8FF",
+  },
 };
+
+// Generate full themes with all 49 properties
+export const themes: Record<string, Theme> = Object.fromEntries(
+  Object.entries(coreThemes).map(([name, core]) => [name, generateDefaults(core)])
+);
 
 export default themes;
 
@@ -399,6 +935,7 @@ Object.entries(themes).forEach(([name, theme]) => {
 
   globalStyle(selector, {
     vars: {
+      // Core colors
       [themeVars.bg]: theme.bg,
       [themeVars.bgSecondary]: theme.bgSecondary,
       [themeVars.bgTertiary]: theme.bgTertiary,
@@ -413,6 +950,52 @@ Object.entries(themes).forEach(([name, theme]) => {
       [themeVars.warning]: theme.warning,
       [themeVars.success]: theme.success,
       [themeVars.info]: theme.info,
+      // Borders
+      [themeVars.border]: theme.border,
+      [themeVars.borderSecondary]: theme.borderSecondary,
+      [themeVars.borderFocus]: theme.borderFocus,
+      // Shadows
+      [themeVars.shadow]: theme.shadow,
+      [themeVars.shadowHover]: theme.shadowHover,
+      [themeVars.shadowGlow]: theme.shadowGlow,
+      // Gradients
+      [themeVars.gradientStart]: theme.gradientStart,
+      [themeVars.gradientEnd]: theme.gradientEnd,
+      [themeVars.gradientAngle]: theme.gradientAngle,
+      // Aura
+      [themeVars.auraOpacity]: theme.auraOpacity,
+      [themeVars.auraBlur]: theme.auraBlur,
+      [themeVars.auraSize]: theme.auraSize,
+      // Typography
+      [themeVars.fontPrimary]: theme.fontPrimary,
+      [themeVars.fontSecondary]: theme.fontSecondary,
+      [themeVars.headerWeight]: theme.headerWeight,
+      [themeVars.bodyWeight]: theme.bodyWeight,
+      // Radius
+      [themeVars.radiusSm]: theme.radiusSm,
+      [themeVars.radiusMd]: theme.radiusMd,
+      [themeVars.radiusLg]: theme.radiusLg,
+      // Animation
+      [themeVars.transitionSpeed]: theme.transitionSpeed,
+      [themeVars.transitionEase]: theme.transitionEase,
+      // Links
+      [themeVars.link]: theme.link,
+      [themeVars.linkHover]: theme.linkHover,
+      [themeVars.linkActive]: theme.linkActive,
+      // Overlay
+      [themeVars.overlay]: theme.overlay,
+      [themeVars.overlayDim]: theme.overlayDim,
+      [themeVars.backdropBlur]: theme.backdropBlur,
+      // Charts
+      [themeVars.chart1]: theme.chart1,
+      [themeVars.chart2]: theme.chart2,
+      [themeVars.chart3]: theme.chart3,
+      [themeVars.chart4]: theme.chart4,
+      [themeVars.chart5]: theme.chart5,
+      [themeVars.chart6]: theme.chart6,
+      // Glass
+      [themeVars.glassOpacity]: theme.glassOpacity,
+      [themeVars.glassBorder]: theme.glassBorder,
     },
   });
 });

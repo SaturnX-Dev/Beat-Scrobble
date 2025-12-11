@@ -49,18 +49,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       .then((data) => {
         if (data.error) {
           setUser(null);
-          // Auth Guard: If not logged in and not on public pages, redirect to login
+          // Auth Guard: If not logged in, redirect to login (except public routes)
           if (typeof window !== "undefined") {
             const path = window.location.pathname;
-            // Public paths: /login, maybe /u/ (public profiles) if we allow them
-            // The user requirement says "cuando se abre la app por pimera ves oh se ve el dominio no carga nada ... pagina de login obligatoria"
-            // So we enforce login everywhere except /login and public profiles /u/*
-            if (
-              path !== "/login" &&
-              !path.startsWith("/u/") &&
-              !path.startsWith("/register") // in case we add register route separate
-            ) {
-              window.location.href = "/login?redirectTo=" + path;
+            // Public paths that don't require authentication
+            const publicPaths = [
+              "/login",
+              "/u/",  // Public profiles
+            ];
+
+            const isPublicPath = publicPaths.some(p =>
+              p.endsWith("/") ? path.startsWith(p) : path === p
+            );
+
+            if (!isPublicPath) {
+              // Not on a public path and not logged in - redirect to login
+              window.location.href = "/login?redirectTo=" + encodeURIComponent(path);
             }
           }
         } else {
@@ -109,7 +113,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         if (cfg.default_theme && cfg.default_theme !== "") {
           setDefaultTheme(cfg.default_theme);
         } else {
-          setDefaultTheme("yuu");
+          // Auto-detect based on system preference
+          const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          setDefaultTheme(isDarkMode ? "slate" : "snow");
         }
         if (cfg.version) {
           setServerVersion(cfg.version);

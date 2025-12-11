@@ -4,7 +4,7 @@ import themes from "~/styles/themes.css";
 import { AsyncButton } from "../AsyncButton";
 import { CardAuraSelector } from "./CardAuraSelector";
 import { ThemePaletteSelector } from "./ThemePaletteSelector";
-import { CustomElementColors } from "./CustomElementColors";
+import { ThemeEditor } from "./ThemeEditor";
 import { CustomBackground } from "./CustomBackground";
 import { Collapsible } from "../ui/Collapsible";
 import { Clock, Palette, Settings2, Moon, Sun } from "lucide-react";
@@ -13,20 +13,7 @@ export function ThemeSwitcher() {
   const { setTheme, setCustomTheme, getCustomTheme, resetTheme } = useTheme();
 
   const initialTheme = {
-    bg: "#1e1816",
-    bgSecondary: "#2f2623",
-    bgTertiary: "#453733",
-    fg: "#f8f3ec",
-    fgSecondary: "#d6ccc2",
-    fgTertiary: "#b4a89c",
-    primary: "#f5a97f",
-    primaryDim: "#d88b65",
-    accent: "#f9db6d",
-    accentDim: "#d9bc55",
-    error: "#e26c6a",
-    warning: "#f5b851",
-    success: "#8fc48f",
-    info: "#87b8dd",
+    ...themes.modernDark, // Default to modernDark
     // Auto Mode Settings embedded in custom theme
     autoEnabled: false,
     dayStart: 6,
@@ -56,20 +43,14 @@ export function ThemeSwitcher() {
       const hour = new Date().getHours();
       const isDay = hour >= (parsedTheme.dayStart || 6) && hour < (parsedTheme.nightStart || 18);
 
-      // Define palettes
+      // Define palettes using imported themes
       const lightTheme = {
-        bg: "#f2f2f7", bgSecondary: "#ffffff", bgTertiary: "#e5e5ea",
-        fg: "#000000", fgSecondary: "#8e8e93", fgTertiary: "#c7c7cc",
-        primary: "#007aff", primaryDim: "#007aff", accent: "#5856d6", accentDim: "#5856d6",
-        error: "#ff3b30", warning: "#ff9500", success: "#34c759", info: "#5ac8fa",
+        ...themes.modernLight,
         autoEnabled: true, dayStart: parsedTheme.dayStart, nightStart: parsedTheme.nightStart // Preserve settings
       };
 
       const darkTheme = {
-        bg: "#000000", bgSecondary: "#1c1c1e", bgTertiary: "#2c2c2e",
-        fg: "#ffffff", fgSecondary: "#8e8e93", fgTertiary: "#48484a",
-        primary: "#0a84ff", primaryDim: "#007aff", accent: "#5e5ce6", accentDim: "#5e5ce6",
-        error: "#ff453a", warning: "#ff9f0a", success: "#32d74b", info: "#64d2ff",
+        ...themes.modernDark,
         autoEnabled: true, dayStart: parsedTheme.dayStart, nightStart: parsedTheme.nightStart // Preserve settings
       };
 
@@ -194,145 +175,45 @@ export function ThemeSwitcher() {
               </AsyncButton>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Brand Colors */}
-              <div>
-                <h3 className="text-xs font-bold text-[var(--color-fg-secondary)] uppercase tracking-wider mb-4 border-b border-[var(--color-bg-tertiary)] pb-2">Brand</h3>
-                <div className="space-y-3">
-                  {[
-                    { key: 'primary', label: 'Primary' },
-                    { key: 'primaryDim', label: 'Primary Dim' },
-                    { key: 'accent', label: 'Accent' },
-                    { key: 'accentDim', label: 'Accent Dim' },
-                  ].map((color) => {
-                    const theme = parsedTheme;
-                    return (
-                      <div key={color.key} className="flex items-center gap-3">
-                        <input
-                          type="color"
-                          value={theme[color.key]}
-                          onChange={(e) => updateField(color.key, e.target.value)}
-                          className="w-8 h-8 rounded cursor-pointer border-none p-0 bg-transparent"
-                        />
-                        <div className="flex-1">
-                          <label className="text-xs font-medium text-[var(--color-fg)] block">{color.label}</label>
-                          <input
-                            type="text"
-                            value={theme[color.key]}
-                            onChange={(e) => updateField(color.key, e.target.value)}
-                            className="w-full bg-transparent text-[var(--color-fg-secondary)] text-[10px] font-mono outline-none border-none p-0"
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* UI Colors */}
-              <div>
-                <h3 className="text-xs font-bold text-[var(--color-fg-secondary)] uppercase tracking-wider mb-4 border-b border-[var(--color-bg-tertiary)] pb-2">Interface</h3>
-                <div className="space-y-3">
-                  {[
-                    { key: 'bg', label: 'Background' },
-                    { key: 'bgSecondary', label: 'Surface' },
-                    { key: 'bgTertiary', label: 'Border/Highlight' },
-                    { key: 'fg', label: 'Text Primary' },
-                    { key: 'fgSecondary', label: 'Text Secondary' },
-                    { key: 'fgTertiary', label: 'Text Muted' },
-                  ].map((color) => {
-                    const theme = parsedTheme;
-                    return (
-                      <div key={color.key} className="flex items-center gap-3">
-                        <input
-                          type="color"
-                          value={theme[color.key]}
-                          onChange={(e) => updateField(color.key, e.target.value)}
-                          className="w-8 h-8 rounded cursor-pointer border-none p-0 bg-transparent"
-                        />
-                        <div className="flex-1">
-                          <label className="text-xs font-medium text-[var(--color-fg)] block">{color.label}</label>
-                          <input
-                            type="text"
-                            value={theme[color.key]}
-                            onChange={(e) => updateField(color.key, e.target.value)}
-                            className="w-full bg-transparent text-[var(--color-fg-secondary)] text-[10px] font-mono outline-none border-none p-0"
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Status & Actions */}
-              <div className="flex flex-col h-full">
-                <h3 className="text-xs font-bold text-[var(--color-fg-secondary)] uppercase tracking-wider mb-4 border-b border-[var(--color-bg-tertiary)] pb-2">Status</h3>
-                <div className="space-y-3 mb-6">
-                  {[
-                    { key: 'success', label: 'Success' },
-                    { key: 'error', label: 'Error' },
-                    { key: 'warning', label: 'Warning' },
-                    { key: 'info', label: 'Info' },
-                  ].map((color) => {
-                    const theme = parsedTheme;
-                    return (
-                      <div key={color.key} className="flex items-center gap-3">
-                        <input
-                          type="color"
-                          value={theme[color.key]}
-                          onChange={(e) => updateField(color.key, e.target.value)}
-                          className="w-8 h-8 rounded cursor-pointer border-none p-0 bg-transparent"
-                        />
-                        <div className="flex-1">
-                          <label className="text-xs font-medium text-[var(--color-fg)] block">{color.label}</label>
-                          <input
-                            type="text"
-                            value={theme[color.key]}
-                            onChange={(e) => updateField(color.key, e.target.value)}
-                            className="w-full bg-transparent text-[var(--color-fg-secondary)] text-[10px] font-mono outline-none border-none p-0"
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-auto pt-4 border-t border-[var(--color-bg-tertiary)] flex gap-2">
-                  <button
-                    onClick={() => {
-                      const theme = parsedTheme;
-                      const blob = new Blob([JSON.stringify(theme, null, 2)], { type: 'application/json' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = 'theme.json';
-                      a.click();
-                    }}
-                    className="flex-1 py-2 rounded-lg bg-[var(--color-bg)] hover:bg-[var(--color-bg-tertiary)] transition-colors text-xs font-bold text-[var(--color-fg-secondary)] border border-[var(--color-bg-tertiary)]"
-                  >
-                    Download JSON
-                  </button>
-                  <button
-                    onClick={() => {
-                      const theme = parsedTheme;
-                      const css = `:root {\n${Object.entries(theme).map(([k, v]) => `  --color-${k.replace(/[A-Z]/g, m => '-' + m.toLowerCase())}: ${v};`).join('\n')}\n}`;
-                      navigator.clipboard.writeText(css);
-                    }}
-                    className="flex-1 py-2 rounded-lg bg-[var(--color-bg)] hover:bg-[var(--color-bg-tertiary)] transition-colors text-xs font-bold text-[var(--color-fg-secondary)] border border-[var(--color-bg-tertiary)]"
-                  >
-                    Copy CSS
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Modules */}
-            <div className="space-y-4 pt-4 border-t border-[var(--color-bg-tertiary)]">
-              <CustomElementColors />
-              <CustomBackground />
+            {/* Reordered Layout as requested */}
+            <div className="space-y-6">
               <CardAuraSelector />
+
+              <CustomBackground />
+
+              <ThemeEditor
+                theme={parsedTheme}
+                onUpdate={updateField}
+              />
             </div>
+
+            <div className="pt-4 border-t border-[var(--color-bg-tertiary)] flex gap-2">
+              <button
+                onClick={() => {
+                  const theme = parsedTheme;
+                  const blob = new Blob([JSON.stringify(theme, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'theme.json';
+                  a.click();
+                }}
+                className="flex-1 py-2 rounded-lg bg-[var(--color-bg)] hover:bg-[var(--color-bg-tertiary)] transition-colors text-xs font-bold text-[var(--color-fg-secondary)] border border-[var(--color-bg-tertiary)]"
+              >
+                Download JSON
+              </button>
+              <button
+                onClick={() => {
+                  const theme = parsedTheme;
+                  const css = `:root {\n${Object.entries(theme).map(([k, v]) => `  --color-${k.replace(/[A-Z]/g, m => '-' + m.toLowerCase())}: ${v};`).join('\n')}\n}`;
+                  navigator.clipboard.writeText(css);
+                }}
+                className="flex-1 py-2 rounded-lg bg-[var(--color-bg)] hover:bg-[var(--color-bg-tertiary)] transition-colors text-xs font-bold text-[var(--color-fg-secondary)] border border-[var(--color-bg-tertiary)]"
+              >
+                Copy CSS
+              </button>
+            </div>
+
           </div>
         </Collapsible>
       </div>

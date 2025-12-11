@@ -1,6 +1,6 @@
 import { useState } from "react";
 import ThemeOptionLegacy from "./ThemeOption";
-import themes from "~/styles/themes.css";
+import { themes } from "~/styles/themes.css";
 
 interface ThemePaletteSelectorProps {
     setTheme: (name: string) => void;
@@ -10,6 +10,29 @@ interface ThemePaletteSelectorProps {
 
 export function ThemePaletteSelector({ setTheme, setCustom, setCustomTheme }: ThemePaletteSelectorProps) {
     const [isExpanded, setIsExpanded] = useState(false);
+
+    const MODERN_THEME_NAMES = [
+        // Base
+        "modernLight", "modernDark", "slate",
+
+        // Pink & Red
+        "rose", "coral", "blossom", "blossomDark", "cottonCandy", "velvet",
+
+        // Orange, Peach & Yellow
+        "sunset", "amber", "marshmallow", "marshmallowDark", "macaroon", "embers", "sorbet", "firefly",
+
+        // Green
+        "forest", "pistache", "pistacheDark", "matcha", "aurora",
+
+        // Teal & Cyan
+        "teal", "lagoon", "lagoonDark", "glacier",
+
+        // Blue
+        "ocean", "cloud", "cloudDark", "abyss",
+
+        // Purple & Violet
+        "purple", "lavender", "mist", "mistDark", "lilac", "nebula"
+    ];
 
     return (
         <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4 border border-[var(--color-bg-tertiary)]">
@@ -32,48 +55,8 @@ export function ThemePaletteSelector({ setTheme, setCustom, setCustomTheme }: Th
                     <div>
                         <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Modern</h4>
                         <div className="grid grid-cols-2 items-center gap-2">
-                            {/* Dark Theme (Apple Dark) */}
-                            <ThemeOptionLegacy
-                                setTheme={(name: string) => {
-                                    const darkTheme = {
-                                        bg: "#000000", bgSecondary: "#1c1c1e", bgTertiary: "#2c2c2e",
-                                        fg: "#ffffff", fgSecondary: "#8e8e93", fgTertiary: "#48484a",
-                                        primary: "#0a84ff", primaryDim: "#007aff", accent: "#5e5ce6", accentDim: "#5e5ce6",
-                                        error: "#ff453a", warning: "#ff9f0a", success: "#32d74b", info: "#64d2ff"
-                                    };
-                                    setCustomTheme(darkTheme);
-                                    setCustom(JSON.stringify(darkTheme, null, 2));
-                                }}
-                                theme={{
-                                    bg: "#000000", bgSecondary: "#1c1c1e", bgTertiary: "#2c2c2e",
-                                    fg: "#ffffff", fgSecondary: "#8e8e93", fgTertiary: "#48484a",
-                                    primary: "#0a84ff", primaryDim: "#007aff", accent: "#5e5ce6", accentDim: "#5e5ce6",
-                                    error: "#ff453a", warning: "#ff9f0a", success: "#32d74b", info: "#64d2ff"
-                                }}
-                                themeName="Dark"
-                            />
-                            {/* Light Theme (Apple Light) */}
-                            <ThemeOptionLegacy
-                                setTheme={(name: string) => {
-                                    const lightTheme = {
-                                        bg: "#f2f2f7", bgSecondary: "#ffffff", bgTertiary: "#e5e5ea",
-                                        fg: "#000000", fgSecondary: "#8e8e93", fgTertiary: "#c7c7cc",
-                                        primary: "#007aff", primaryDim: "#007aff", accent: "#5856d6", accentDim: "#5856d6",
-                                        error: "#ff3b30", warning: "#ff9500", success: "#34c759", info: "#5ac8fa"
-                                    };
-                                    setCustomTheme(lightTheme);
-                                    setCustom(JSON.stringify(lightTheme, null, 2));
-                                }}
-                                theme={{
-                                    bg: "#f2f2f7", bgSecondary: "#ffffff", bgTertiary: "#e5e5ea",
-                                    fg: "#000000", fgSecondary: "#8e8e93", fgTertiary: "#c7c7cc",
-                                    primary: "#007aff", primaryDim: "#007aff", accent: "#5856d6", accentDim: "#5856d6",
-                                    error: "#ff3b30", warning: "#ff9500", success: "#34c759", info: "#5ac8fa"
-                                }}
-                                themeName="Light"
-                            />
                             {Object.entries(themes)
-                                .filter(([name]) => ["rose", "slate", "ocean", "forest", "sunset", "purple", "coral", "teal", "amber", "lavender"].includes(name))
+                                .filter(([name]) => MODERN_THEME_NAMES.includes(name))
                                 .map(([name, themeData]) => (
                                     <ThemeOptionLegacy
                                         setTheme={(themeName: string) => {
@@ -96,7 +79,7 @@ export function ThemePaletteSelector({ setTheme, setCustom, setCustomTheme }: Th
                         <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Classic</h4>
                         <div className="grid grid-cols-2 items-center gap-2">
                             {Object.entries(themes)
-                                .filter(([name]) => !["rose", "slate", "ocean", "forest", "sunset", "purple", "snow", "coral", "teal", "amber", "lavender"].includes(name))
+                                .filter(([name]) => !MODERN_THEME_NAMES.includes(name) && !["snow"].includes(name)) // Snow is manually excluded if needed, or included in classic logic
                                 .map(([name, themeData]) => (
                                     <ThemeOptionLegacy
                                         setTheme={(themeName: string) => {

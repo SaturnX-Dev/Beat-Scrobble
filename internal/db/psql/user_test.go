@@ -179,7 +179,7 @@ func TestDeleteApiKey(t *testing.T) {
 	require.NoError(t, err)
 
 	// Delete the API key
-	err = store.DeleteApiKey(ctx, 1) // Assuming the ID is auto-generated and starts from 1
+	err = store.DeleteApiKey(ctx, 1, 2) // ID is 1, User ID is 2
 	require.NoError(t, err)
 
 	// Verify the API key was deleted

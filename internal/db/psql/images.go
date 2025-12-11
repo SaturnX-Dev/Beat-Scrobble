@@ -45,6 +45,38 @@ func (d *Psql) GetImageSource(ctx context.Context, image uuid.UUID) (string, err
 	return "", nil
 }
 
+// GetAlbumByImage returns album information by image UUID
+func (d *Psql) GetAlbumByImage(ctx context.Context, image uuid.UUID) (*models.Album, error) {
+	r, err := d.q.GetReleaseByImageID(ctx, &image)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("GetAlbumByImage: %w", err)
+	}
+	return &models.Album{
+		ID:    r.ID,
+		MbzID: r.MusicBrainzID,
+		Image: r.Image,
+	}, nil
+}
+
+// GetArtistByImage returns artist information by image UUID
+func (d *Psql) GetArtistByImage(ctx context.Context, image uuid.UUID) (*models.Artist, error) {
+	r, err := d.q.GetArtistByImage(ctx, &image)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("GetArtistByImage: %w", err)
+	}
+	return &models.Artist{
+		ID:    r.ID,
+		MbzID: r.MusicBrainzID,
+		Image: r.Image,
+	}, nil
+}
+
 func (d *Psql) AlbumsWithoutImages(ctx context.Context, from int32) ([]*models.Album, error) {
 	l := logger.FromContext(ctx)
 	rows, err := d.q.GetReleasesWithoutImages(ctx, repository.GetReleasesWithoutImagesParams{

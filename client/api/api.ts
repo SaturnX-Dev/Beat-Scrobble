@@ -262,8 +262,11 @@ function updateUser(username: string, password: string, currentPassword?: string
       body.append('current_password', currentPassword)
     }
   }
-  return fetch("/apis/web/v1/update/user", {
-    method: "PUT",
+  return request("/apis/web/v1/user", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
     body: body,
   })
 }
@@ -350,12 +353,6 @@ function fetchSpotifyMetadata(id: number, type: "artist" | "album" | "track", sp
   return request(url, { method: "POST" });
 }
 
-function bulkFetchSpotifyMetadata(): Promise<{ success: boolean; processed: number; failed: number; skipped: number }> {
-  return request(`/apis/web/v1/spotify/bulk-fetch`, { method: "POST" }).then(
-    (r) => r.json() as Promise<{ success: boolean; processed: number; failed: number; skipped: number }>
-  );
-}
-
 function exportSpotifyMetadata(): Promise<Blob> {
   return request(`/apis/web/v1/spotify/export-metadata`).then(r => r.blob());
 }
@@ -405,7 +402,6 @@ export {
   spotifySearch,
   getSpotifyConfigured,
   fetchSpotifyMetadata,
-  bulkFetchSpotifyMetadata,
   exportSpotifyMetadata,
   importSpotifyMetadata,
   signup,
@@ -431,25 +427,21 @@ function getAllUsers(): Promise<User[]> {
 }
 
 function createUser(username: string, password: string, role: string): Promise<User> {
-  const form = new URLSearchParams();
-  form.append("username", username);
-  form.append("password", password);
-  form.append("role", role);
   return request(`/apis/web/v1/admin/users`, {
     method: "POST",
-    body: form,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password, role }),
   }).then((r) => r.json() as Promise<User>);
 }
 
 function adminUpdateUser(id: number, opts: { username?: string, password?: string, role?: string }): Promise<Response> {
-  const form = new URLSearchParams();
-  form.append("id", String(id));
-  if (opts.username) form.append("username", opts.username);
-  if (opts.password) form.append("password", opts.password);
-  if (opts.role) form.append("role", opts.role);
-  return request(`/apis/web/v1/admin/users`, {
+  const payload: { role?: string; password?: string } = {};
+  if (opts.password) payload.password = opts.password;
+  if (opts.role) payload.role = opts.role;
+  return request(`/apis/web/v1/admin/users?id=${id}`, {
     method: "PATCH",
-    body: form,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
   });
 }
 

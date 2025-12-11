@@ -61,8 +61,8 @@ export default function ImageReplaceModal({
         <button
           onClick={() => setMode("url")}
           className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all ${mode === "url"
-              ? "bg-[var(--color-bg-secondary)] text-[var(--color-fg)] shadow-sm"
-              : "text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)]"
+            ? "bg-[var(--color-bg-secondary)] text-[var(--color-fg)] shadow-sm"
+            : "text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)]"
             }`}
         >
           <Link size={14} />
@@ -71,8 +71,8 @@ export default function ImageReplaceModal({
         <button
           onClick={() => setMode("spotify")}
           className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all ${mode === "spotify"
-              ? "bg-[#1DB954] text-white shadow-sm"
-              : "text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)]"
+            ? "bg-[#1DB954] text-white shadow-sm"
+            : "text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)]"
             }`}
         >
           <Search size={14} />
@@ -138,7 +138,13 @@ export default function ImageReplaceModal({
                 </button>
               </div>
             ) : (
-              ""
+              <div className="mt-6 pt-4 border-t border-[var(--color-bg-tertiary)]">
+                <p className="text-xs text-[var(--color-fg-secondary)] mb-2">
+                  {type === "Artist"
+                    ? "💡 Tip: Use the 'Spotify Search' tab above to find and apply artist images."
+                    : "No MusicBrainz ID found for suggestions. Try using the 'Spotify Search' tab."}
+                </p>
+              </div>
             )}
           </>
         ) : (

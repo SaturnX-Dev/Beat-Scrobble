@@ -187,6 +187,19 @@ func SignupHandler(store db.DB) http.HandlerFunc {
 		})
 		if err != nil {
 			l.Error().Err(err).Msg("SignupHandler: Failed to create user")
+			// Check if it's a validation error
+			errMsg := err.Error()
+			if strings.Contains(errMsg, "ValidateUsername") || strings.Contains(errMsg, "ValidateAndNormalizePassword") {
+				// Extract the actual validation message
+				if strings.Contains(errMsg, "at least 8 characters") {
+					utils.WriteError(w, "password must be at least 8 characters", http.StatusBadRequest)
+				} else if strings.Contains(errMsg, "username") {
+					utils.WriteError(w, "invalid username format", http.StatusBadRequest)
+				} else {
+					utils.WriteError(w, "validation failed", http.StatusBadRequest)
+				}
+				return
+			}
 			utils.WriteError(w, "registration failed", http.StatusInternalServerError)
 			return
 		}

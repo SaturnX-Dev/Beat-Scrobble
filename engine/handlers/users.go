@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
@@ -92,6 +93,18 @@ func CreateUserHandler(store db.DB) http.HandlerFunc {
 		})
 		if err != nil {
 			l.Error().Err(err).Msg("CreateUserHandler: SaveUser failed")
+			// Check if it's a validation error
+			errMsg := err.Error()
+			if strings.Contains(errMsg, "ValidateUsername") || strings.Contains(errMsg, "ValidateAndNormalizePassword") {
+				if strings.Contains(errMsg, "at least 8 characters") {
+					utils.WriteError(w, "password must be at least 8 characters", http.StatusBadRequest)
+				} else if strings.Contains(errMsg, "username") {
+					utils.WriteError(w, "invalid username format", http.StatusBadRequest)
+				} else {
+					utils.WriteError(w, "validation failed", http.StatusBadRequest)
+				}
+				return
+			}
 			utils.WriteError(w, "failed to create user", http.StatusInternalServerError)
 			return
 		}

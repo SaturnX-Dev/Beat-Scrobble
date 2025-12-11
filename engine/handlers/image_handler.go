@@ -13,6 +13,7 @@ import (
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/catalog"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/images"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 	"github.com/go-chi/chi/v5"
@@ -56,8 +57,9 @@ func ImageHandler(store db.DB) http.HandlerFunc {
 					l.Warn().Msgf("ImageHandler: Could not find requested image %s. Attempting to download from source", imgid.String())
 					sourcePath, err = downloadMissingImage(r.Context(), store, imgid)
 					if err != nil {
-						l.Err(err).Msg("ImageHandler: Failed to redownload missing image")
-						w.WriteHeader(http.StatusInternalServerError)
+						l.Warn().Err(err).Msg("ImageHandler: Failed to redownload missing image, serving default")
+						serveDefaultImage(w, r, imageSize)
+						return
 					}
 				} else if err != nil {
 					l.Err(err).Msg("ImageHandler: Failed to access source image file at large size")
@@ -154,19 +156,142 @@ func serveDefaultImage(w http.ResponseWriter, r *http.Request, size catalog.Imag
 
 // finds the item associated with the image id, downloads it, and saves it in the source path, returning the path to the image
 func downloadMissingImage(ctx context.Context, store db.DB, id uuid.UUID) (string, error) {
+	l := logger.FromContext(ctx)
+
 	src, err := store.GetImageSource(ctx, id)
 	if err != nil {
-		return "", fmt.Errorf("downloadMissingImage: %w", err)
+		return "", fmt.Errorf("downloadMissingImage: GetImageSource: %w", err)
 	}
+
 	var size catalog.ImageSize
 	if cfg.FullImageCacheEnabled() {
 		size = catalog.ImageSizeFull
 	} else {
 		size = catalog.ImageSizeLarge
 	}
-	err = catalog.DownloadAndCacheImage(ctx, id, src, size)
+
+	// If we have a valid URL, try downloading it
+	if src != "" && catalog.ValidateImageURL(src) == nil {
+		err = catalog.DownloadAndCacheImage(ctx, id, src, size)
+		if err == nil {
+			return path.Join(catalog.SourceImageDir(), id.String()), nil
+		}
+		l.Debug().Err(err).Msg("downloadMissingImage: Download from stored URL failed, trying external search")
+	} else {
+		l.Debug().Msgf("downloadMissingImage: No valid URL stored (got: %q), trying external search", src)
+	}
+
+	// URL is empty or invalid, try to find image from external providers
+	newSrc, entityID, entityType, err := findImageFromExternalProviders(ctx, store, id)
 	if err != nil {
 		return "", fmt.Errorf("downloadMissingImage: %w", err)
 	}
+
+	if newSrc == "" {
+		return "", fmt.Errorf("downloadMissingImage: no image found from external providers")
+	}
+
+	// Download the image
+	err = catalog.DownloadAndCacheImage(ctx, id, newSrc, size)
+	if err != nil {
+		return "", fmt.Errorf("downloadMissingImage: DownloadAndCacheImage: %w", err)
+	}
+
+	// Update database with the new image source
+	if entityType == "album" && entityID > 0 {
+		err = store.UpdateAlbum(ctx, db.UpdateAlbumOpts{
+			ID:       entityID,
+			Image:    id,
+			ImageSrc: newSrc,
+		})
+		if err != nil {
+			l.Warn().Err(err).Msg("downloadMissingImage: Failed to update album image source in DB")
+		} else {
+			l.Info().Msgf("downloadMissingImage: Updated album %d image source to %s", entityID, newSrc)
+		}
+	} else if entityType == "artist" && entityID > 0 {
+		err = store.UpdateArtist(ctx, db.UpdateArtistOpts{
+			ID:       entityID,
+			Image:    id,
+			ImageSrc: newSrc,
+		})
+		if err != nil {
+			l.Warn().Err(err).Msg("downloadMissingImage: Failed to update artist image source in DB")
+		} else {
+			l.Info().Msgf("downloadMissingImage: Updated artist %d image source to %s", entityID, newSrc)
+		}
+	}
+
 	return path.Join(catalog.SourceImageDir(), id.String()), nil
+}
+
+// findImageFromExternalProviders searches for image URL from external providers (Spotify, Deezer, CAA, Subsonic)
+// Returns: image URL, entity ID, entity type ("album" or "artist"), error
+func findImageFromExternalProviders(ctx context.Context, store db.DB, imageID uuid.UUID) (string, int32, string, error) {
+	l := logger.FromContext(ctx)
+
+	// First, try to find if this image belongs to an album
+	albumByImg, err := store.GetAlbumByImage(ctx, imageID)
+	if err == nil && albumByImg != nil {
+		// Get full album data with GetAlbum to get the title
+		album, err := store.GetAlbum(ctx, db.GetAlbumOpts{ID: albumByImg.ID})
+		if err != nil {
+			l.Debug().Err(err).Msg("findImageFromExternalProviders: Failed to get album details")
+		} else if album != nil {
+			l.Debug().Msgf("findImageFromExternalProviders: Image belongs to album '%s' (ID: %d)", album.Title, album.ID)
+
+			// Get artists for the album
+			artists, err := store.GetArtistsForAlbum(ctx, album.ID)
+			if err != nil {
+				l.Debug().Err(err).Msg("findImageFromExternalProviders: Failed to get artists for album")
+			}
+
+			var artistNames []string
+			for _, a := range artists {
+				artistNames = append(artistNames, a.Name)
+			}
+
+			// Search for album image using external providers
+			imgURL, err := images.GetAlbumImage(ctx, images.AlbumImageOpts{
+				Artists:      artistNames,
+				Album:        album.Title,
+				ReleaseMbzID: album.MbzID,
+			})
+			if err != nil {
+				l.Debug().Err(err).Msg("findImageFromExternalProviders: GetAlbumImage failed")
+			}
+			if imgURL != "" {
+				return imgURL, album.ID, "album", nil
+			}
+		}
+	}
+
+	// Try to find if this image belongs to an artist
+	artistByImg, err := store.GetArtistByImage(ctx, imageID)
+	if err == nil && artistByImg != nil {
+		// Get full artist data with GetArtist to get name and aliases
+		artist, err := store.GetArtist(ctx, db.GetArtistOpts{ID: artistByImg.ID})
+		if err != nil {
+			l.Debug().Err(err).Msg("findImageFromExternalProviders: Failed to get artist details")
+		} else if artist != nil {
+			l.Debug().Msgf("findImageFromExternalProviders: Image belongs to artist '%s' (ID: %d)", artist.Name, artist.ID)
+
+			// Use artist name and aliases for search
+			aliases := []string{artist.Name}
+			aliases = append(aliases, artist.Aliases...)
+
+			// Search for artist image using external providers
+			imgURL, err := images.GetArtistImage(ctx, images.ArtistImageOpts{
+				Aliases: aliases,
+			})
+			if err != nil {
+				l.Debug().Err(err).Msg("findImageFromExternalProviders: GetArtistImage failed")
+			}
+			if imgURL != "" {
+				return imgURL, artist.ID, "artist", nil
+			}
+		}
+	}
+
+	return "", 0, "", nil
 }

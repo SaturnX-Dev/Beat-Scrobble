@@ -10,11 +10,6 @@ export const meta = () => {
 };
 
 export async function clientLoader({ request }: LoaderFunctionArgs) {
-    // Check if session exists via API (or just rely on backend redirecting 401s, 
-    // but for a smooth UX we might want to check here or just let the user login).
-    // Ideally, if we are already logged in, go to dashboard.
-    // We can try a quick fetch to /api/web/v1/user/me, but that might be slow.
-    // For now, let's assume if they hit /login, they want to login.
     return null;
 }
 
@@ -34,19 +29,22 @@ export async function clientAction({ request }: ActionFunctionArgs) {
     if (intent === "login" || intent === "signup") {
         const endpoint = intent === "login" ? "/login" : "/signup";
         try {
-            const res = await fetch(`http://localhost:4110/apis/web/v1${endpoint}`, {
+            const res = await fetch(`/apis/web/v1${endpoint}`, {
                 method: "POST",
                 body: params,
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
+                credentials: "include",
             });
 
             if (res.ok) {
                 if (intent === "signup") {
-                    return redirect("/onboarding");
+                    window.location.href = "/onboarding";
+                    return null;
                 }
-                return redirect(redirectTo);
+                window.location.href = redirectTo;
+                return null;
             } else {
                 let errText = await res.text();
                 try {
@@ -74,11 +72,11 @@ export default function Login() {
     const isSubmitting = navigation.state === "submitting";
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[#0a0a0a]">
+        <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-[var(--color-bg)]">
             {/* Background Ambience */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-purple-900/20 blur-[120px] animate-pulse-slow" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-900/20 blur-[100px] animate-pulse-slow delay-1000" />
+                <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-[var(--color-primary)]/20 blur-[120px] animate-pulse" style={{ animationDuration: '4s' }} />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-[var(--color-accent)]/20 blur-[100px] animate-pulse" style={{ animationDuration: '4s', animationDelay: '1s' }} />
             </div>
 
             {/* Main Card */}
@@ -86,37 +84,37 @@ export default function Login() {
 
                 {/* Logo Section */}
                 <div className="flex flex-col items-center mb-8 space-y-2">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow-lg shadow-purple-500/20 mb-4 transform hover:scale-105 transition-transform duration-300">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-accent)] flex items-center justify-center shadow-lg mb-4 transform hover:scale-105 transition-transform duration-300" style={{ boxShadow: '0 10px 40px var(--color-primary)' }}>
                         <FaMusic className="text-white text-3xl" />
                     </div>
-                    <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                    <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--color-fg)] to-[var(--color-fg-secondary)]">
                         Beat Scrobble
                     </h1>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-[var(--color-fg-secondary)] text-sm">
                         Your music, your data, your insights.
                     </p>
                 </div>
 
                 {/* Glass Card */}
-                <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
+                <div className="glass-card rounded-2xl p-8 shadow-2xl">
 
                     {/* Toggle Switch */}
-                    <div className="flex mb-8 bg-black/30 rounded-lg p-1 border border-white/5">
+                    <div className="flex mb-8 bg-[var(--color-bg)]/50 rounded-lg p-1 border border-[var(--color-bg-tertiary)]">
                         <button
                             onClick={() => setIsLogin(true)}
-                            className={`flex - 1 py - 2 text - sm font - medium rounded - md transition - all duration - 200 ${isLogin
-                                ? 'bg-white/10 text-white shadow-sm'
-                                : 'text-gray-500 hover:text-gray-300'
-                                } `}
+                            className={`flex-1 py-2 text-sm font-medium rounded-md transition-all duration-200 ${isLogin
+                                ? 'bg-[var(--color-bg-tertiary)] text-[var(--color-fg)] shadow-sm'
+                                : 'text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)]'
+                                }`}
                         >
                             Login
                         </button>
                         <button
                             onClick={() => setIsLogin(false)}
-                            className={`flex - 1 py - 2 text - sm font - medium rounded - md transition - all duration - 200 ${!isLogin
-                                ? 'bg-white/10 text-white shadow-sm'
-                                : 'text-gray-500 hover:text-gray-300'
-                                } `}
+                            className={`flex-1 py-2 text-sm font-medium rounded-md transition-all duration-200 ${!isLogin
+                                ? 'bg-[var(--color-bg-tertiary)] text-[var(--color-fg)] shadow-sm'
+                                : 'text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)]'
+                                }`}
                         >
                             Signup
                         </button>
@@ -127,9 +125,9 @@ export default function Login() {
                         <input type="hidden" name="redirectTo" value={redirectTo} />
 
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">Username</label>
+                            <label className="text-xs font-semibold text-[var(--color-fg-secondary)] uppercase tracking-wider ml-1">Username</label>
                             <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 group-focus-within:text-purple-400 transition-colors">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--color-fg-tertiary)] group-focus-within:text-[var(--color-primary)] transition-colors">
                                     <FaUser />
                                 </div>
                                 <input
@@ -137,15 +135,15 @@ export default function Login() {
                                     type="text"
                                     name="username"
                                     placeholder="Enter your username"
-                                    className="w-full bg-black/20 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                                    className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-xl py-3 pl-10 pr-4 text-[var(--color-fg)] placeholder-[var(--color-fg-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:border-[var(--color-primary)]/50 transition-all"
                                 />
                             </div>
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">Password</label>
+                            <label className="text-xs font-semibold text-[var(--color-fg-secondary)] uppercase tracking-wider ml-1">Password</label>
                             <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 group-focus-within:text-purple-400 transition-colors">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--color-fg-tertiary)] group-focus-within:text-[var(--color-primary)] transition-colors">
                                     <FaLock />
                                 </div>
                                 <input
@@ -153,30 +151,30 @@ export default function Login() {
                                     type="password"
                                     name="password"
                                     placeholder="••••••••"
-                                    className="w-full bg-black/20 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all"
+                                    className="w-full bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-xl py-3 pl-10 pr-4 text-[var(--color-fg)] placeholder-[var(--color-fg-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:border-[var(--color-primary)]/50 transition-all"
                                 />
                             </div>
                         </div>
 
                         {isLogin && (
                             <div className="flex items-center justify-between text-xs">
-                                <label className="flex items-center space-x-2 cursor-pointer text-gray-400 hover:text-white transition-colors">
-                                    <input type="checkbox" name="remember" className="rounded bg-white/10 border-white/20 text-purple-500 focus:ring-purple-500/50" />
+                                <label className="flex items-center space-x-2 cursor-pointer text-[var(--color-fg-secondary)] hover:text-[var(--color-fg)] transition-colors">
+                                    <input type="checkbox" name="remember" className="rounded bg-[var(--color-bg-tertiary)] border-[var(--color-bg-tertiary)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]/50" />
                                     <span>Remember me</span>
                                 </label>
-                                <a href="#" className="text-purple-400 hover:text-purple-300 transition-colors">Forgot password?</a>
                             </div>
                         )}
 
                         {actionData?.error && (
-                            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+                            <div className="p-3 rounded-lg bg-[var(--color-error)]/10 border border-[var(--color-error)]/20 text-[var(--color-error)] text-sm text-center">
                                 {actionData.error}
                             </div>
                         )}
 
                         <button
                             disabled={isSubmitting}
-                            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-purple-600/30 transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl shadow-lg transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            style={{ boxShadow: '0 10px 40px var(--color-primary)' }}
                         >
                             {isSubmitting ? (
                                 <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -191,8 +189,8 @@ export default function Login() {
                 </div>
 
                 {/* Footer */}
-                <div className="mt-8 text-center text-xs text-gray-600">
-                    <p>Protected by reCAPTCHA maybe. <br /> © 2025 SaturnX-Dev.</p>
+                <div className="mt-8 text-center text-xs text-[var(--color-fg-tertiary)]">
+                    <p>© 2025 SaturnX-Dev.</p>
                 </div>
 
             </div>

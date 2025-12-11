@@ -66,6 +66,9 @@ type SubmitListenOpts struct {
 
 	// When true, checks for existing listens within +/- 60s window for the same track
 	DeduplicateFuzzy bool
+
+	// Optional: Direct URL to image to use if no other image is found
+	ImageURL string
 }
 
 const (
@@ -115,6 +118,7 @@ func SubmitListen(ctx context.Context, store db.DB, opts SubmitListenOpts) error
 		Mbzc:              opts.MbzCaller,
 		Artists:           artists,
 		SkipCacheImage:    opts.SkipCacheImage,
+		ImageURL:          opts.ImageURL,
 	})
 	if err != nil {
 		l.Error().Err(err).Msg("Failed to associate release group to listen")
