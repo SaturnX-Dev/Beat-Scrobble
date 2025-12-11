@@ -48,6 +48,7 @@ const (
 	FETCH_IMAGES_DURING_IMPORT_ENV = "BEAT_SCROBBLE_FETCH_IMAGES_DURING_IMPORT"
 	ARTIST_SEPARATORS_ENV          = "BEAT_SCROBBLE_ARTIST_SEPARATORS_REGEX"
 	LOGIN_GATE_ENV                 = "BEAT_SCROBBLE_LOGIN_GATE"
+	MAX_USERS_ENV                  = "BEAT_SCROBBLE_MAX_USERS"
 )
 
 type config struct {
@@ -85,6 +86,7 @@ type config struct {
 	importAfter            time.Time
 	artistSeparators       []*regexp.Regexp
 	loginGate              bool
+	maxUsers               int
 }
 
 var (
@@ -208,6 +210,11 @@ func loadConfig(getenv func(string) string, version string) (*config, error) {
 
 	if strings.ToLower(getenv(LOGIN_GATE_ENV)) == "true" {
 		cfg.loginGate = true
+	}
+
+	cfg.maxUsers, _ = strconv.Atoi(getenv(MAX_USERS_ENV))
+	if cfg.maxUsers < 1 {
+		cfg.maxUsers = 0 // Unlimited if not set, or maybe 0 means unlimited
 	}
 
 	switch strings.ToLower(getenv(LOG_LEVEL_ENV)) {
@@ -420,4 +427,10 @@ func LoginGate() bool {
 	lock.RLock()
 	defer lock.RUnlock()
 	return globalConfig.loginGate
+}
+
+func MaxUsers() int {
+	lock.RLock()
+	defer lock.RUnlock()
+	return globalConfig.maxUsers
 }

@@ -45,16 +45,65 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     fetch("/apis/web/v1/user/me")
       .then((res) => res.json())
       .then((data) => {
-        data.error ? setUser(null) : setUser(data);
+        if (data.error) {
+          setUser(null);
+          // Auth Guard: If not logged in and not on public pages, redirect to login
+          if (typeof window !== "undefined") {
+            const path = window.location.pathname;
+            // Public paths: /login, maybe /u/ (public profiles) if we allow them
+            // The user requirement says "cuando se abre la app por pimera ves oh se ve el dominio no carga nada ... pagina de login obligatoria"
+            // So we enforce login everywhere except /login and public profiles /u/*
+            if (
+              path !== "/login" &&
+              !path.startsWith("/u/") &&
+              !path.startsWith("/register") // in case we add register route separate
+            ) {
+              window.location.href = "/login?redirectTo=" + path;
+            }
+          }
+        } else {
+          setUser(data);
+
+          // Fetch preferences to check setup status
+          fetch("/apis/web/v1/user/preferences")
+            .then(res => res.json())
+            .then(prefs => {
+              if (typeof window !== "undefined") {
+                const path = window.location.pathname;
+                // If not setup and not on onboarding page, redirect
+                if (!prefs.setup_completed && path !== "/onboarding" && path !== "/login") {
+                  window.location.href = "/onboarding";
+                }
+                // If setup IS completed and we are on onboarding, redirect home? 
+                // Maybe not, user might want to revisit onboarding (though usually it's a separate settings page)
+                // But for "Primer uso", yes.
+              }
+            })
+            .catch(err => console.error("Failed to check setup status", err));
+
+          // If logged in and on login page, redirect to home
+          if (typeof window !== "undefined" && window.location.pathname === "/login") {
+            window.location.href = "/";
+          }
+        }
       })
-      .catch(() => setUser(null));
+      .catch(() => {
+        setUser(null);
+        // Same auth guard on error
+        if (typeof window !== "undefined") {
+          const path = window.location.pathname;
+          if (path !== "/login" && !path.startsWith("/u/")) {
+            window.location.href = "/login";
+          }
+        }
+      });
 
     setConfigurableHomeActivity(true);
     setHomeItems(12);
 
     getCfg().then((cfg) => {
-      console.log(cfg);
-      if (cfg.default_theme !== "") {
+      // console.log(cfg);
+      if (cfg && cfg.default_theme && cfg.default_theme !== "") {
         setDefaultTheme(cfg.default_theme);
       } else {
         setDefaultTheme("yuu");

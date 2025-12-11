@@ -71,6 +71,7 @@ func bindRoutes(
 		} else {
 			r.Post("/login", handlers.LoginHandler(db))
 		}
+		r.Post("/signup", handlers.SignupHandler(db))
 
 		r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 			if !ready.Load() {
@@ -101,6 +102,7 @@ func bindRoutes(
 			r.Post("/user/apikeys", handlers.GenerateApiKeyHandler(db))
 			r.Patch("/user/apikeys", handlers.UpdateApiKeyLabelHandler(db))
 			r.Delete("/user/apikeys", handlers.DeleteApiKeyHandler(db))
+			r.Get("/user/client-sources", handlers.GetClientSourcesHandler(db))
 			r.Get("/user/me", handlers.MeHandler(db))
 			r.Patch("/user", handlers.UpdateUserHandler(db))
 			// Theme persistence
@@ -140,6 +142,12 @@ func bindRoutes(
 
 			// Presence
 			r.Post("/presence/ping", handlers.PresencePingHandler(db))
+
+			// Admin User Management
+			r.Get("/admin/users", handlers.ListUsersHandler(db))
+			r.Post("/admin/users", handlers.CreateUserHandler(db))
+			r.Patch("/admin/users", handlers.AdminUpdateUserHandler(db))
+			r.Delete("/admin/users", handlers.AdminDeleteUserHandler(db))
 		})
 
 		// Public routes (no auth required)
@@ -161,6 +169,16 @@ func bindRoutes(
 
 		r.With(middleware.ValidateApiKey(db)).Post("/submit-listens", handlers.LbzSubmitListenHandler(db, mbz))
 		r.With(middleware.ValidateApiKey(db)).Get("/validate-token", handlers.LbzValidateTokenHandler(db))
+	})
+
+	// Redirect root /health to API health for consistency
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		if !ready.Load() {
+			http.Error(w, "not ready", http.StatusServiceUnavailable)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"ready"}`))
 	})
 
 	// serve react client

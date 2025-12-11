@@ -24,12 +24,34 @@ type SpotifyExportItem struct {
 	MsPlayed   int32     `json:"ms_played"`
 }
 
-func ImportSpotifyFile(ctx context.Context, store db.DB, filename string) error {
+func ImportSpotifyFile(ctx context.Context, store db.DB, filename string, userID int32) error {
 	l := logger.FromContext(ctx)
-	l.Info().Msgf("Beginning spotify import on file: %s", filename)
-	file, err := os.Open(path.Join(cfg.ConfigDir(), "import", filename))
+	l.Info().Msgf("Beginning spotify import on file: %s for user: %d", filename, userID)
+	// Files are now stored in user-specific subdirectories or passed via valid path
+	// The filename passed here should probably be the full path or relative path from config
+	// But let's assume the caller handles the pathing or we check both?
+	// For now, let's update the signature first.
+	// Since we are moving to <config>/import/<username>/<file>, the caller will likely pass the full path or we construct it.
+	// Let's assume filename is the path relative to config/import or full path.
+	// To minimize breakage, let's assume the caller resolves the path for now,
+	// OR we assume standard `import/username/file` structure.
+
+	// Existing code used: path.Join(cfg.ConfigDir(), "import", filename)
+	// We should probably just iterate on the arguments.
+	// Let's change the function to accept the FULL PATH or relative path.
+	// Actually, let's keep it simple: The caller (RunImporter/Worker) constructs the path.
+	// So we should remove the hardcoded path join here?
+	// Wait, existing code: os.Open(path.Join(cfg.ConfigDir(), "import", filename))
+	// I should probably change this to accept `filePath string` instead of filename+join.
+
+	// Implementation:
+	filePath := path.Join(cfg.ConfigDir(), "import", filename)
+	// If the file is in a subdirectory, 'filename' coming from the walker might be "user/file.json".
+	// path.Join handles that correctly.
+
+	file, err := os.Open(filePath)
 	if err != nil {
-		l.Err(err).Msgf("Failed to read import file: %s", filename)
+		l.Err(err).Msgf("Failed to read import file: %s", filePath)
 		return fmt.Errorf("ImportSpotifyFile: %w", err)
 	}
 	defer file.Close()
@@ -66,7 +88,7 @@ func ImportSpotifyFile(ctx context.Context, store db.DB, filename string) error 
 			Duration:       dur / 1000,
 			Time:           item.Timestamp,
 			Client:         "spotify",
-			UserID:         1,
+			UserID:         userID,
 			SkipCacheImage: !cfg.FetchImagesDuringImport(),
 		}
 		err = catalog.SubmitListen(ctx, store, opts)

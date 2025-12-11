@@ -43,3 +43,9 @@ UPDATE users SET password = $2 WHERE id = $1;
 
 -- name: UpdateApiKeyLabel :exec
 UPDATE api_keys SET label = $3 WHERE id = $1 AND user_id = $2;
+
+-- name: GetAllUsers :many
+SELECT * FROM users ORDER BY id;
+
+-- name: UpdateUserRole :exec
+UPDATE users SET role = $2 WHERE id = $1;

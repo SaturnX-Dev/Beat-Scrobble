@@ -229,56 +229,100 @@ func Run(
 
 func RunImporter(l *zerolog.Logger, store db.DB, mbzc mbz.MusicBrainzCaller) {
 	l.Debug().Msg("Checking for import files...")
-	files, err := os.ReadDir(path.Join(cfg.ConfigDir(), "import"))
+	baseImportDir := path.Join(cfg.ConfigDir(), "import")
+	entries, err := os.ReadDir(baseImportDir)
 	if err != nil {
 		l.Err(err).Msg("Failed to read files from import dir")
-	}
-	if len(files) > 0 {
-		l.Info().Msg("Files found in import directory. Attempting to import...")
-	} else {
 		return
 	}
+
+	if len(entries) == 0 {
+		return
+	}
+	l.Info().Msg("Files/Folders found in import directory. scanning...")
+
 	defer func() {
 		if r := recover(); r != nil {
 			l.Error().Interface("recover", r).Msg("Panic when importing files")
 		}
 	}()
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		if strings.Contains(file.Name(), "Streaming_History_Audio") {
-			l.Info().Msgf("Import file %s detecting as being Spotify export", file.Name())
-			err := importer.ImportSpotifyFile(logger.NewContext(l), store, file.Name())
-			if err != nil {
-				l.Err(err).Msgf("Failed to import file: %s", file.Name())
-			}
-		} else if strings.Contains(file.Name(), "maloja") {
-			l.Info().Msgf("Import file %s detecting as being Maloja export", file.Name())
-			err := importer.ImportMalojaFile(logger.NewContext(l), store, file.Name())
-			if err != nil {
-				l.Err(err).Msgf("Failed to import file: %s", file.Name())
-			}
-		} else if strings.Contains(file.Name(), "recenttracks") {
-			l.Info().Msgf("Import file %s detecting as being ghan.nl LastFM export", file.Name())
-			err := importer.ImportLastFMFile(logger.NewContext(l), store, mbzc, file.Name())
-			if err != nil {
-				l.Err(err).Msgf("Failed to import file: %s", file.Name())
-			}
-		} else if strings.Contains(file.Name(), "listenbrainz") {
-			l.Info().Msgf("Import file %s detecting as being ListenBrainz export", file.Name())
-			err := importer.ImportListenBrainzExport(logger.NewContext(l), store, mbzc, file.Name())
-			if err != nil {
-				l.Err(err).Msgf("Failed to import file: %s", file.Name())
-			}
-		} else if strings.Contains(file.Name(), "beat_scrobble") || strings.Contains(file.Name(), "beat-scrobble") || strings.Contains(file.Name(), "koito") {
-			l.Info().Msgf("Import file %s detecting as being Beat Scrobble/Koito export", file.Name())
-			err := importer.ImportBeatScrobbleFile(logger.NewContext(l), store, file.Name())
-			if err != nil {
-				l.Err(err).Msgf("Failed to import file: %s", file.Name())
-			}
+
+	processFile := func(filename string, userID int32, fullPath string) {
+		// Because the importer logic expects just the filename relative to import dir (legacy)
+		// OR we updated it to take full path?
+		// In previous steps, I updated `ImportSpotifyFile` etc to:
+		// `filePath := path.Join(cfg.ConfigDir(), "import", filename)`
+		// THIS IS A PROBLEM if the file is in a subdirectory `import/user/file`.
+		// `path.Join(..., "import", "user/file")` works fine!
+		// So passing "subfolder/filename" as 'filename' argument is correct.
+
+		// Determine relative path for the importer function
+		// If root file: filename = "file.json"
+		// If subfolder: filename = "user/file.json"
+
+		l.Info().Msgf("Processing import: %s for UserID: %d", filename, userID)
+
+		var err error
+		if strings.Contains(filename, "Streaming_History_Audio") {
+			l.Info().Msgf("Import file %s detecting as being Spotify export", filename)
+			err = importer.ImportSpotifyFile(logger.NewContext(l), store, filename, userID)
+		} else if strings.Contains(filename, "maloja") {
+			l.Info().Msgf("Import file %s detecting as being Maloja export", filename)
+			err = importer.ImportMalojaFile(logger.NewContext(l), store, filename, userID)
+		} else if strings.Contains(filename, "recenttracks") {
+			l.Info().Msgf("Import file %s detecting as being ghan.nl LastFM export", filename)
+			err = importer.ImportLastFMFile(logger.NewContext(l), store, mbzc, filename, userID)
+		} else if strings.Contains(filename, "listenbrainz") {
+			l.Info().Msgf("Import file %s detecting as being ListenBrainz export", filename)
+			err = importer.ImportListenBrainzExport(logger.NewContext(l), store, mbzc, filename, userID)
+		} else if strings.Contains(filename, "beat_scrobble") || strings.Contains(filename, "beat-scrobble") || strings.Contains(filename, "koito") {
+			l.Info().Msgf("Import file %s detecting as being Beat Scrobble/Koito export", filename)
+			err = importer.ImportBeatScrobbleFile(logger.NewContext(l), store, filename, userID)
 		} else {
-			l.Warn().Msgf("File %s not recognized as a valid import file; make sure it is valid and named correctly", file.Name())
+			l.Warn().Msgf("File %s not recognized as a valid import file", filename)
+			return
+		}
+
+		if err != nil {
+			l.Err(err).Msgf("Failed to import file: %s", filename)
+		}
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			// It's a user folder (presumably username)
+			username := entry.Name()
+			if username == "import_complete" {
+				continue
+			}
+
+			user, err := store.GetUserByUsername(context.Background(), username)
+			if err != nil {
+				l.Warn().Msgf("Found import folder '%s' but could not find user with that username. Skipping.", username)
+				continue
+			}
+			l.Info().Msgf("Found import folder for user: %s (ID: %d)", username, user.ID)
+
+			userDir := path.Join(baseImportDir, username)
+			userFiles, err := os.ReadDir(userDir)
+			if err != nil {
+				l.Err(err).Msgf("Failed to read user import dir: %s", userDir)
+				continue
+			}
+
+			for _, userFile := range userFiles {
+				if userFile.IsDir() {
+					continue
+				}
+				// Pass relative path "username/filename"
+				relativePath := path.Join(username, userFile.Name())
+				processFile(relativePath, user.ID, path.Join(userDir, userFile.Name()))
+			}
+
+		} else {
+			// Root file - Legacy/Fallback -> UserID 1
+			l.Warn().Msgf("Found file in root import directory: %s. Assuming Default User (ID: 1). Please organize imports into folders by username.", entry.Name())
+			processFile(entry.Name(), 1, path.Join(baseImportDir, entry.Name()))
 		}
 	}
 }

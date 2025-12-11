@@ -100,6 +100,27 @@ func (d *Psql) SaveApiKey(ctx context.Context, opts db.SaveApiKeyOpts) (*models.
 	}, nil
 }
 
+func (d *Psql) GetAllUsers(ctx context.Context) ([]*models.User, error) {
+	rows, err := d.q.GetAllUsers(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("GetAllUsers: %w", err)
+	}
+	users := make([]*models.User, len(rows))
+	for i, row := range rows {
+		users[i] = &models.User{
+			ID:       row.ID,
+			Username: row.Username,
+			Role:     models.UserRole(row.Role),
+			Password: row.Password,
+		}
+	}
+	return users, nil
+}
+
+func (d *Psql) DeleteUser(ctx context.Context, id int32) error {
+	return d.q.DeleteUser(ctx, id)
+}
+
 func (d *Psql) UpdateUser(ctx context.Context, opts db.UpdateUserOpts) error {
 	l := logger.FromContext(ctx)
 	if opts.ID == 0 {
@@ -143,6 +164,15 @@ func (d *Psql) UpdateUser(ctx context.Context, opts db.UpdateUserOpts) error {
 		})
 		if err != nil {
 			return fmt.Errorf("UpdateUser: UpdateUserPassword: %w", err)
+		}
+	}
+	if opts.Role != nil {
+		err = qtx.UpdateUserRole(ctx, repository.UpdateUserRoleParams{
+			ID:   opts.ID,
+			Role: repository.Role(*opts.Role),
+		})
+		if err != nil {
+			return fmt.Errorf("UpdateUser: UpdateUserRole: %w", err)
 		}
 	}
 	return tx.Commit(ctx)

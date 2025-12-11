@@ -32,9 +32,9 @@ type MalojaTrack struct {
 	} `json:"album"`
 }
 
-func ImportMalojaFile(ctx context.Context, store db.DB, filename string) error {
+func ImportMalojaFile(ctx context.Context, store db.DB, filename string, userID int32) error {
 	l := logger.FromContext(ctx)
-	l.Info().Msgf("Beginning maloja import on file: %s", filename)
+	l.Info().Msgf("Beginning maloja import on file: %s for user: %d", filename, userID)
 	file, err := os.Open(path.Join(cfg.ConfigDir(), "import", filename))
 	if err != nil {
 		l.Err(err).Msgf("Failed to read import file: %s", filename)
@@ -79,7 +79,7 @@ func ImportMalojaFile(ctx context.Context, store db.DB, filename string) error {
 			ReleaseTitle:   item.Track.Album.Title,
 			Time:           ts.Local(),
 			Client:         "maloja",
-			UserID:         1,
+			UserID:         userID,
 			SkipCacheImage: !cfg.FetchImagesDuringImport(),
 		}
 		err = catalog.SubmitListen(ctx, store, opts)

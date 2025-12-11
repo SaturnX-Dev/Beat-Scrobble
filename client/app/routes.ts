@@ -14,4 +14,6 @@ export default [
     route("/profile", "routes/Profile.tsx"),
     route("/u/:username", "routes/PublicProfile.tsx"),
     route("/theme-helper", "routes/ThemeHelper.tsx"),
+    route("login", "routes/Login.tsx"),
+    route("onboarding", "routes/Onboarding.tsx"),
 ] satisfies RouteConfig;

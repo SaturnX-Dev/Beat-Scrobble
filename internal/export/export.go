@@ -45,6 +45,9 @@ type BeatScrobbleArtist struct {
 	Aliases   []models.Alias `json:"aliases"`
 }
 
+// Legacy alias
+type KoitoExport = BeatScrobbleExport
+
 func ExportData(ctx context.Context, user *models.User, store db.DB, mode string, out io.Writer) error {
 	lastTime := time.Unix(0, 0)
 	lastTrackId := int32(0)

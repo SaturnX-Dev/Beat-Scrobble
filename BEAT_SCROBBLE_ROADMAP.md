@@ -1,78 +1,67 @@
-# � Beat Scrobble High-Performance Roadmap
+# 🗺️ Beat Scrobble Roadmap
 
-This document outlines the strategic roadmap for transforming Beat Scrobble into a high-performance, scalable, and robust music analytics platform.
+> **Focus:** Full integration of pgvector for Semantic Search & AI features.
 
----
+This roadmap outlines the path to activating the latent vector capabilities in the Beat Scrobble database.
 
-## 🏗 Phase 1: The Foundation (Backend & Database)
-*Goal: Ensure the core engine can handle millions of scrobbles with sub-millisecond response times.*
+## 🧠 Phase 1: The Vector Engine (Backend)
 
-### 1. Database Optimization & Indexing
-- [x] **Critical Security/Privacy Fix**: Update all SQL queries (e.g., `GetLastListensPaginated`) to enforce `WHERE user_id = ?`. Currently, some queries may leak data across users.
-- [x] **Compound Indexes**: Create indexes on `(user_id, listened_at)` and `(user_id, track_id)` to speed up personal history retrieval.
-- [x] **Materialized Views**:
-    - Implement `daily_user_stats` and `monthly_user_stats` tables.
-    - **Why**: Currently, the dashboard calculates specific counts on *every request*. Pre-aggregating this data into views will make the dashboard instant, regardless of whether you have 10k or 10M scrobbles.
-- [x] **Search Optimization**: Replace `gin_trgm_ops` on generic text fields with a dedicated Full-Text Search (FTS) vector column (`tsvector`) for Artists/Albums/Tracks.
+Goal: Populate the `*_embeddings` tables which are currently empty.
 
-### 2. Server-Side Performance
-- [x] **Compression Middleware**: Enable Gzip/Brotli compression in Go (`chi` middleware or `nginx`).
-    - **Impact**: JSON responses for "All Time" history can be 5MB+. Compression reduces this to ~500KB, speeding up mobile load times by 10x.
-- [x] **Connection Pooling**: Tune `pgx` connection pool settings (MaxConns, MinConns) based on CPU cores.
-- [x] **Caching Headers**: Implement `ETag` and `Cache-Control` headers for API endpoints.
-    - If listening history hasn't changed, the server should return `304 Not Modified`, saving bandwidth and processing.
+- [ ] **Embedding Service (`internal/ai/embedding.go`)**
+    - Implement a Go client for OpenRouter/OpenAI Embeddings API.
+    - Model: `text-embedding-ada-002` (Output: 1536 dimensions).
+- [ ] **Background Worker (`engine/worker/embeddings.go`)**
+    - **Queue System**: Create a priority queue for items needing embeddings.
+    - **Throttler**: Respect rate limits (e.g., batch 100 tracks per call or sequential processing).
+    - **Triggers**:
+        - On Import: Queue new tracks automatically.
+        - On Demand: "Generate Embeddings" button in Admin.
+- [ ] **Data Objects**
+    - Create Go structs for:
+        - `TrackEmbedding`
+        - `ArtistEmbedding`
+        - `UserTasteEmbedding`
 
----
+## 🔍 Phase 2: Semantic Search API
 
-## ⚡ Phase 2: Client-Side Velocity
-*Goal: Make the UI feel instant and fluid.*
+Goal: Expose vector similarity search to the frontend.
 
-### 1. Advanced Caching Strategy
-- [x] **Persistent Query Cache**: Use `persistQueryClient` (TanStack Query) to save stats to `localStorage`/`IndexedDB`.
-    - **Result**: when you open the app, you see your last known stats *instantly* while new data fetches in the background. No loading spinners.
-- [x] **Optimistic Updates**: When submitting a scrobble or changing a theme, update the UI immediately before the server responds.
+- [ ] **DB Queries (`db/queries/vector.sql`)**
+    - Implement the calls to the PL/pgSQL functions:
+        - `find_similar_tracks(embedding, limit)`
+        - `find_similar_artists(embedding, limit)`
+- [ ] **Engine Handlers (`engine/handlers/search_vector.go`)**
+    - `GET /api/web/v1/search/semantic?q=sad+songs+for+rainy+days`
+        - Logic: Text Query -> Generate Embedding -> DB Vector Search -> Return items.
+    - `GET /api/web/v1/recommendations/more-like-this?track_id=123`
+        - Logic: Get Track Embedding -> DB Vector Search -> Return similar items.
 
-### 2. Rendering Performance
-- [x] **Virtualization Everywhere**: Ensure all long lists (Top Tracks, History, Artist Lists) uses `react-virtual`.
-- [x] **Code Splitting**: Verify `React.lazy` usage for heavy routes (e.g., Settings, deep Analytics pages) to reduce the initial bundle size.
+## 👤 Phase 3: User Taste Profiling
 
----
+Goal: Understand the user's "vibe" mathematically.
 
-## 🤖 Phase 3: AI & Background Processing
-*Goal: Offload heavy tasks to keep the API responsive.*
+- [ ] **Taste Aggregator**
+    - Cron job to calculate `user_taste_embeddings`.
+    - Algorithm: Weighted average of the user's top 50 tracks' embeddings.
+- [ ] **"Soulmate" Matcher**
+    - `GET /api/web/v1/social/similar-users`
+    - Logic: Use `find_similar_users` to compare taste vectors.
 
-### 1. Asynchronous Architecture
-- [x] **Job Queue for Scrobble Sync**
-  - **Goal:** Prevent long-running imports from blocking the API.
-  - **Action:** Refactor `import.go` and `spotify.go` to offload tasks to a background worker/queue (e.g., using Go channels or a lightweight queue).
-  - **Status:** **Done**. Created `engine/worker` and refactored ImportHandler.
-- [x] **SSE Channel Optimization**
-  - **Goal**: Prevent goroutine leaks and improve robustness of `SpotifyBulkFetchSSEHandler`.
-  - **Action**: Refactored to use unbuffered channels and context cancellation.
-  - **Status**: **Done**.
-- [x] **Embeddings Vector DB**
-  - **Goal:** Enable semantic search and "vibe-based" recommendations.
-  - **Action:** Integrate `pgvector` into the PostgreSQL schema and pipeline.
-  - **Status**: **Done**. Created migration `000012_pgvector_embeddings.sql`.
-  - Store embeddings for tracks locally to enable "Semantic Search" (e.g., "Sad songs from the 90s") without calling OpenAI every time.
+## 🎨 Phase 4: Frontend Integration
 
----
+Goal: Make it visible to the user.
 
-## ☁️ Phase 4: Infrastructure & Deployment
-*Goal: Production-grade reliability.*
-
-### 1. Docker & Orchestration
-- [x] **Multi-Stage Builds**: Optimize `Dockerfile` to use `alpine` or `scratch` for the Go binary, reducing image size from >500MB to <50MB.
-- [x] **Health Checks**: Implement deep health checks (DB connectivity, Cache status) for K8s/Docker Swarm.
-
-### 2. Edge Caching
-- [x] **Image optimization (CDN)**: If self-hosted, use Nginx caching for `/images/*` endpoints. Compute resizing once, serve from disk forever.
+- [ ] **Search UI**
+    - Add toggle: "Keyword Search" vs "Vibe Search" (Semantic).
+- [ ] **Track Page**
+    - Add "More Like This" section using vector similarity.
+- [ ] **Profile Page**
+    - Add "Taste Profile" visualization (maybe reducing 1536 dims to 2D using PCA/t-SNE for a chart).
 
 ---
 
-## � Priority Checklist (Immediate Actions)
-
-1.  **[High]** Fix `user_id` isolation in SQL queries.
-2.  **[High]** Add Gzip compression to Server.
-3.  **[Medium]** Implement `daily_stats` materialized view for Dashboard.
-4.  **[Medium]** Optimize Docker image size.
+**Legend:**
+- [ ] Pending
+- [/] In Progress
+- [x] Completed

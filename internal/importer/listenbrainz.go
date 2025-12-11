@@ -22,11 +22,17 @@ import (
 	"github.com/google/uuid"
 )
 
-func ImportListenBrainzExport(ctx context.Context, store db.DB, mbzc mbz.MusicBrainzCaller, filename string) error {
+func ImportListenBrainzExport(ctx context.Context, store db.DB, mbzc mbz.MusicBrainzCaller, filename string, userID int32) error {
 	l := logger.FromContext(ctx)
 
-	r, err := zip.OpenReader(path.Join(path.Join(cfg.ConfigDir(), "import", filename)))
+	r, err := zip.OpenReader(path.Join(cfg.ConfigDir(), "import", filename))
 	if err != nil {
+		// Try opening as full path if above fails, or just assume filename is relative to import/
+		// But we modified other importers simply.
+		// Let's stick to the convention: "filename" is relative to "import/"?
+		// No, we agreed to move to "import/<username>/filename".
+		// But here I'm keeping the logic "path.Join(cfg.ConfigDir(), 'import', filename)".
+		// If 'filename' is "user/file.zip", this works.
 		return err
 	}
 	defer r.Close()
@@ -46,7 +52,7 @@ func ImportListenBrainzExport(ctx context.Context, store db.DB, mbzc mbz.MusicBr
 				continue
 			}
 
-			err = ImportListenBrainzFile(ctx, store, mbzc, rc, f.Name)
+			err = ImportListenBrainzFile(ctx, store, mbzc, rc, f.Name, userID)
 			if err != nil {
 				l.Err(err).Msgf("Failed to import listens from file: %s", f.Name)
 			}
@@ -57,9 +63,9 @@ func ImportListenBrainzExport(ctx context.Context, store db.DB, mbzc mbz.MusicBr
 	return finishImport(ctx, filename, 0)
 }
 
-func ImportListenBrainzFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrainzCaller, r io.Reader, filename string) error {
+func ImportListenBrainzFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrainzCaller, r io.Reader, filename string, userID int32) error {
 	l := logger.FromContext(ctx)
-	l.Info().Msgf("Beginning ListenBrainz import on file: %s", filename)
+	l.Info().Msgf("Beginning ListenBrainz import on file: %s for user: %d", filename, userID)
 
 	scanner := bufio.NewScanner(r)
 
@@ -139,7 +145,7 @@ func ImportListenBrainzFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrai
 			ArtistMbidMappings: artistMbidMap,
 			Duration:           duration,
 			Time:               ts,
-			UserID:             1,
+			UserID:             userID,
 			Client:             client,
 			SkipCacheImage:     !cfg.FetchImagesDuringImport(),
 		}

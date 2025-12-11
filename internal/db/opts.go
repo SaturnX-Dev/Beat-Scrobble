@@ -112,6 +112,7 @@ type UpdateUserOpts struct {
 	ID       int32
 	Username string
 	Password string
+	Role     *models.UserRole
 }
 
 type AddArtistsToAlbumOpts struct {

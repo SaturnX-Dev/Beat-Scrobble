@@ -5,6 +5,8 @@ import { ThemeSwitcher } from "../themeSwitcher/ThemeSwitcher";
 import { useAppContext } from "~/providers/AppProvider";
 import ApiKeysModal from "./ApiKeysModal";
 import BackupModal from "./BackupModal";
+import RelaySettings from "./RelaySettings";
+import UsersSettings from "./UsersSettings";
 
 interface Props {
     open: boolean
@@ -33,7 +35,13 @@ export default function SettingsModal({ open, setOpen }: Props) {
                             <TabsTrigger className={triggerClasses} value="API Keys">
                                 API Keys
                             </TabsTrigger>
+                            <TabsTrigger className={triggerClasses} value="Relay">
+                                Relay / Proxy
+                            </TabsTrigger>
                             <TabsTrigger className={triggerClasses} value="Backup">Backup</TabsTrigger>
+                            {user?.role === 'admin' && (
+                                <TabsTrigger className={triggerClasses} value="Users">Users</TabsTrigger>
+                            )}
                         </>
                     )}
                     <TabsTrigger className={triggerClasses} value="About">About</TabsTrigger>
@@ -47,6 +55,14 @@ export default function SettingsModal({ open, setOpen }: Props) {
                 </TabsContent>
                 <TabsContent value="API Keys" className={contentClasses}>
                     <ApiKeysModal />
+                </TabsContent>
+                {user?.role === 'admin' && (
+                    <TabsContent value="Users" className={contentClasses}>
+                        <UsersSettings />
+                    </TabsContent>
+                )}
+                <TabsContent value="Relay" className={contentClasses}>
+                    <RelaySettings />
                 </TabsContent>
                 <TabsContent value="Backup" className={contentClasses}>
                     <BackupModal />

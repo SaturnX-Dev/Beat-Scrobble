@@ -6,10 +6,12 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
@@ -77,6 +79,17 @@ func LbzSubmitListenHandler(store db.DB, mbzc mbz.MusicBrainzCaller) func(w http
 			l.Debug().Msg("LbzSubmitListenHandler: Payload must only contain one listen for non-import requests")
 			utils.WriteError(w, "payload must only contain one listen for non-import requests", http.StatusBadRequest)
 			return
+		}
+
+		// Capture client name from the first payloaditem for auto-registration
+		// Note: req.Payload cannot be empty here due to check above
+		var payloadOneClient string
+		if len(req.Payload) > 0 {
+			if req.Payload[0].TrackMeta.AdditionalInfo.MediaPlayer != "" {
+				payloadOneClient = req.Payload[0].TrackMeta.AdditionalInfo.MediaPlayer
+			} else if req.Payload[0].TrackMeta.AdditionalInfo.SubmissionClient != "" {
+				payloadOneClient = req.Payload[0].TrackMeta.AdditionalInfo.SubmissionClient
+			}
 		}
 
 		for _, payload := range req.Payload {
@@ -191,13 +204,61 @@ func LbzSubmitListenHandler(store db.DB, mbzc mbz.MusicBrainzCaller) func(w http
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte("{\"status\": \"ok\"}"))
 
-		if cfg.LbzRelayEnabled() {
-			go doLbzRelay(requestBytes, l)
+		// Check User Preferences for Relay overrides
+		// Default to global config
+		relayEnabled := cfg.LbzRelayEnabled()
+		relayUrl := cfg.LbzRelayUrl()
+		relayToken := cfg.LbzRelayToken()
+
+		// Try to fetch user overrides
+		if prefsBytes, err := store.GetUserPreferences(r.Context(), u.ID); err == nil && len(prefsBytes) > 0 {
+			var prefs map[string]interface{}
+			if err := json.Unmarshal(prefsBytes, &prefs); err == nil {
+				if val, ok := prefs["relay_enabled"].(bool); ok {
+					relayEnabled = val
+				}
+				if val, ok := prefs["relay_url"].(string); ok && val != "" {
+					relayUrl = val
+				}
+				if val, ok := prefs["relay_token"].(string); ok && val != "" {
+					relayToken = val
+				}
+			}
+		}
+
+		// Auto-register client source
+		authHeader := r.Header.Get("Authorization")
+		var token string
+		if strings.HasPrefix(strings.ToLower(authHeader), "token ") {
+			token = strings.TrimSpace(authHeader[6:])
+		}
+
+		if token != "" {
+			sourceName := payloadOneClient
+			if sourceName == "" {
+				sourceName = r.UserAgent()
+			}
+			if sourceName == "" {
+				sourceName = "Unknown Client"
+			}
+
+			// Upsert asynchronously
+			go func(uid int32, name, tok string) {
+				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+				defer cancel()
+				if err := store.UpsertClientSource(ctx, uid, name, tok); err != nil {
+					l.Debug().Err(err).Msg("Failed to upsert client source")
+				}
+			}(u.ID, sourceName, token)
+		}
+
+		if relayEnabled {
+			go doLbzRelay(requestBytes, l, relayUrl, relayToken)
 		}
 	}
 }
 
-func doLbzRelay(requestBytes []byte, l *zerolog.Logger) {
+func doLbzRelay(requestBytes []byte, l *zerolog.Logger, relayUrl, relayToken string) {
 	defer func() {
 		if r := recover(); r != nil {
 			l.Error().Interface("recover", r).Msg("doLbzRelay: Panic occurred")
@@ -208,13 +269,30 @@ func doLbzRelay(requestBytes []byte, l *zerolog.Logger) {
 		initialBackoff   = 5 * time.Second
 		maxBackoff       = 40 * time.Second
 	)
-	l.Debug().Msg("doLbzRelay: Building ListenBrainz relay request")
-	req, err := http.NewRequest("POST", cfg.LbzRelayUrl()+"/submit-listens", bytes.NewBuffer(requestBytes))
+
+	// Normalize URL
+	targetUrl := relayUrl
+	if !strings.HasSuffix(targetUrl, "/submit-listens") {
+		// handle base url vs full endpoint url
+		// if user put "api.listenbrainz.org", we assume he means base
+		// but if he puts "api.listenbrainz.org/1/submit-listens", we use that
+		// simplest heuristic: append /submit-listens if not present?
+		// But LBZ API is /1/submit-listens usually.
+		// Let's assume the user inputs the BASE API URL if standard, or full if custom?
+		// cfg.LbzRelayUrl() usually expects base.
+		// Let's stick to appending /submit-listens to be consistent with original code
+		// original was: cfg.LbzRelayUrl()+"/submit-listens"
+		// If user provides "https://api.listenbrainz.org/1", we append.
+		targetUrl = fmt.Sprintf("%s/submit-listens", strings.TrimRight(relayUrl, "/"))
+	}
+
+	l.Debug().Str("url", targetUrl).Msg("doLbzRelay: Building ListenBrainz relay request")
+	req, err := http.NewRequest("POST", targetUrl, bytes.NewBuffer(requestBytes))
 	if err != nil {
 		l.Err(err).Msg("doLbzRelay: Failed to build ListenBrainz relay request")
 		return
 	}
-	req.Header.Add("Authorization", "Token "+cfg.LbzRelayToken())
+	req.Header.Add("Authorization", "Token "+relayToken)
 	req.Header.Add("Content-Type", "application/json")
 
 	client := &http.Client{

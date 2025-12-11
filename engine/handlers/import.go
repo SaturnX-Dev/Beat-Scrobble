@@ -105,10 +105,25 @@ func ImportHandler(store db.DB, wWorker *worker.Worker) http.HandlerFunc {
 			listensPending = len(importData.Listens)
 			l.Info().Msgf("ImportHandler: Found %d listens to import", listensPending)
 
+			// Ensure user import directory exists
+			userImportDir := path.Join(cfg.ConfigDir(), "import", user.Username)
+			if _, err := os.Stat(userImportDir); os.IsNotExist(err) {
+				if err := os.MkdirAll(userImportDir, 0755); err != nil {
+					l.Error().Err(err).Msg("ImportHandler: Failed to create user import directory")
+					utils.WriteError(w, "failed to prepare import", http.StatusInternalServerError)
+					return
+				}
+			}
+
 			// Write the body to import directory for processing
 			timestamp := time.Now().UnixMilli()
-			filename := fmt.Sprintf("web_import_%d_koito.json", timestamp)
-			importPath := path.Join(cfg.ConfigDir(), "import", filename)
+			filenameSuffix := "beat_scrobble.json"
+			if importData.Version == "1" {
+				filenameSuffix = "koito.json"
+			}
+			filename := fmt.Sprintf("web_import_%d_%s", timestamp, filenameSuffix)
+			// fullPath := path.Join(userImportDir, filename) // Unused variable, removing
+			importPath := path.Join(userImportDir, filename)
 
 			err := os.WriteFile(importPath, body, 0644)
 			if err != nil {
@@ -116,10 +131,11 @@ func ImportHandler(store db.DB, wWorker *worker.Worker) http.HandlerFunc {
 				utils.WriteError(w, "failed to queue import file", http.StatusInternalServerError)
 				return
 			}
-			l.Info().Msgf("ImportHandler: Listens queued for import in file %s", filename)
+			relativePath := path.Join(user.Username, filename)
+			l.Info().Msgf("ImportHandler: Listens queued for import in file %s (User: %s)", relativePath, user.Username)
 
 			// Background Processing (Phase 3)
-			wWorker.EnqueueImport(filename)
+			wWorker.EnqueueImport(relativePath, int32(user.ID))
 		}
 
 		// Build response based on what was restored

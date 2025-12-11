@@ -41,12 +41,13 @@ type LastFMImage struct {
 	Url  string `json:"#text"`
 }
 
-func ImportLastFMFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrainzCaller, filename string) error {
+func ImportLastFMFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrainzCaller, filename string, userID int32) error {
 	l := logger.FromContext(ctx)
-	l.Info().Msgf("Beginning LastFM import on file: %s", filename)
-	file, err := os.Open(path.Join(cfg.ConfigDir(), "import", filename))
+	l.Info().Msgf("Beginning LastFM import on file: %s for user: %d", filename, userID)
+	filePath := path.Join(cfg.ConfigDir(), "import", filename)
+	file, err := os.Open(filePath)
 	if err != nil {
-		l.Err(err).Msgf("Failed to read import file: %s", filename)
+		l.Err(err).Msgf("Failed to read import file: %s", filePath)
 		return fmt.Errorf("ImportLastFMFile: %w", err)
 	}
 	defer file.Close()
@@ -117,7 +118,7 @@ func ImportLastFMFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrainzCall
 				ArtistMbidMappings: artistMbidMap,
 				Client:             "lastfm",
 				Time:               ts,
-				UserID:             1,
+				UserID:             userID,
 				SkipCacheImage:     !cfg.FetchImagesDuringImport(),
 			}
 			err = catalog.SubmitListen(ctx, store, opts)

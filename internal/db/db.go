@@ -92,6 +92,13 @@ type DB interface {
 	// Preferences
 	SaveUserPreferences(ctx context.Context, userId int32, preferencesData []byte) error
 	GetUserPreferences(ctx context.Context, userId int32) ([]byte, error)
+	// Sources
+	UpsertClientSource(ctx context.Context, userId int32, name, token string) error
+	GetClientSources(ctx context.Context, userId int32) ([]models.ClientSource, error)
+	// User
+	GetAllUsers(ctx context.Context) ([]*models.User, error)
+	DeleteUser(ctx context.Context, id int32) error
+
 	// Lifecycle
 	Ping(ctx context.Context) error
 	Close(ctx context.Context)

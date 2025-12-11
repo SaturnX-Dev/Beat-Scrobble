@@ -6,8 +6,10 @@ import (
 	"time"
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -124,6 +126,91 @@ func MeHandler(store db.DB) http.HandlerFunc {
 
 		l.Debug().Msgf("MeHandler: Returning user data for ID %d", user.ID)
 		utils.WriteJSON(w, http.StatusOK, user)
+	}
+}
+
+func SignupHandler(store db.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		l := logger.FromContext(ctx)
+
+		l.Debug().Msg("SignupHandler: Received request")
+
+		// Check Max Users Limit
+		if max := cfg.MaxUsers(); max > 0 {
+			count, err := store.CountUsers(ctx)
+			if err != nil {
+				l.Error().Err(err).Msg("SignupHandler: Failed to count users")
+				utils.WriteError(w, "registration failed", http.StatusInternalServerError)
+				return
+			}
+			if int(count) >= max {
+				l.Warn().Msgf("SignupHandler: Max users reached (%d >= %d)", count, max)
+				utils.WriteError(w, "registration closed: max users reached", http.StatusForbidden)
+				return
+			}
+		}
+
+		if err := r.ParseForm(); err != nil {
+			l.Debug().AnErr("error", err).Msg("SignupHandler: Failed to parse form")
+			utils.WriteError(w, "invalid request format", http.StatusBadRequest)
+			return
+		}
+
+		username := r.FormValue("username")
+		password := r.FormValue("password")
+		if username == "" || password == "" {
+			l.Debug().Msg("SignupHandler: Missing credentials")
+			utils.WriteError(w, "username and password required", http.StatusBadRequest)
+			return
+		}
+
+		// Check if user exists
+		existing, err := store.GetUserByUsername(ctx, username)
+		if err != nil {
+			l.Error().Err(err).Msg("SignupHandler: Database error checking username")
+			utils.WriteError(w, "registration failed", http.StatusInternalServerError)
+			return
+		}
+		if existing != nil {
+			l.Debug().Msgf("SignupHandler: Username '%s' already taken", username)
+			utils.WriteError(w, "username already taken", http.StatusConflict)
+			return
+		}
+
+		// Create User
+		user, err := store.SaveUser(ctx, db.SaveUserOpts{
+			Username: username,
+			Password: password,
+			Role:     models.UserRoleUser, // Default role for new signups
+		})
+		if err != nil {
+			l.Error().Err(err).Msg("SignupHandler: Failed to create user")
+			utils.WriteError(w, "registration failed", http.StatusInternalServerError)
+			return
+		}
+
+		l.Info().Msgf("SignupHandler: New user created: %s (ID: %d)", username, user.ID)
+
+		// Create Session (Auto-Login)
+		expiresAt := time.Now().Add(24 * time.Hour)
+		session, err := store.SaveSession(ctx, user.ID, expiresAt, false)
+		if err != nil {
+			l.Error().Err(err).Msg("SignupHandler: Failed to create session")
+			utils.WriteError(w, "registration successful but login failed", http.StatusInternalServerError)
+			return
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "beat_scrobble_session",
+			Value:    session.ID.String(),
+			Expires:  expiresAt,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   false,
+		})
+
+		w.WriteHeader(http.StatusCreated)
 	}
 }
 

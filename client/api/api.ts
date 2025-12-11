@@ -401,7 +401,60 @@ export {
   bulkFetchSpotifyMetadata,
   exportSpotifyMetadata,
   importSpotifyMetadata,
+  signup,
+  getAllUsers,
+  createUser,
+  adminUpdateUser,
+  adminDeleteUser,
+  getClientSources,
 };
+
+function signup(username: string, password: string): Promise<User> {
+  const form = new URLSearchParams();
+  form.append("username", username);
+  form.append("password", password);
+  return request(`/apis/web/v1/signup`, {
+    method: "POST",
+    body: form,
+  }).then((r) => r.json() as Promise<User>);
+}
+
+function getAllUsers(): Promise<User[]> {
+  return request(`/apis/web/v1/admin/users`).then((r) => r.json() as Promise<User[]>);
+}
+
+function createUser(username: string, password: string, role: string): Promise<User> {
+  const form = new URLSearchParams();
+  form.append("username", username);
+  form.append("password", password);
+  form.append("role", role);
+  return request(`/apis/web/v1/admin/users`, {
+    method: "POST",
+    body: form,
+  }).then((r) => r.json() as Promise<User>);
+}
+
+function adminUpdateUser(id: number, opts: { username?: string, password?: string, role?: string }): Promise<Response> {
+  const form = new URLSearchParams();
+  form.append("id", String(id));
+  if (opts.username) form.append("username", opts.username);
+  if (opts.password) form.append("password", opts.password);
+  if (opts.role) form.append("role", opts.role);
+  return request(`/apis/web/v1/admin/users`, {
+    method: "PATCH",
+    body: form,
+  });
+}
+
+function adminDeleteUser(id: number): Promise<Response> {
+  return request(`/apis/web/v1/admin/users?id=${id}`, {
+    method: "DELETE",
+  });
+}
+
+function getClientSources(): Promise<ClientSource[]> {
+  return request(`/apis/web/v1/user/client-sources`).then((r) => r.json() as Promise<ClientSource[]>);
+}
 type Track = {
   id: number;
   title: string;
@@ -476,6 +529,15 @@ type PaginatedResponse<T> = {
   has_next_page: boolean;
   current_page: number;
   items_per_page: number;
+};
+type ClientSource = {
+  id: number;
+  user_id: number;
+  name: string;
+  token: string;
+  last_seen: Date;
+  config: string;
+  created_at: Date;
 };
 type ListenActivityItem = {
   start_time: Date;

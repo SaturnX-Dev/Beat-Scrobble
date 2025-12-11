@@ -11,8 +11,13 @@ import (
 	"github.com/rs/zerolog"
 )
 
+type ImportJob struct {
+	Filename string
+	UserID   int32
+}
+
 type Worker struct {
-	ImportQueue chan string
+	ImportQueue chan ImportJob
 	DB          db.DB
 	MBZ         mbz.MusicBrainzCaller
 	Logger      *zerolog.Logger
@@ -22,7 +27,7 @@ type Worker struct {
 
 func New(db db.DB, mbz mbz.MusicBrainzCaller, l *zerolog.Logger) *Worker {
 	return &Worker{
-		ImportQueue: make(chan string, 100), // Buffer up to 100 files
+		ImportQueue: make(chan ImportJob, 100), // Buffer up to 100 files
 		DB:          db,
 		MBZ:         mbz,
 		Logger:      l,
@@ -46,9 +51,9 @@ func (w *Worker) processLoop() {
 
 	for {
 		select {
-		case filename := <-w.ImportQueue:
-			w.Logger.Info().Str("file", filename).Msg("Worker: Received import job")
-			w.processImport(filename)
+		case job := <-w.ImportQueue:
+			w.Logger.Info().Str("file", job.Filename).Int("user_id", int(job.UserID)).Msg("Worker: Received import job")
+			w.processImport(job)
 		case <-w.quit:
 			w.Logger.Info().Msg("Worker: Shutting down background processor")
 			return
@@ -56,23 +61,25 @@ func (w *Worker) processLoop() {
 	}
 }
 
-func (w *Worker) processImport(filename string) {
+func (w *Worker) processImport(job ImportJob) {
 	// Re-use logic from engine.go's RunImporter but for single file
-	l := w.Logger.With().Str("component", "worker").Str("file", filename).Logger()
+	l := w.Logger.With().Str("component", "worker").Str("file", job.Filename).Int("user_id", int(job.UserID)).Logger()
 	ctx := logger.NewContext(&l)
 
 	// Determine type based on name (legacy logic)
 	var err error
-	if strings.Contains(filename, "Streaming_History_Audio") {
-		err = importer.ImportSpotifyFile(ctx, w.DB, filename)
-	} else if strings.Contains(filename, "maloja") {
-		err = importer.ImportMalojaFile(ctx, w.DB, filename)
-	} else if strings.Contains(filename, "recenttracks") {
-		err = importer.ImportLastFMFile(ctx, w.DB, w.MBZ, filename)
-	} else if strings.Contains(filename, "listenbrainz") {
-		err = importer.ImportListenBrainzExport(ctx, w.DB, w.MBZ, filename)
-	} else if strings.Contains(filename, "beat_scrobble") || strings.Contains(filename, "beat-scrobble") || strings.Contains(filename, "koito") {
-		err = importer.ImportBeatScrobbleFile(ctx, w.DB, filename)
+	if strings.Contains(job.Filename, "Streaming_History_Audio") {
+		err = importer.ImportSpotifyFile(ctx, w.DB, job.Filename, job.UserID)
+	} else if strings.Contains(job.Filename, "maloja") {
+		err = importer.ImportMalojaFile(ctx, w.DB, job.Filename, job.UserID)
+	} else if strings.Contains(job.Filename, "recenttracks") {
+		err = importer.ImportLastFMFile(ctx, w.DB, w.MBZ, job.Filename, job.UserID)
+	} else if strings.Contains(job.Filename, "listenbrainz") {
+		err = importer.ImportListenBrainzExport(ctx, w.DB, w.MBZ, job.Filename, job.UserID)
+	} else if strings.Contains(job.Filename, "beat_scrobble") || strings.Contains(job.Filename, "beat-scrobble") {
+		err = importer.ImportBeatScrobbleFile(ctx, w.DB, job.Filename, job.UserID)
+	} else if strings.Contains(job.Filename, "koito") {
+		err = importer.ImportKoitoFile(ctx, w.DB, job.Filename, job.UserID)
 	} else {
 		l.Warn().Msg("Worker: Unknown file type")
 		return
@@ -87,10 +94,14 @@ func (w *Worker) processImport(filename string) {
 }
 
 // EnqueueImport adds a file to the processing queue
-func (w *Worker) EnqueueImport(filename string) {
+func (w *Worker) EnqueueImport(filename string, userID int32) {
+	job := ImportJob{
+		Filename: filename,
+		UserID:   userID,
+	}
 	select {
-	case w.ImportQueue <- filename:
-		w.Logger.Info().Str("file", filename).Msg("Worker: Enqueued for processing")
+	case w.ImportQueue <- job:
+		w.Logger.Info().Str("file", filename).Int("user_id", int(userID)).Msg("Worker: Enqueued for processing")
 	default:
 		w.Logger.Warn().Str("file", filename).Msg("Worker: Queue full, dropped import")
 	}

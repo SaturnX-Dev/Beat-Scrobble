@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { createApiKey, deleteApiKey, getApiKeys, type ApiKey } from "api/api";
+import { createApiKey, deleteApiKey, getApiKeys, type ApiKey, getClientSources } from "api/api";
 import { AsyncButton } from "../AsyncButton";
 import { useEffect, useRef, useState } from "react";
 import { Copy, Trash, Eye, EyeOff, RefreshCw } from "lucide-react";
@@ -212,30 +212,61 @@ export default function ApiKeysModal() {
 
     }
 
+    const { data: clientSources } = useQuery({
+        queryKey: ['client-sources'],
+        queryFn: getClientSources,
+    });
+
     return (
         <div className="flex flex-col gap-8 pb-8">
             {/* Internal API Keys Section */}
             <div className="">
                 <h2 className="text-xl font-bold mb-4">Beat Scrobble API Keys</h2>
                 <div className="flex flex-col gap-4 relative">
-                    {displayData.map((v) => (
-                        <div className="flex gap-2" key={v.key}>
-                            <div
-                                ref={el => {
-                                    textRefs.current[v.key] = el;
-                                }}
-                                onClick={() => handleRevealAndSelect(v.key)}
-                                className={`bg p-3 rounded-md flex-grow cursor-pointer select-text ${expandedKey === v.key ? '' : 'truncate'
-                                    }`}
-                                style={{ whiteSpace: 'nowrap' }}
-                                title={v.key}
-                            >
-                                {expandedKey === v.key ? v.key : `${v.key.slice(0, 8)}... ${v.label}`}
+                    {displayData.map((v) => {
+                        const relatedSources = clientSources?.filter(s => s.token === v.key) || [];
+                        return (
+                            <div key={v.key} className="flex flex-col gap-2 p-3 bg-[var(--color-bg-secondary)]/30 rounded-lg border border-[var(--color-bg-tertiary)]">
+                                <div className="flex gap-2">
+                                    <div
+                                        ref={el => {
+                                            textRefs.current[v.key] = el;
+                                        }}
+                                        onClick={() => handleRevealAndSelect(v.key)}
+                                        className={`bg-[var(--color-bg)] p-3 rounded-md flex-grow cursor-pointer select-text ${expandedKey === v.key ? '' : 'truncate'
+                                            } font-mono text-sm`}
+                                        style={{ whiteSpace: 'nowrap' }}
+                                        title={v.key}
+                                    >
+                                        {expandedKey === v.key ? v.key : `${v.label} (${v.key.slice(0, 8)}...)`}
+                                    </div>
+                                    <button onClick={(e) => handleCopy(e, v.key)} className="large-button px-5 rounded-md hover:bg-[var(--color-bg-secondary)]"><Copy size={16} /></button>
+                                    <AsyncButton loading={loading} onClick={() => handleDeleteApiKey(v.id)} confirm><Trash size={16} /></AsyncButton>
+                                    <button
+                                        onClick={() => setExpandedKey(expandedKey === v.key ? null : v.key)}
+                                        className="large-button px-5 rounded-md hover:bg-[var(--color-bg-secondary)]"
+                                    >
+                                        {expandedKey === v.key ? <EyeOff size={16} /> : <Eye size={16} />}
+                                    </button>
+                                </div>
+
+                                {/* Client Sources List */}
+                                {relatedSources.length > 0 && (
+                                    <div className="pl-4 border-l-2 border-[var(--color-primary)]/30 mt-1">
+                                        <p className="text-xs text-[var(--color-fg-secondary)] mb-2 font-medium">Connected Clients:</p>
+                                        <div className="flex flex-col gap-2">
+                                            {relatedSources.map(s => (
+                                                <div key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between bg-[var(--color-bg)]/50 p-2 rounded text-xs gap-1">
+                                                    <span className="font-semibold text-[var(--color-fg)]">{s.name}</span>
+                                                    <span className="text-[var(--color-fg-secondary)]">Last seen: {new Date(s.last_seen).toLocaleString()}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                            <button onClick={(e) => handleCopy(e, v.key)} className="large-button px-5 rounded-md"><Copy size={16} /></button>
-                            <AsyncButton loading={loading} onClick={() => handleDeleteApiKey(v.id)} confirm><Trash size={16} /></AsyncButton>
-                        </div>
-                    ))}
+                        )
+                    })}
                     <div className="flex gap-2 w-full sm:w-3/5">
                         <input
                             type="text"

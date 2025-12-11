@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -13,30 +14,68 @@ import (
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/export"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
-func ImportKoitoFile(ctx context.Context, store db.DB, filename string, userID int32) error {
+func ImportBeatScrobbleFile(ctx context.Context, store db.DB, filename string, userID int32) error {
 	l := logger.FromContext(ctx)
-	l.Info().Msgf("Beginning Koito import on file: %s for user %d", filename, userID)
-	data := new(export.KoitoExport)
+	l.Info().Msgf("Beginning Beat Scrobble import on file: %s for user %d", filename, userID)
 	f, err := os.Open(path.Join(cfg.ConfigDir(), "import", filename))
 	if err != nil {
-		return fmt.Errorf("ImportKoitoFile: os.Open: %w", err)
+		return fmt.Errorf("ImportBeatScrobbleFile: os.Open: %w", err)
 	}
 	defer f.Close()
-	err = json.NewDecoder(f).Decode(data)
+	return importBeatScrobbleData(ctx, store, f, userID)
+}
+
+// ImportBeatScrobbleFromReader imports Beat Scrobble data from an io.Reader
+func ImportBeatScrobbleFromReader(ctx context.Context, store db.DB, r io.Reader, userID int32) error {
+	return importBeatScrobbleData(ctx, store, r, userID)
+}
+
+func importBeatScrobbleData(ctx context.Context, store db.DB, r io.Reader, userID int32) error {
+	l := logger.FromContext(ctx)
+	data := new(export.BeatScrobbleExport)
+	err := json.NewDecoder(r).Decode(data)
 	if err != nil {
-		return fmt.Errorf("ImportKoitoFile: Decode: %w", err)
+		return fmt.Errorf("importBeatScrobbleData: Decode: %w", err)
 	}
 
-	if data.Version != "1" {
-		return fmt.Errorf("ImportKoitoFile: unupported version: %s", data.Version)
+	// Support both v1 (legacy Koito) and v2 (Beat Scrobble with prefs/theme)
+	if data.Version != "1" && data.Version != "2" {
+		return fmt.Errorf("importBeatScrobbleData: unsupported version: %s", data.Version)
 	}
 
-	l.Info().Msgf("Beginning data import for user: %s (target userID: %d)", data.User, userID)
+	l.Info().Msgf("Beginning data import for user: %d (from export user: %s, format v%s)", userID, data.User, data.Version)
+
+	// For v2 format, restore preferences and theme
+	if data.Version == "2" {
+		// Restore preferences if present
+		if data.Preferences != nil && len(data.Preferences) > 0 {
+			prefsBytes, err := json.Marshal(data.Preferences)
+			if err == nil {
+				err = store.SaveUserPreferences(ctx, userID, prefsBytes)
+				if err != nil {
+					l.Warn().Err(err).Msg("importBeatScrobbleData: Failed to restore preferences")
+				} else {
+					l.Info().Msg("importBeatScrobbleData: Preferences restored successfully")
+				}
+			}
+		}
+
+		// Restore theme if present
+		if len(data.Theme) > 0 && string(data.Theme) != "null" && string(data.Theme) != "{}" {
+			err = store.SaveUserTheme(ctx, userID, data.Theme)
+			if err != nil {
+				l.Warn().Err(err).Msg("importBeatScrobbleData: Failed to restore theme")
+			} else {
+				l.Info().Msg("importBeatScrobbleData: Theme restored successfully")
+			}
+		}
+	}
 
 	count := 0
 
@@ -70,11 +109,11 @@ func ImportKoitoFile(ctx context.Context, store db.DB, filename string, userID i
 					Aliases:       utils.FlattenAliases(ia.Aliases),
 				})
 				if err != nil {
-					return fmt.Errorf("ImportKoitoFile: %w", err)
+					return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 				}
 				artistIds = append(artistIds, artist.ID)
 			} else if err != nil {
-				return fmt.Errorf("ImportKoitoFile: %w", err)
+				return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 			} else {
 				artistIds = append(artistIds, artist.ID)
 			}
@@ -108,11 +147,11 @@ func ImportKoitoFile(ctx context.Context, store db.DB, filename string, userID i
 				VariousArtists: data.Listens[i].Album.VariousArtists,
 			})
 			if err != nil {
-				return fmt.Errorf("ImportKoitoFile: %w", err)
+				return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 			}
 			albumId = album.ID
 		} else if err != nil {
-			return fmt.Errorf("ImportKoitoFile: %w", err)
+			return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 		} else {
 			albumId = album.ID
 		}
@@ -137,15 +176,15 @@ func ImportKoitoFile(ctx context.Context, store db.DB, filename string, userID i
 				AlbumID:        albumId,
 			})
 			if err != nil {
-				return fmt.Errorf("ImportKoitoFile: %w", err)
+				return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 			}
 			// save track aliases
 			err = store.SaveTrackAliases(ctx, track.ID, utils.FlattenAliases(data.Listens[i].Track.Aliases), "Import")
 			if err != nil {
-				return fmt.Errorf("ImportKoitoFile: %w", err)
+				return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 			}
 		} else if err != nil {
-			return fmt.Errorf("ImportKoitoFile: %w", err)
+			return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 		}
 
 		// save listen
@@ -155,13 +194,22 @@ func ImportKoitoFile(ctx context.Context, store db.DB, filename string, userID i
 			UserID:  userID,
 		})
 		if err != nil {
-			return fmt.Errorf("ImportKoitoFile: %w", err)
+			return fmt.Errorf("ImportBeatScrobbleFile: %w", err)
 		}
 
-		l.Info().Msgf("ImportKoitoFile: Imported listen for track %s", track.Title)
+		l.Info().Msgf("ImportBeatScrobbleFile: Imported listen for track %s", track.Title)
 		count++
 	}
 
-	l.Info().Msgf("ImportKoitoFile: Finished importing %d listens", count)
+	l.Info().Msgf("ImportBeatScrobbleFile: Finished importing %d listens", count)
 	return nil
+}
+
+func getPrimaryAliasFromAliasSlice(aliases []models.Alias) string {
+	for _, a := range aliases {
+		if a.Primary {
+			return a.Alias
+		}
+	}
+	return ""
 }
