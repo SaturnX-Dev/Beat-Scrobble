@@ -11,7 +11,7 @@ WORKDIR /client
 
 # Cache dependencies first
 COPY ./client/package.json ./client/package-lock.json ./
-RUN npm install
+RUN npm ci
 
 # Copy source and build
 COPY ./client .
