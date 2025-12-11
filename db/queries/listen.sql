@@ -103,6 +103,15 @@ SELECT COUNT(*) AS total_count
 FROM listens l
 WHERE l.user_id = $1 AND l.listened_at BETWEEN $2 AND $3;
 
+-- name: ExistsListenFuzzy :one
+SELECT EXISTS(
+    SELECT 1 FROM listens
+    WHERE user_id = $1
+      AND track_id = $2
+      AND listened_at >= ($3::timestamptz - interval '60 seconds')
+      AND listened_at <= ($3::timestamptz + interval '60 seconds')
+);
+
 -- name: CountListensFromTrack :one
 SELECT COUNT(*) AS total_count
 FROM listens l
