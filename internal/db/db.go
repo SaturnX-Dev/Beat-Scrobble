@@ -65,7 +65,7 @@ type DB interface {
 	DeleteAlbumAlias(ctx context.Context, id int32, alias string) error
 	DeleteTrackAlias(ctx context.Context, id int32, alias string) error
 	DeleteSession(ctx context.Context, sessionId uuid.UUID) error
-	DeleteApiKey(ctx context.Context, id int32) error
+	DeleteApiKey(ctx context.Context, id int32, userID int32) error
 	// Count
 	CountListens(ctx context.Context, userID int32, period Period) (int64, error)
 	CountTracks(ctx context.Context, userID int32, period Period) (int64, error)

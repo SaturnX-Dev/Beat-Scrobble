@@ -88,7 +88,7 @@ func DeleteApiKeyHandler(store db.DB) http.HandlerFunc {
 			return
 		}
 
-		if err := store.DeleteApiKey(ctx, int32(apiKeyID)); err != nil {
+		if err := store.DeleteApiKey(ctx, int32(apiKeyID), user.ID); err != nil {
 			l.Error().Err(err).Msg("DeleteApiKeyHandler: Failed to delete API key")
 			utils.WriteError(w, "failed to delete api key", http.StatusInternalServerError)
 			return

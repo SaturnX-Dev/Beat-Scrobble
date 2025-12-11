@@ -32,11 +32,16 @@ func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
 }
 
 const deleteApiKey = `-- name: DeleteApiKey :exec
-DELETE FROM api_keys WHERE id = $1
+DELETE FROM api_keys WHERE id = $1 AND user_id = $2
 `
 
-func (q *Queries) DeleteApiKey(ctx context.Context, id int32) error {
-	_, err := q.db.Exec(ctx, deleteApiKey, id)
+type DeleteApiKeyParams struct {
+	ID     int32
+	UserID int32
+}
+
+func (q *Queries) DeleteApiKey(ctx context.Context, arg DeleteApiKeyParams) error {
+	_, err := q.db.Exec(ctx, deleteApiKey, arg.ID, arg.UserID)
 	return err
 }
 

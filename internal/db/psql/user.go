@@ -203,8 +203,11 @@ func (d *Psql) UpdateApiKeyLabel(ctx context.Context, opts db.UpdateApiKeyLabelO
 	})
 }
 
-func (d *Psql) DeleteApiKey(ctx context.Context, id int32) error {
-	return d.q.DeleteApiKey(ctx, id)
+func (d *Psql) DeleteApiKey(ctx context.Context, id int32, userID int32) error {
+	return d.q.DeleteApiKey(ctx, repository.DeleteApiKeyParams{
+		ID:     id,
+		UserID: userID,
+	})
 }
 
 func (d *Psql) CountUsers(ctx context.Context) (int64, error) {
