@@ -72,7 +72,7 @@ export default function SettingsModal({ open, setOpen }: Props) {
                         <div className="flex flex-col gap-2">
                             <h2 className="text-2xl font-bold text-[var(--color-fg)]">About Beat Scrobble</h2>
                             <p className="text-[var(--color-fg-secondary)]">
-                                A modern, colorful, self-hosted music analytics platform. Your music, your data, your insights. Powered by smart AI with zero wasted tokens.
+                                A modern, colorful, self-hosted music analytics platform that puts your listening data under your control. Your music, your data, your insights – powered by smart AI with zero wasted tokens, built on Beat-Scrobble: a Koito-based, themeable scrobbler that works with any program compatible with ListenBrainz
                             </p>
                         </div>
 

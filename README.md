@@ -8,8 +8,7 @@
 </p>
 
 <p align="center">
-  <b>Modern, Colorful, Self-Hosted Music Analytics Platform</b><br/>
-  <i>Your music, your data, your insights. Powered by smart AI with zero wasted tokens.</i>
+  A modern, colorful, self-hosted music analytics platform that puts your listening data under your control. Your music, your data, your insights – powered by smart AI with zero wasted tokens, built on Beat-Scrobble: a Koito-based, themeable scrobbler that works with any program compatible with ListenBrainz.
 </p>
 
 <p align="center">
