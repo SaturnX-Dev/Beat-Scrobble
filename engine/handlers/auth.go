@@ -72,7 +72,8 @@ func LoginHandler(store db.DB) http.HandlerFunc {
 			Expires:  expiresAt,
 			Path:     "/",
 			HttpOnly: true,
-			Secure:   false,
+			Secure:   true,
+			SameSite: http.SameSiteLaxMode,
 		})
 
 		l.Debug().Msgf("LoginHandler: User %d authenticated", user.ID)
@@ -207,7 +208,8 @@ func SignupHandler(store db.DB) http.HandlerFunc {
 			Expires:  expiresAt,
 			Path:     "/",
 			HttpOnly: true,
-			Secure:   false,
+			Secure:   true,
+			SameSite: http.SameSiteLaxMode,
 		})
 
 		w.WriteHeader(http.StatusCreated)

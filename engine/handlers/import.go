@@ -135,7 +135,11 @@ func ImportHandler(store db.DB, wWorker *worker.Worker) http.HandlerFunc {
 			l.Info().Msgf("ImportHandler: Listens queued for import in file %s (User: %s)", relativePath, user.Username)
 
 			// Background Processing (Phase 3)
-			wWorker.EnqueueImport(relativePath, int32(user.ID))
+			if ok := wWorker.EnqueueImport(relativePath, int32(user.ID)); !ok {
+				l.Warn().Msg("ImportHandler: Worker queue full")
+				utils.WriteError(w, "server busy, try again later", http.StatusServiceUnavailable)
+				return
+			}
 		}
 
 		// Build response based on what was restored

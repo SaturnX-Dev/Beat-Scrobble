@@ -1,6 +1,9 @@
 # 🎵 Beat Scrobble
 
 <p align="center">
+  <img src="assets/logo.jpg" alt="Beat Scrobble Logo" width="200" style="border-radius: 20px;"/>
+  <br>
+  <br>
   <img src="assets/Mod1.png" alt="Beat Scrobble Dashboard" width="800"/>
 </p>
 
@@ -17,6 +20,19 @@
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react" alt="React 19"/>
   <img src="https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql" alt="PostgreSQL 16"/>
 </p>
+
+## 📋 Table of Contents
+
+- [✨ Features](#-features)
+- [🛡️ Security & Privacy](#-security--privacy)
+- [🚀 Quick Start](#-quick-start)
+- [🎨 Premium UI](#-premium-ui--customization)
+- [🎵 Spotify Integration](#-spotify-integration)
+- [☁️ Server-Side Storage](#-server-side-storage)
+- [⚡ Performance](#-performance)
+- [⚙️ Configuration](#-configuration)
+- [🐳 Production Deployment](#-production-deployment)
+- [🏗️ Architecture](#-architecture)
 
 ---
 
@@ -111,12 +127,27 @@ Beat Scrobble offers **15+ interactive visualizations** to explore your listenin
 | :--- | :--- |
 | **🎛️ Control Room** | Unified dashboard with Now Playing, metrics, and mini-charts. |
 | **🎁 Yearly Recap** | "Spotify Wrapped" style annual summary with shareable stats. |
-| **� Period Filters** | Instant filtering: Today, Week, Month, Year, All Time. |
+| ** Period Filters** | Instant filtering: Today, Week, Month, Year, All Time. |
 | **▶️ Now Playing** | Real-time player with AI critique and quick actions. |
 
 ---
 
-## �🚀 Quick Start
+## 🛡️ Security & Privacy
+
+Beat Scrobble puts your data safety first with enterprise-grade security practices standard in every deployment.
+
+| Feature | Description |
+| :--- | :--- |
+| **🔒 Secret Masking** | API keys and secrets are automatically redacted before being sent to the client, preventing leakage via XSS or browser inspection. |
+| **🍪 Secure Sessions** | Authentication uses `HttpOnly`, `Secure`, and `SameSite=Lax` cookies to prevent session hijacking and CSRF attacks. |
+| **🛡️ Brute Force Shield** | Intelligent Rate Limiting on Login and Signup endpoints prevents credential stuffing attacks. |
+| **🛑 Resource Protection** | Strict Timeouts and Size Limits on all external requests and uploads prevent DoS attacks and resource exhaustion. |
+| **🕵️ User Isolation** | Strict Row-Level Security ensures users can never access each other's data in multi-user instances. |
+| **👮 Role-Based Access** | Granular RBAC ensures only verified Admins can modify global settings or manage users. |
+
+---
+
+## 🚀 Quick Start
 
 ### Docker (Recommended)
 

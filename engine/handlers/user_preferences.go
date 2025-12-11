@@ -49,8 +49,32 @@ func GetUserPreferencesHandler(store db.DB) http.HandlerFunc {
 		}
 
 		l.Debug().Msgf("GetUserPreferencesHandler: Returning preferences for user %d", user.ID)
-		utils.WriteJSON(w, http.StatusOK, preferences)
+
+		// Security: Mask sensitive fields before sending to client
+		safePreferences := make(map[string]interface{})
+		for k, v := range preferences {
+			if isSensitiveKey(k) {
+				// Check if it has a value, if so send mask
+				if strVal, ok := v.(string); ok && strVal != "" {
+					safePreferences[k] = "********"
+				} else {
+					safePreferences[k] = v // Empty or nil is fine
+				}
+			} else {
+				safePreferences[k] = v
+			}
+		}
+
+		utils.WriteJSON(w, http.StatusOK, safePreferences)
 	}
+}
+
+func isSensitiveKey(key string) bool {
+	lower := strings.ToLower(key)
+	return strings.Contains(lower, "_secret") ||
+		strings.Contains(lower, "_key") ||
+		strings.Contains(lower, "_token") ||
+		strings.Contains(lower, "password")
 }
 
 // SaveUserPreferencesHandler saves the user's preferences
@@ -129,6 +153,11 @@ func SaveUserPreferencesHandler(store db.DB) http.HandlerFunc {
 				if oldVal, ok := finalPrefs[k]; !ok || oldVal != v {
 					playlistPromptChanged = true
 				}
+			}
+
+			// Security: Do not overwrite with mask
+			if strVal, ok := v.(string); ok && strVal == "********" {
+				continue
 			}
 
 			finalPrefs[k] = v

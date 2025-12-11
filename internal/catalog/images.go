@@ -10,6 +10,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
@@ -106,7 +107,11 @@ func DownloadAndCacheImage(ctx context.Context, id uuid.UUID, url string, size I
 		return fmt.Errorf("DownloadAndCacheImage: %w", err)
 	}
 	l.Debug().Msgf("Downloading image for ID %s", id)
-	resp, err := http.Get(url)
+
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+	resp, err := client.Get(url)
 	if err != nil {
 		return fmt.Errorf("DownloadAndCacheImage: http.Get: %w", err)
 	}

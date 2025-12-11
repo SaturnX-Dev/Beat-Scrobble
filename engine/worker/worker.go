@@ -93,8 +93,8 @@ func (w *Worker) processImport(job ImportJob) {
 	}
 }
 
-// EnqueueImport adds a file to the processing queue
-func (w *Worker) EnqueueImport(filename string, userID int32) {
+// EnqueueImport adds a file to the processing queue. Returns true if enqueued, false if dropped.
+func (w *Worker) EnqueueImport(filename string, userID int32) bool {
 	job := ImportJob{
 		Filename: filename,
 		UserID:   userID,
@@ -102,7 +102,9 @@ func (w *Worker) EnqueueImport(filename string, userID int32) {
 	select {
 	case w.ImportQueue <- job:
 		w.Logger.Info().Str("file", filename).Int("user_id", int(userID)).Msg("Worker: Enqueued for processing")
+		return true
 	default:
 		w.Logger.Warn().Str("file", filename).Msg("Worker: Queue full, dropped import")
+		return false
 	}
 }

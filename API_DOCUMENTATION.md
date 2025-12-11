@@ -1,183 +1,186 @@
-# 🛠️ Beat Scrobble API Documentation
+# 📚 Beat Scrobble API
 
-**Version:** v1  
+<div align="center">
+
+[![API Version](https://img.shields.io/badge/API-v1-blue.svg?style=flat-square)](/apis/web/v1)
+[![Status](https://img.shields.io/badge/Status-Active-success.svg?style=flat-square)](/health)
+[![Authentication](https://img.shields.io/badge/Auth-Session-orange.svg?style=flat-square)](/login)
+
+</div>
+
+Welcome to the Beat Scrobble API documentation. This API allows you to interact programmatically with your music data, manage users, and leverage AI features.
+
+## 📡 Base Configuration
+
 **Base URL:** `/apis/web/v1`
 
-This document provides a comprehensive technical reference for the Beat Scrobble REST API.
+| Header | Value | Description |
+| :--- | :--- | :--- |
+| `Content-Type` | `application/json` | Required for all POST/PATCH requests. |
+| `Accept` | `application/json` | Expected response format. |
+
+### 🛑 Rate Limiting
+
+To ensure stability, the API enforces the following rate limits:
+
+| Endpoint | Limit | Window |
+| :--- | :--- | :--- |
+| `/login` | 10 requests | 1 minute |
+| `/signup` | 5 requests | 1 minute |
+| `/ai/*` | Varies | Adaptive based on token usage |
+| `Global` | 5000 requests | 1 hour |
+
+---
 
 ## 🔐 Authentication
 
-Most endpoints require authentication. The API uses session-based authentication.
+The API uses **Session-Based Authentication** via strict HTTP-only cookies.
 
-- **Login:** `POST /apis/web/v1/login`
-- **Logout:** `POST /apis/web/v1/logout`
-- **Setup Status:** `GET /apis/web/v1/setup-status`
-- **Complete Setup:** `POST /apis/web/v1/setup-complete`
-- **Register:** `POST /apis/web/v1/signup`
+### Session Lifecycle
 
----
+1.  **Login:** `POST /login` with username/password.
+2.  **Cookie:** Server sets `beat_scrobble_session` cookie (`Secure`, `HttpOnly`, `SameSite=Lax`).
+3.  **Requests:** Browser/Client automatically sends cookie with subsequent requests.
+4.  **Logout:** `POST /logout` invalidates the session server-side.
 
-## 🎧 core Resources
+### 🔑 API Keys (Headless)
 
-### Artists
+For scripts and external integrations (e.g., ListenBrainz submission), use Bearer Token auth via API Keys generated in User Settings.
 
-#### Get Artist
-`GET /artist`
-Retrieves detailed information for a specific artist.
-- **Query Params:** `id` (required)
-
-#### Get Artists for Item
-`GET /artists`
-Retrieves artists associated with a specific item (e.g., track or album).
-- **Query Params:** `id`, `type` (track/album)
-
-#### Set Primary Artist
-`POST /artists/primary`
-Sets the primary artist for a user's library context.
-
-#### Delete Artist
-`DELETE /artist`
-Removes an artist from the library.
-- **Query Params:** `id` (required)
-
-### Albums
-
-#### Get Album
-`GET /album`
-Retrieves detailed information for a specific album.
-- **Query Params:** `id` (required)
-
-#### Update Album
-`PATCH /album`
-Updates album metadata.
-
-#### Delete Album
-`DELETE /album`
-Removes an album from the library.
-- **Query Params:** `id` (required)
-
-### Tracks
-
-#### Get Track
-`GET /track`
-Retrieves detailed information for a specific track.
-- **Query Params:** `id` (required)
-
-#### Delete Track
-`DELETE /track`
-Removes a track from the library.
-- **Query Params:** `id` (required)
+header: `Authorization: Bearer <your_api_key>`
 
 ---
 
-## 📈 Statistics & Charts
+## 🎧 Core Resources
 
-### Top Lists
-Time-boxed rankings of your most listened items.
+Read and manage your library entities.
 
-- `GET /top-tracks` - Top Tracks
-- `GET /top-albums` - Top Albums
-- `GET /top-artists` - Top Artists
+### 🎤 Artists
 
-**Common Query Params:**
-- `time_range`: `short_term` (4 weeks), `medium_term` (6 months), `long_term` (years)
-- `limit`: Number of items (default 50)
+| Method | Endpoint | Description | Query Params |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/artist` | Get artist details | `id` (int) |
+| `GET` | `/artists` | Get artists for item | `id`, `type` (track/album) |
+| `POST` | `/artists/primary` | Set primary artist | - |
+| `DELETE` | `/artist` | Remove artist | `id` (int) |
 
-### Listening History
+### 💿 Albums
 
-- `GET /listens` - Full listening history (paginated)
-- `GET /listen-activity` - Heatmap/activity data
-- `GET /now-playing` - Currently playing track
-- `GET /stats` - Aggregated user statistics
-- `GET /yearly-recap` - Annual summary data
+| Method | Endpoint | Description | Query Params |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/album` | Get album details | `id` (int) |
+| `PATCH` | `/album` | Update metadata | - |
+| `DELETE` | `/album` | Remove album | `id` (int) |
 
----
+### 🎵 Tracks
 
-## 🤖 AI Features
-
-Powered by OpenRouter.
-
-### Critique
-- `POST /ai/critique` - Generate a critique for a specific track
-- `POST /ai/profile-critique` - Generate a psychological profile based on listening habits
-
-### Playlists
-- `POST /ai/generate-playlist` - Generate an AI-curated playlist
-    - **Body:** `{ "type": "mood" | "genre" | "time_capsule" | "discovery", "params": {...} }`
-
-### Cache Management
-- `POST /ai/clear-cache` - Invalidate AI response cache
-- `GET /ai/cache/export` - Export AI cache database
-- `POST /ai/cache/import` - Import AI cache database
+| Method | Endpoint | Description | Query Params |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/track` | Get track details | `id` (int) |
+| `DELETE` | `/track` | Remove track | `id` (int) |
+| `POST` | `/listen` | Manually submit listen | - |
 
 ---
 
-## 👤 User & Configuration
+## 🤖 AI & Intelligence
+
+Powered by OpenRouter LLMs. Responses are cached indefinitely to save tokens.
+
+### 🧠 Critique
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/ai/critique` | Get snarky commentary on a track. |
+| `POST` | `/ai/profile-critique` | Get psychoanalysis of your music taste. |
+
+### 📻 Generation
+
+| Method | Endpoint | Body |
+| :--- | :--- | :--- |
+| `POST` | `/ai/generate-playlist` | `{ "type": "mood" \| "genre" \| "decade", "params": {...} }` |
+
+### 🧹 Cache
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/ai/clear-cache` | Force clear AI response cache. |
+| `GET` | `/ai/cache/export` | Backup AI responses JSON. |
+
+---
+
+## 📊 Analytics & Stats
+
+Visualizations and aggregations.
+
+| Endpoint | Description | Params |
+| :--- | :--- | :--- |
+| `/top-tracks` | Top tracks ranking | `time_range`, `limit` |
+| `/top-artists` | Top artists ranking | `time_range`, `limit` |
+| `/top-albums` | Top albums ranking | `time_range`, `limit` |
+| `/stats` | Global user stats (total time, counts) | - |
+| `/listen-activity` | Heatmap data points | - |
+| `/yearly-recap` | Annual "Wrapped" style data | `year` |
+
+---
+
+## 👤 User Management
 
 ### Profile
-- `GET /user/me` - Current user details
-- `PATCH /user` - Update user profile
-- `POST /user/profile-image` - Upload profile image (Base64)
-- `POST /user/background-image` - Upload background image (Base64)
 
-### Preferences
-- `GET /user/preferences` - Get user preferences (UI settings, etc.)
-- `POST /user/preferences` - Save user preferences
-- `GET /user/theme` - Get saved theme
-- `POST /user/theme` - Save theme
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/user/me` | Current session user details. |
+| `POST` | `/user/profile-image` | Upload avatar (Base64). |
+| `POST` | `/user/background-image` | Upload wallpaper (Base64). |
+| `GET` | `/user/preferences` | Get UI settings (Redacted secrets). |
+| `POST` | `/user/preferences` | Update UI settings. |
 
-### API Keys
-Manage API keys for external apps or integrations.
-- `GET /user/apikeys`
-- `POST /user/apikeys`
-- `PATCH /user/apikeys`
-- `DELETE /user/apikeys`
+### 👮 Admin Area
 
-### User Administration (Admin)
- Manage users on the instance.
-- `GET /admin/users` - List all users
-- `POST /admin/users` - Create user
-- `PATCH /admin/users` - Update user (role/password)
-- `DELETE /admin/users` - Delete user
+Requres `role: admin`.
 
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/admin/users` | List all instance users. |
+| `POST` | `/admin/users` | Create new user manually. |
+| `PATCH` | `/admin/users` | Reset password or change role. |
+| `DELETE` | `/admin/users` | Ban/Remove user. |
 
 ---
 
-## 🎵 Spotify Integration
+## 🧩 Integrations
 
-- `GET /spotify/configured` - Check if Spotify is linked
-- `GET /spotify/search` - Search Spotify catalog
-- `POST /spotify/fetch-metadata` - Fetch metadata for specific ID
-- `GET /spotify/bulk-fetch-sse` - Bulk metadata fetch stream (Server-Sent Events)
-- `GET /spotify/export-metadata`
-- `POST /spotify/import-metadata`
+### Spotify
 
----
+| Endpoint | Meaning |
+| :--- | :--- |
+| `/spotify/configured` | Check connection status. |
+| `/spotify/search` | Proxy search to Spotify Catalog. |
+| `/spotify/fetch-metadata` | Import metadata for specific item. |
+| `/spotify/bulk-fetch-sse` | **Server-Sent Events** stream for full library sync. |
 
-## 🛠️ Data Management
+### ListenBrainz
 
-### Merge & Edit
-- `POST /merge/tracks`
-- `POST /merge/albums`
-- `POST /merge/artists`
-
-### Aliases
-Manage artist/track aliases to correct metadata.
-- `GET /aliases`
-- `POST /aliases`
-- `POST /aliases/delete`
-- `POST /aliases/primary`
-
-### Import/Export
-- `GET /export` - Full library export
-- `POST /import` - Import from various formats (Last.fm, Spotify, etc.)
+| Endpoint | Meaning |
+| :--- | :--- |
+| `/apis/listenbrainz/1/submit-listens` | Compatible submission endpoint. |
+| `/apis/listenbrainz/1/validate-token` | Token verification. |
 
 ---
 
-## 📡 Public Endpoints
+## ⚠️ Error Codes
 
-No authentication required.
+| Code | Meaning |
+| :--- | :--- |
+| `200` | Success. |
+| `400` | Bad Request (Check params). |
+| `401` | Unauthorized (Login required). |
+| `403` | Forbidden (Admin required). |
+| `429` | Too Many Requests (Rate Limit). |
+| `500` | Internal Server Error. |
 
-- `GET /config` - Public server configuration
-- `GET /health` - Health check
-- `GET /public/profile/{username}` - Public user profile
+---
+
+<p align="center">
+  Generated for Beat Scrobble v1.0
+</p>

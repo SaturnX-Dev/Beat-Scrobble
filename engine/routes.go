@@ -35,6 +35,8 @@ func bindRoutes(
 	}
 	// Enable Gzip compression with compression level 5 (balanced)
 	r.Use(chimiddleware.Compress(5))
+	// Enable Security Headers (HSTS, etc handled by proxy usually, but safe defaults here)
+	r.Use(middleware.SecurityHeaders)
 
 	r.With(chimiddleware.RequestSize(5<<20)).
 		Get("/images/{size}/{filename}", handlers.ImageHandler(db))
@@ -71,7 +73,18 @@ func bindRoutes(
 		} else {
 			r.Post("/login", handlers.LoginHandler(db))
 		}
-		r.Post("/signup", handlers.SignupHandler(db))
+
+		if !cfg.RateLimitDisabled() {
+			r.With(httprate.Limit(
+				5,
+				time.Minute,
+				httprate.WithLimitHandler(func(w http.ResponseWriter, r *http.Request) {
+					http.Error(w, `{"error":"too many requests"}`, http.StatusTooManyRequests)
+				}),
+			)).Post("/signup", handlers.SignupHandler(db))
+		} else {
+			r.Post("/signup", handlers.SignupHandler(db))
+		}
 
 		r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 			if !ready.Load() {

@@ -59,9 +59,24 @@ Goal: Make it visible to the user.
 - [ ] **Profile Page**
     - Add "Taste Profile" visualization (maybe reducing 1536 dims to 2D using PCA/t-SNE for a chart).
 
+## 🛡️ Phase 5: Security & Enterprise Hardening
+
+Goal: Prepare the application for multi-tenant or public deployment with "Bank-Grade" security.
+
+- [ ] **Encryption at Rest**
+    - Encrypt sensitive columns (Tokens, API Keys, Emails) using AES-256-GCM.
+    - Implement Key Management System (Environment Variable or Vault).
+- [ ] **Audit Logging**
+    - Track all administrative actions (User deletion, Role changes).
+    - Store IP, Timestamp, and User Agent for every sensitive mutation.
+- [ ] **Concurrency Control**
+    - Implement Redis-based distributed locks or Postgres Advisory Locks for `SubmitListen` to ensure zero-duplicate guarantee.
+- [ ] **Worker Scaling**
+    - Replace in-memory channel queue with persistent job queue (Redis/Postgres) to survive restarts.
+
 ---
 
 **Legend:**
 - [ ] Pending
 - [/] In Progress
-- [x] Completed
+- [x] Completeds

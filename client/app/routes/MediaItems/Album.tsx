@@ -40,7 +40,7 @@ export default function Album() {
     }
   };
 
-  console.log(album);
+
 
   return (
     <MediaLayout
