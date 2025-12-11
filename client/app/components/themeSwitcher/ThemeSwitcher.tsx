@@ -167,14 +167,6 @@ export function ThemeSwitcher() {
         {/* Collapsible Custom Editor */}
         <Collapsible title="Custom Theme Editor" icon={<Palette size={20} />} subtitle="Fine-tune brand colors, UI elements and backgrounds">
           <div className="space-y-6">
-            <div className="flex justify-end sticky top-0 z-10 bg-[var(--color-bg-secondary)]/95 backdrop-blur py-2 border-b border-[var(--color-bg-tertiary)] mb-4">
-              <AsyncButton onClick={async () => {
-                await handleCustomTheme();
-              }} className="bg-[var(--color-primary)] text-white px-6 py-1.5 text-sm rounded-lg font-bold shadow-lg shadow-[var(--color-primary)]/20 hover:scale-105 transition-all">
-                Save Preset
-              </AsyncButton>
-            </div>
-
             {/* Reordered Layout as requested */}
             <div className="space-y-6">
               <CardAuraSelector />
@@ -187,6 +179,7 @@ export function ThemeSwitcher() {
               />
             </div>
 
+            {/* Export Buttons */}
             <div className="pt-4 border-t border-[var(--color-bg-tertiary)] flex gap-2">
               <button
                 onClick={() => {
@@ -198,7 +191,7 @@ export function ThemeSwitcher() {
                   a.download = 'theme.json';
                   a.click();
                 }}
-                className="flex-1 py-2 rounded-lg bg-[var(--color-bg)] hover:bg-[var(--color-bg-tertiary)] transition-colors text-xs font-bold text-[var(--color-fg-secondary)] border border-[var(--color-bg-tertiary)]"
+                className="flex-1 py-1.5 rounded-lg bg-[var(--color-bg)] hover:bg-[var(--color-bg-tertiary)] transition-colors text-xs font-bold text-[var(--color-fg-secondary)] border border-[var(--color-bg-tertiary)]"
               >
                 Download JSON
               </button>
@@ -208,10 +201,46 @@ export function ThemeSwitcher() {
                   const css = `:root {\n${Object.entries(theme).map(([k, v]) => `  --color-${k.replace(/[A-Z]/g, m => '-' + m.toLowerCase())}: ${v};`).join('\n')}\n}`;
                   navigator.clipboard.writeText(css);
                 }}
-                className="flex-1 py-2 rounded-lg bg-[var(--color-bg)] hover:bg-[var(--color-bg-tertiary)] transition-colors text-xs font-bold text-[var(--color-fg-secondary)] border border-[var(--color-bg-tertiary)]"
+                className="flex-1 py-1.5 rounded-lg bg-[var(--color-bg)] hover:bg-[var(--color-bg-tertiary)] transition-colors text-xs font-bold text-[var(--color-fg-secondary)] border border-[var(--color-bg-tertiary)]"
               >
                 Copy CSS
               </button>
+            </div>
+
+            {/* Import Section */}
+            <div className="pt-4 border-t border-[var(--color-bg-tertiary)]">
+              <Collapsible title="Import Theme code" icon={<Settings2 size={14} />} subtitle="Paste JSON config here">
+                <div className="space-y-3 pt-2">
+                  <textarea
+                    className="w-full h-24 bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-lg p-3 text-[10px] font-mono text-[var(--color-fg-secondary)] focus:outline-none focus:border-[var(--color-primary)] resize-none"
+                    placeholder='Paste theme JSON here: { "bg": "#...", ... }'
+                    onChange={(e) => {
+                      // Auto-validate visually could go here, but we'll validate on click
+                    }}
+                    id="theme-import-input"
+                  />
+                  <AsyncButton
+                    onClick={async () => {
+                      const input = (document.getElementById('theme-import-input') as HTMLTextAreaElement).value;
+                      try {
+                        const imported = JSON.parse(input);
+                        if (!imported.bg || !imported.primary) {
+                          alert("Invalid Theme: Missing 'bg' or 'primary' colors.");
+                          return;
+                        }
+                        setCustomTheme(imported);
+                        setCustom(JSON.stringify(imported, null, 2));
+                        (document.getElementById('theme-import-input') as HTMLTextAreaElement).value = ''; // clear
+                      } catch (e) {
+                        alert("Invalid JSON: Please check your syntax.");
+                      }
+                    }}
+                    className="w-full py-2 bg-[var(--color-bg-secondary)] hover:bg-[var(--color-primary)] hover:text-white border border-[var(--color-bg-tertiary)] hover:border-transparent rounded-lg text-xs font-bold transition-all text-[var(--color-fg)]"
+                  >
+                    Apply Preset
+                  </AsyncButton>
+                </div>
+              </Collapsible>
             </div>
 
           </div>

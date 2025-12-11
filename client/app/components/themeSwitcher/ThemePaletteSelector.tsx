@@ -34,6 +34,44 @@ export function ThemePaletteSelector({ setTheme, setCustom, setCustomTheme }: Th
         "purple", "lavender", "mist", "mistDark", "lilac", "nebula"
     ];
 
+    // Helper to extract hue from hex
+    const getHue = (hex: string) => {
+        // Remove #
+        hex = hex.replace('#', '');
+
+        // Parse r, g, b
+        const r = parseInt(hex.substring(0, 2), 16) / 255;
+        const g = parseInt(hex.substring(2, 4), 16) / 255;
+        const b = parseInt(hex.substring(4, 6), 16) / 255;
+
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        let h = 0;
+
+        if (max === min) {
+            h = 0; // achromatic
+        } else {
+            const d = max - min;
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+
+        return h * 360;
+    };
+
+    // Sort themes by hue
+    const sortedModernThemes = Object.entries(themes)
+        .filter(([name]) => MODERN_THEME_NAMES.includes(name))
+        .sort(([, a], [, b]) => {
+            const hueA = getHue(a.primary);
+            const hueB = getHue(b.primary);
+            return hueA - hueB;
+        });
+
     return (
         <div className="bg-[var(--color-bg-secondary)] rounded-xl p-4 border border-[var(--color-bg-tertiary)]">
             <button
@@ -51,35 +89,33 @@ export function ThemePaletteSelector({ setTheme, setCustom, setCustomTheme }: Th
 
             {isExpanded && (
                 <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
-                    {/* Modern Themes */}
+                    {/* Modern Themes (Rainbow Sorted) */}
                     <div>
-                        <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Modern</h4>
+                        <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Rainbow Palette</h4>
                         <div className="grid grid-cols-2 items-center gap-2">
-                            {Object.entries(themes)
-                                .filter(([name]) => MODERN_THEME_NAMES.includes(name))
-                                .map(([name, themeData]) => (
-                                    <ThemeOptionLegacy
-                                        setTheme={(themeName: string) => {
-                                            setTheme(themeName);
-                                            const selectedTheme = themes[themeName];
-                                            if (selectedTheme) {
-                                                setCustom(JSON.stringify(selectedTheme, null, 2));
-                                            }
-                                        }}
-                                        key={name}
-                                        theme={themeData}
-                                        themeName={name}
-                                    />
-                                ))}
+                            {sortedModernThemes.map(([name, themeData]) => (
+                                <ThemeOptionLegacy
+                                    setTheme={(themeName: string) => {
+                                        setTheme(themeName);
+                                        const selectedTheme = themes[themeName];
+                                        if (selectedTheme) {
+                                            setCustom(JSON.stringify(selectedTheme, null, 2));
+                                        }
+                                    }}
+                                    key={name}
+                                    theme={themeData}
+                                    themeName={name}
+                                />
+                            ))}
                         </div>
                     </div>
 
                     {/* Classic Themes */}
                     <div>
-                        <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Classic</h4>
+                        <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] mb-2 uppercase tracking-wider">Classic & Monochrome</h4>
                         <div className="grid grid-cols-2 items-center gap-2">
                             {Object.entries(themes)
-                                .filter(([name]) => !MODERN_THEME_NAMES.includes(name) && !["snow"].includes(name)) // Snow is manually excluded if needed, or included in classic logic
+                                .filter(([name]) => !MODERN_THEME_NAMES.includes(name) && !["snow"].includes(name))
                                 .map(([name, themeData]) => (
                                     <ThemeOptionLegacy
                                         setTheme={(themeName: string) => {
