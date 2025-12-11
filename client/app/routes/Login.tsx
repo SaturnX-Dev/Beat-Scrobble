@@ -9,7 +9,7 @@ export const meta = () => {
     ];
 };
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function clientLoader({ request }: LoaderFunctionArgs) {
     // Check if session exists via API (or just rely on backend redirecting 401s, 
     // but for a smooth UX we might want to check here or just let the user login).
     // Ideally, if we are already logged in, go to dashboard.
@@ -18,7 +18,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return null;
 }
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function clientAction({ request }: ActionFunctionArgs) {
     const formData = await request.formData();
     const intent = formData.get("intent");
     const redirectTo = (formData.get("redirectTo") as string) || "/";

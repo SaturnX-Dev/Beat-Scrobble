@@ -2,6 +2,11 @@ name: Build and Push Docker Image
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version Override (e.g. 2.0.0)'
+        required: false
+        default: ''
 
 env:
   REGISTRY: ghcr.io
@@ -41,6 +46,7 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -51,6 +57,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BEAT_SCROBBLE_VERSION=${{ github.ref_name }}
+            BEAT_SCROBBLE_VERSION=${{ inputs.version || github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+

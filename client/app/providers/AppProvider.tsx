@@ -8,6 +8,7 @@ interface AppContextType {
   configurableHomeActivity: boolean;
   homeItems: number;
   defaultTheme: string;
+  serverVersion: string;
   setConfigurableHomeActivity: (value: boolean) => void;
   setHomeItems: (value: number) => void;
   setUsername: (value: string) => void;
@@ -28,6 +29,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [defaultTheme, setDefaultTheme] = useState<string | undefined>(
     undefined
   );
+  const [serverVersion, setServerVersion] = useState<string>("unknown");
   const [configurableHomeActivity, setConfigurableHomeActivity] =
     useState<boolean>(false);
   const [homeItems, setHomeItems] = useState<number>(0);
@@ -103,10 +105,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     getCfg().then((cfg) => {
       // console.log(cfg);
-      if (cfg && cfg.default_theme && cfg.default_theme !== "") {
-        setDefaultTheme(cfg.default_theme);
-      } else {
-        setDefaultTheme("yuu");
+      if (cfg) {
+        if (cfg.default_theme && cfg.default_theme !== "") {
+          setDefaultTheme(cfg.default_theme);
+        } else {
+          setDefaultTheme("yuu");
+        }
+        if (cfg.version) {
+          setServerVersion(cfg.version);
+        }
       }
     });
 
@@ -140,6 +147,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     configurableHomeActivity,
     homeItems,
     defaultTheme,
+    serverVersion,
     setConfigurableHomeActivity,
     setHomeItems,
     setUsername,

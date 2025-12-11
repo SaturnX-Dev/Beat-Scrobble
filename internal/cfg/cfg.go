@@ -87,6 +87,7 @@ type config struct {
 	artistSeparators       []*regexp.Regexp
 	loginGate              bool
 	maxUsers               int
+	version                string
 }
 
 var (
@@ -110,6 +111,7 @@ func Load(getenv func(string) string, version string) error {
 // loadConfig loads the configuration from environment variables.
 func loadConfig(getenv func(string) string, version string) (*config, error) {
 	cfg := new(config)
+	cfg.version = version
 
 	cfg.databaseUrl = getenv(DATABASE_URL_ENV)
 	if cfg.databaseUrl == "" {

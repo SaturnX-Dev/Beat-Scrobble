@@ -577,6 +577,7 @@ type ApiError = {
 };
 type Config = {
   default_theme: string;
+  version?: string;
 };
 type NowPlaying = {
   currently_playing: boolean;

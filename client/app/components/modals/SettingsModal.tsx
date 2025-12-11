@@ -79,10 +79,10 @@ export default function SettingsModal({ open, setOpen }: Props) {
                         <div className="p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
                             <h3 className="font-semibold text-[var(--color-fg)] mb-2">Version Info</h3>
                             <div className="grid grid-cols-2 gap-2 text-sm">
-                                <span className="text-[var(--color-fg-secondary)]">Version:</span>
-                                <span className="text-[var(--color-fg)] font-mono">0.1.0-alpha</span>
-                                <span className="text-[var(--color-fg-secondary)]">Build:</span>
-                                <span className="text-[var(--color-fg)] font-mono">Development</span>
+                                <span className="text-[var(--color-fg-secondary)]">Client:</span>
+                                <span className="text-[var(--color-fg)] font-mono">{import.meta.env.VITE_BEAT_SCROBBLE_VERSION || "Dev"}</span>
+                                <span className="text-[var(--color-fg-secondary)]">Server:</span>
+                                <span className="text-[var(--color-fg)] font-mono">{useAppContext().serverVersion}</span>
                             </div>
                         </div>
 
