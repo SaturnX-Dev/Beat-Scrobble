@@ -10,12 +10,12 @@ ENV BUILD_TARGET=docker
 WORKDIR /client
 
 # Cache dependencies first
-COPY ./client/package.json ./client/yarn.lock ./
-RUN yarn install --frozen-lockfile --production=false
+COPY ./client/package.json ./client/package-lock.json ./
+RUN npm install
 
 # Copy source and build
 COPY ./client .
-RUN yarn run build
+RUN npm run build
 
 # ============================================
 # Stage 2: Go Backend Build
