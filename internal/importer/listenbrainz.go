@@ -148,6 +148,7 @@ func ImportListenBrainzFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrai
 			UserID:             userID,
 			Client:             client,
 			SkipCacheImage:     !cfg.FetchImagesDuringImport(),
+			DeduplicateFuzzy:   true,
 		}
 		err = catalog.SubmitListen(ctx, store, opts)
 		if err != nil {

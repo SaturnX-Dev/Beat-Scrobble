@@ -72,15 +72,16 @@ func ImportMalojaFile(ctx context.Context, store db.DB, filename string, userID 
 			continue
 		}
 		opts := catalog.SubmitListenOpts{
-			MbzCaller:      &mbz.MusicBrainzClient{},
-			Artist:         item.Track.Artists[0],
-			ArtistNames:    artists,
-			TrackTitle:     item.Track.Title,
-			ReleaseTitle:   item.Track.Album.Title,
-			Time:           ts.Local(),
-			Client:         "maloja",
-			UserID:         userID,
-			SkipCacheImage: !cfg.FetchImagesDuringImport(),
+			MbzCaller:        &mbz.MusicBrainzClient{},
+			Artist:           item.Track.Artists[0],
+			ArtistNames:      artists,
+			TrackTitle:       item.Track.Title,
+			ReleaseTitle:     item.Track.Album.Title,
+			Time:             ts.Local(),
+			Client:           "maloja",
+			UserID:           userID,
+			SkipCacheImage:   !cfg.FetchImagesDuringImport(),
+			DeduplicateFuzzy: true,
 		}
 		err = catalog.SubmitListen(ctx, store, opts)
 		if err != nil {

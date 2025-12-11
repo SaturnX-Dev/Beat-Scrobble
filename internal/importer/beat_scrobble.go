@@ -189,9 +189,10 @@ func importBeatScrobbleData(ctx context.Context, store db.DB, r io.Reader, userI
 
 		// save listen
 		err = store.SaveListen(ctx, db.SaveListenOpts{
-			TrackID: track.ID,
-			Time:    data.Listens[i].ListenedAt,
-			UserID:  userID,
+			TrackID:          track.ID,
+			Time:             data.Listens[i].ListenedAt,
+			UserID:           userID,
+			DeduplicateFuzzy: true,
 		})
 		if err != nil {
 			return fmt.Errorf("ImportBeatScrobbleFile: %w", err)

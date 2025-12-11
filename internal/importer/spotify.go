@@ -81,15 +81,16 @@ func ImportSpotifyFile(ctx context.Context, store db.DB, filename string, userID
 			continue
 		}
 		opts := catalog.SubmitListenOpts{
-			MbzCaller:      &mbz.MusicBrainzClient{},
-			Artist:         item.ArtistName,
-			TrackTitle:     item.TrackName,
-			ReleaseTitle:   item.AlbumName,
-			Duration:       dur / 1000,
-			Time:           item.Timestamp,
-			Client:         "spotify",
-			UserID:         userID,
-			SkipCacheImage: !cfg.FetchImagesDuringImport(),
+			MbzCaller:        &mbz.MusicBrainzClient{},
+			Artist:           item.ArtistName,
+			TrackTitle:       item.TrackName,
+			ReleaseTitle:     item.AlbumName,
+			Duration:         dur / 1000,
+			Time:             item.Timestamp,
+			Client:           "spotify",
+			UserID:           userID,
+			SkipCacheImage:   !cfg.FetchImagesDuringImport(),
+			DeduplicateFuzzy: true,
 		}
 		err = catalog.SubmitListen(ctx, store, opts)
 		if err != nil {

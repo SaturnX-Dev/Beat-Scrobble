@@ -11,6 +11,9 @@ Most endpoints require authentication. The API uses session-based authentication
 
 - **Login:** `POST /apis/web/v1/login`
 - **Logout:** `POST /apis/web/v1/logout`
+- **Setup Status:** `GET /apis/web/v1/setup-status`
+- **Complete Setup:** `POST /apis/web/v1/setup-complete`
+- **Register:** `POST /apis/web/v1/signup`
 
 ---
 
@@ -129,6 +132,14 @@ Manage API keys for external apps or integrations.
 - `POST /user/apikeys`
 - `PATCH /user/apikeys`
 - `DELETE /user/apikeys`
+
+### User Administration (Admin)
+ Manage users on the instance.
+- `GET /admin/users` - List all users
+- `POST /admin/users` - Create user
+- `PATCH /admin/users` - Update user (role/password)
+- `DELETE /admin/users` - Delete user
+
 
 ---
 

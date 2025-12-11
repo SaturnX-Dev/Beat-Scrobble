@@ -227,6 +227,21 @@ func (d *Psql) SaveListen(ctx context.Context, opts db.SaveListenOpts) error {
 		client = &opts.Client
 	}
 	l.Debug().Msgf("Inserting listen for track with id %d at time %v into DB", opts.TrackID, opts.Time)
+
+	if opts.DeduplicateFuzzy {
+		exists, err := d.ExistsListenFuzzy(ctx, repository.ExistsListenFuzzyParams{
+			UserID:     opts.UserID,
+			TrackID:    opts.TrackID,
+			ListenedAt: opts.Time,
+		})
+		if err != nil {
+			l.Err(err).Msg("Failed to check for fuzzy duplicate")
+		} else if exists {
+			l.Info().Msgf("Skipping fuzzy duplicate listen for track %d at %v", opts.TrackID, opts.Time)
+			return nil
+		}
+	}
+
 	return d.q.InsertListen(ctx, repository.InsertListenParams{
 		TrackID:    opts.TrackID,
 		ListenedAt: opts.Time,

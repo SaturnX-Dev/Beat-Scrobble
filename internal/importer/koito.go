@@ -150,9 +150,10 @@ func ImportKoitoFile(ctx context.Context, store db.DB, filename string, userID i
 
 		// save listen
 		err = store.SaveListen(ctx, db.SaveListenOpts{
-			TrackID: track.ID,
-			Time:    data.Listens[i].ListenedAt,
-			UserID:  userID,
+			TrackID:          track.ID,
+			Time:             data.Listens[i].ListenedAt,
+			UserID:           userID,
+			DeduplicateFuzzy: true,
 		})
 		if err != nil {
 			return fmt.Errorf("ImportKoitoFile: %w", err)

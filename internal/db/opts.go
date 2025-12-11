@@ -84,6 +84,8 @@ type SaveListenOpts struct {
 	Time    time.Time
 	UserID  int32
 	Client  string
+	// When true, checks for existing listens within +/- 60s window for the same track
+	DeduplicateFuzzy bool
 }
 
 type UpdateTrackOpts struct {

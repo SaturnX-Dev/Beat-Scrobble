@@ -30,6 +30,8 @@ type GetListensOpts struct {
 type SaveListenOpts struct {
 	TrackID int32
 	Time    time.Time
+	UserID  int32
+	Client  string
 }
 
 type ArtistMbidMap struct {
@@ -61,6 +63,9 @@ type SubmitListenOpts struct {
 	UserID       int32
 	Client       string
 	IsNowPlaying bool
+
+	// When true, checks for existing listens within +/- 60s window for the same track
+	DeduplicateFuzzy bool
 }
 
 const (
@@ -183,10 +188,11 @@ func SubmitListen(ctx context.Context, store db.DB, opts SubmitListenOpts) error
 	l.Info().Msgf("Received listen: '%s' by %s, from release '%s'", track.Title, buildArtistStr(artists), rg.Title)
 
 	return store.SaveListen(ctx, db.SaveListenOpts{
-		TrackID: track.ID,
-		Time:    opts.Time,
-		UserID:  opts.UserID,
-		Client:  opts.Client,
+		TrackID:          track.ID,
+		Time:             opts.Time,
+		UserID:           opts.UserID,
+		Client:           opts.Client,
+		DeduplicateFuzzy: opts.DeduplicateFuzzy,
 	})
 }
 

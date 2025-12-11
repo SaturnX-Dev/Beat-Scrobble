@@ -27,7 +27,7 @@
 | Feature | Description |
 | :--- | :--- |
 | **🔗 ListenBrainz Compatible** | Seamless integration with any LB-compatible scrobbler. Just point your client to your server URL. |
-| **📥 Multi-Source Import** | One-click import from Spotify, Last.fm, ListenBrainz, and Maloja. Smart deduplication included. |
+| **📥 Multi-Source Import** | One-click import from Spotify, Last.fm, ListenBrainz, and Maloja. **Smart Deduplication** handles cross-service syncing intelligently. |
 | **📡 Relay Mode** | Automatically forward your scrobbles to other services like ListenBrainz or Maloja (Proxy Mode). |
 | **🔐 Full Data Ownership** | Self-hosted architecture. Your data stays 100% yours, stored locally in PostgreSQL. |
 | **👥 Multi-User Support** | Complete user isolation. Admins can manage users, roles, and quotas via a dedicated UI. |
@@ -352,6 +352,8 @@ Admins have access to a dedicated **Users** tab in Settings.
 - **Create/Delete Users**: Manage access to your instance.
 - **Roles**: Assign `User` or `Admin` roles.
 - **Quotas**: `MAX_USERS` env var limits signups.
+- **Isolation**: Each user has their own isolated listen history, sources, and imports.
+
 
 ### Environment Variables
 

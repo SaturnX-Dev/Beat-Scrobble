@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/repository"
 	"github.com/google/uuid"
 )
 
@@ -98,6 +99,7 @@ type DB interface {
 	// User
 	GetAllUsers(ctx context.Context) ([]*models.User, error)
 	DeleteUser(ctx context.Context, id int32) error
+	ExistsListenFuzzy(ctx context.Context, arg repository.ExistsListenFuzzyParams) (bool, error)
 
 	// Lifecycle
 	Ping(ctx context.Context) error

@@ -120,6 +120,7 @@ func ImportLastFMFile(ctx context.Context, store db.DB, mbzc mbz.MusicBrainzCall
 				Time:               ts,
 				UserID:             userID,
 				SkipCacheImage:     !cfg.FetchImagesDuringImport(),
+				DeduplicateFuzzy:   true,
 			}
 			err = catalog.SubmitListen(ctx, store, opts)
 			if err != nil {
