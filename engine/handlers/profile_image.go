@@ -219,6 +219,14 @@ func UploadProfileImageBase64Handler(store db.DB) http.HandlerFunc {
 			return
 		}
 
+		// Verify content type from actual bytes
+		detectedType := http.DetectContentType(data)
+		if !strings.HasPrefix(detectedType, "image/") {
+			l.Warn().Str("type", detectedType).Msg("UploadProfileImageBase64Handler: Uploaded file is not an image (magic bytes mismatch)")
+			utils.WriteError(w, "file must be an image", http.StatusBadRequest)
+			return
+		}
+
 		// Check size
 		if len(data) > maxProfileImageSize {
 			utils.WriteError(w, "file too large (max 5MB)", http.StatusBadRequest)
@@ -317,6 +325,14 @@ func UploadBackgroundImageBase64Handler(store db.DB) http.HandlerFunc {
 		data, err := base64.StdEncoding.DecodeString(parts[1])
 		if err != nil {
 			utils.WriteError(w, "invalid base64 data", http.StatusBadRequest)
+			return
+		}
+
+		// Verify content type from actual bytes
+		detectedType := http.DetectContentType(data)
+		if !strings.HasPrefix(detectedType, "image/") {
+			l.Warn().Str("type", detectedType).Msg("UploadBackgroundImageBase64Handler: Uploaded file is not an image (magic bytes mismatch)")
+			utils.WriteError(w, "file must be an image", http.StatusBadRequest)
 			return
 		}
 

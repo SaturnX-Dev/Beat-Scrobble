@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { imageUrl } from "api/api";
 import { Image as ImageIcon } from "lucide-react";
 
@@ -19,6 +19,7 @@ export default function OptimizedImage({
 }: OptimizedImageProps) {
     const [isLoaded, setIsLoaded] = useState(false);
     const [hasError, setHasError] = useState(false);
+    const imgRef = useRef<HTMLImageElement>(null);
 
     // Reset state when ID changes
     useEffect(() => {
@@ -27,6 +28,13 @@ export default function OptimizedImage({
     }, [id]);
 
     const src = imageUrl(id, size);
+
+    // Check if image is already loaded (from cache)
+    useEffect(() => {
+        if (imgRef.current && imgRef.current.complete) {
+            setIsLoaded(true);
+        }
+    }, [src]);
 
     return (
         <div
@@ -45,6 +53,7 @@ export default function OptimizedImage({
 
             {/* Actual Image */}
             <img
+                ref={imgRef}
                 src={src}
                 alt={alt}
                 loading="lazy"

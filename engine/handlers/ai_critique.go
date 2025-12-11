@@ -16,6 +16,7 @@ import (
 )
 
 type AICritiqueRequest struct {
+	TrackID    int32  `json:"track_id"`
 	TrackName  string `json:"track_name"`
 	ArtistName string `json:"artist_name"`
 	AlbumName  string `json:"album_name"`
@@ -120,10 +121,101 @@ func GetAICritiqueHandler(store db.DB) http.HandlerFunc {
 			return
 		}
 
-		// 4. Call OpenRouter API
+		// 4. Fetch Metadata (if track ID provided)
+		var trackDetails map[string]interface{}
+
+		shareMeta, _ := prefs["ai_share_meta"].(bool)
+		if val, ok := prefs["ai_share_meta"]; ok {
+			shareMeta = val.(bool)
+		} else {
+			shareMeta = true
+		}
+
+		shareContext, _ := prefs["ai_share_context"].(bool)
+		if val, ok := prefs["ai_share_context"]; ok {
+			shareContext = val.(bool)
+		} else {
+			shareContext = true
+		}
+
+		shareStats, _ := prefs["ai_share_stats"].(bool)
+		if val, ok := prefs["ai_share_stats"]; ok {
+			shareStats = val.(bool)
+		} else {
+			shareStats = true
+		}
+
+		if req.TrackID > 0 {
+			// A. Detailed Track Metadata
+			track, err := store.GetTrack(ctx, db.GetTrackOpts{ID: req.TrackID})
+			if err == nil && track != nil {
+				trackDetails = map[string]interface{}{
+					"track_name": track.Title,
+					"artist":     req.ArtistName, // Keep request artist name as it might be what user sees
+					"album":      req.AlbumName,
+				}
+
+				if shareMeta {
+					trackDetails["bpm"] = track.Tempo
+					trackDetails["key"] = track.Key
+					trackDetails["mode"] = track.Mode
+					trackDetails["energy"] = track.Energy
+					trackDetails["valence"] = track.Valence
+					trackDetails["danceability"] = track.Danceability
+					trackDetails["loudness"] = track.Loudness
+					trackDetails["duration"] = track.Duration
+					trackDetails["popularity"] = track.Popularity
+				}
+
+				// B. Enriched User Listening Stats
+				if shareStats {
+					// 1. Total Listens for this track
+					totalListensResp, err := store.GetListensPaginated(ctx, db.GetItemsOpts{
+						UserID:  int(user.ID),
+						TrackID: int(req.TrackID),
+						Period:  db.PeriodAllTime,
+						Limit:   1, // Only need count
+					})
+					if err == nil {
+						trackDetails["user_total_plays"] = totalListensResp.TotalCount
+					}
+
+					// 2. Listens this week
+					weekListensResp, err := store.GetListensPaginated(ctx, db.GetItemsOpts{
+						UserID:  int(user.ID),
+						TrackID: int(req.TrackID),
+						Period:  db.PeriodWeek,
+						Limit:   1, // Only need count
+					})
+					if err == nil {
+						trackDetails["user_plays_this_week"] = weekListensResp.TotalCount
+					}
+				}
+
+				// 3. Current Context
+				if shareContext {
+					currentTime := time.Now()
+					trackDetails["context"] = map[string]string{
+						"time_of_day": currentTime.Format("15:04"),
+						"day_of_week": currentTime.Weekday().String(),
+					}
+				}
+			}
+		}
+
+		// 5. Call OpenRouter API
 		aiModel = strings.TrimSpace(aiModel)
 		systemPrompt := fmt.Sprintf("You are a music critic. %s", customPrompt)
-		userMessage := fmt.Sprintf("Critique the song '%s' by '%s' from the album '%s'.", req.TrackName, req.ArtistName, req.AlbumName)
+
+		var userMessage string
+		if trackDetails != nil {
+			// Rich metadata prompt
+			jsonBytes, _ := json.MarshalIndent(trackDetails, "", "  ")
+			userMessage = fmt.Sprintf("Critique this track based on its metadata:\n%s", string(jsonBytes))
+		} else {
+			// Fallback text prompt
+			userMessage = fmt.Sprintf("Critique the song '%s' by '%s' from the album '%s'.", req.TrackName, req.ArtistName, req.AlbumName)
+		}
 
 		openRouterReq := OpenRouterRequest{
 			Model: aiModel,

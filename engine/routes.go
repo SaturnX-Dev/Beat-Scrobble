@@ -36,7 +36,10 @@ func bindRoutes(
 	// Enable Gzip compression with compression level 5 (balanced)
 	r.Use(chimiddleware.Compress(5))
 	// Enable Security Headers (HSTS, etc handled by proxy usually, but safe defaults here)
+	// Enable Security Headers (HSTS, etc handled by proxy usually, but safe defaults here)
 	r.Use(middleware.SecurityHeaders)
+	// Limit request size to 10MB globally to prevent DoS via large bodies
+	r.Use(chimiddleware.RequestSize(10 << 20))
 
 	r.With(chimiddleware.RequestSize(5<<20)).
 		Get("/images/{size}/{filename}", handlers.ImageHandler(db))
@@ -47,6 +50,14 @@ func bindRoutes(
 		r.Group(func(r chi.Router) {
 			// Always enforce session validation for API routes
 			r.Use(middleware.ValidateSession(db))
+			// Rate limit: 300 requests per minute per IP (approx 5 req/sec avg)
+			r.Use(httprate.Limit(
+				300,
+				time.Minute,
+				httprate.WithLimitHandler(func(w http.ResponseWriter, r *http.Request) {
+					http.Error(w, `{"error":"too many requests"}`, http.StatusTooManyRequests)
+				}),
+			))
 			r.Get("/artist", handlers.GetArtistHandler(db))
 			r.Get("/artists", handlers.GetArtistsForItemHandler(db))
 			r.Get("/album", handlers.GetAlbumHandler(db))
@@ -197,6 +208,7 @@ func bindRoutes(
 	// serve react client
 	workDir, _ := os.Getwd()
 	filesDir := http.Dir(filepath.Join(workDir, "client/build/client"))
+	// We need the concrete *chi.Mux to set NotFound handler
 	fileServer(r, "/", filesDir)
 
 	// serve client public files
@@ -206,24 +218,34 @@ func bindRoutes(
 
 // FileServer conveniently sets up a http.FileServer handler to serve
 // static files from a http.FileSystem.
-func fileServer(r chi.Router, path string, root http.FileSystem) {
+func fileServer(r *chi.Mux, path string, root http.FileSystem) {
 	if strings.ContainsAny(path, "{}*") {
 		panic("FileServer does not permit any URL parameters.")
 	}
 
 	// Serve static files
 	fs := http.FileServer(root)
-	r.Get(path+"*", func(w http.ResponseWriter, r *http.Request) {
-		// Check if file exists
-		filePath := filepath.Join("client/build/client", strings.TrimPrefix(r.URL.Path, path))
-		if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			// File doesn't exist, serve index.html
-			http.ServeFile(w, r, filepath.Join("client/build/client", "index.html"))
+
+	// fileServer is a catch-all for the frontend, so we must manually handle the
+	// 404 case by serving index.html (SPA Fallback)
+	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
+		// If the request is for an API endpoint, return 404 JSON
+		if strings.HasPrefix(r.URL.Path, "/apis/") {
+			w.WriteHeader(http.StatusNotFound)
+			w.Header().Set("Content-Type", "application/json")
+			w.Write([]byte(`{"error":"not found"}`))
 			return
 		}
 
-		// Serve file normally
-		fs.ServeHTTP(w, r)
+		// Check if file exists in the build directory
+		filePath := filepath.Join("client/build/client", strings.TrimPrefix(r.URL.Path, path))
+		if info, err := os.Stat(filePath); err == nil && !info.IsDir() {
+			fs.ServeHTTP(w, r)
+			return
+		}
+
+		// File doesn't exist, serve index.html for SPA routing
+		http.ServeFile(w, r, filepath.Join("client/build/client", "index.html"))
 	})
 }
 

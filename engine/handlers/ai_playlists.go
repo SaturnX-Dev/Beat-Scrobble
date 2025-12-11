@@ -142,36 +142,49 @@ func GenerateAIPlaylistHandler(store db.DB) http.HandlerFunc {
 			return
 		}
 
-		// Get user's listening context using paginated methods
-		topArtistsResp, _ := store.GetTopArtistsPaginated(ctx, db.GetItemsOpts{
-			UserID: int(user.ID),
-			Limit:  10,
-			Page:   1,
-			Period: db.PeriodMonth,
-		})
-		topTracksResp, _ := store.GetTopTracksPaginated(ctx, db.GetItemsOpts{
-			UserID: int(user.ID),
-			Limit:  10,
-			Page:   1,
-			Period: db.PeriodMonth,
-		})
-
-		artistNames := make([]string, 0)
-		if topArtistsResp != nil {
-			for _, a := range topArtistsResp.Items {
-				artistNames = append(artistNames, a.Name)
-			}
+		// Check privacy settings
+		shareHistory, _ := prefs["ai_playlists_share_history"].(bool)
+		if val, ok := prefs["ai_playlists_share_history"]; ok {
+			shareHistory = val.(bool)
+		} else {
+			shareHistory = true // Default ON
 		}
 
+		artistNames := make([]string, 0)
 		trackInfo := make([]string, 0)
-		if topTracksResp != nil {
-			for _, t := range topTracksResp.Items {
-				artistName := ""
-				if len(t.Artists) > 0 {
-					artistName = t.Artists[0].Name
+
+		if shareHistory {
+			// Get user's listening context using paginated methods
+			topArtistsResp, _ := store.GetTopArtistsPaginated(ctx, db.GetItemsOpts{
+				UserID: int(user.ID),
+				Limit:  10,
+				Page:   1,
+				Period: db.PeriodMonth,
+			})
+			topTracksResp, _ := store.GetTopTracksPaginated(ctx, db.GetItemsOpts{
+				UserID: int(user.ID),
+				Limit:  10,
+				Page:   1,
+				Period: db.PeriodMonth,
+			})
+
+			if topArtistsResp != nil {
+				for _, a := range topArtistsResp.Items {
+					artistNames = append(artistNames, a.Name)
 				}
-				trackInfo = append(trackInfo, fmt.Sprintf("%s by %s", t.Title, artistName))
 			}
+
+			if topTracksResp != nil {
+				for _, t := range topTracksResp.Items {
+					artistName := ""
+					if len(t.Artists) > 0 {
+						artistName = t.Artists[0].Name
+					}
+					trackInfo = append(trackInfo, fmt.Sprintf("%s by %s", t.Title, artistName))
+				}
+			}
+		} else {
+			l.Debug().Msg("AI Playlists: History sharing disabled by user")
 		}
 
 		// Build AI prompt

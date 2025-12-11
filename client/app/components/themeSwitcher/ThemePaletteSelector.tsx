@@ -12,26 +12,26 @@ export function ThemePaletteSelector({ setTheme, setCustom, setCustomTheme }: Th
     const [isExpanded, setIsExpanded] = useState(false);
 
     const MODERN_THEME_NAMES = [
-        // Base
-        "modernLight", "modernDark", "slate",
+        // Base & Monochrome
+        "modernLight", "modernDark", "slate", "prismLight", "prismSoft", "prismDark", "graphite", "porcelain", "lowSaturation", "platinum", "obsidian", "marble", "champagne", "cocoa",
 
         // Pink & Red
-        "rose", "coral", "blossom", "blossomDark", "cottonCandy", "velvet",
+        "ruby", "rose", "coral", "blossom", "cottonCandy", "velvet", "magentaFlash", "ember", "carnival", "noirBordeaux", "roseQuartz", "vaporwave", "rgbFusion", "kawaiiGamer",
 
-        // Orange, Peach & Yellow
-        "sunset", "amber", "marshmallow", "marshmallowDark", "macaroon", "embers", "sorbet", "firefly",
+        // Orange, Peach & Yellow & Gold
+        "tangerine", "sunset", "amber", "sunflower", "marshmallow", "marshmallowDark", "macaroon", "sorbet", "firefly", "aurum", "onyxGold", "synthwaveSunset",
 
         // Green
-        "forest", "pistache", "pistacheDark", "matcha", "aurora",
+        "limePulse", "emeraldCore", "pistache", "pistacheDark", "matcha", "aurora", "moss", "forestNight", "neonMatrix", "toxicLime", "chromaRush",
 
         // Teal & Cyan
-        "teal", "lagoon", "lagoonDark", "glacier",
+        "aquaSplash", "teal", "lagoon", "lagoonDark", "glacier", "oceanic", "tropic", "cyberpunk", "glitch", "cybercyan", "holoGrid",
 
         // Blue
-        "ocean", "cloud", "cloudDark", "abyss",
+        "cobalt", "sapphire", "cloud", "cloudDark", "midnight", "frost", "spectrum", "ink", "royal", "porcelainBlue", "arcadeNeon",
 
         // Purple & Violet
-        "purple", "lavender", "mist", "mistDark", "lilac", "nebula"
+        "violetBeam", "purple", "mist", "mistDark", "lilac", "nebula", "eclipse", "ultravioletPulse"
     ];
 
     // Helper to extract hue from hex
@@ -63,13 +63,61 @@ export function ThemePaletteSelector({ setTheme, setCustom, setCustomTheme }: Th
         return h * 360;
     };
 
-    // Sort themes by hue
+    const getLightness = (hex: string) => {
+        hex = hex.replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16) / 255;
+        const g = parseInt(hex.substring(2, 4), 16) / 255;
+        const b = parseInt(hex.substring(4, 6), 16) / 255;
+        const max = Math.max(r, g, b);
+        const min = Math.min(r, g, b);
+        return (max + min) / 2;
+    };
+
+    // Sort themes by hue (buckets) then lightness
     const sortedModernThemes = Object.entries(themes)
         .filter(([name]) => MODERN_THEME_NAMES.includes(name))
         .sort(([, a], [, b]) => {
+            const getSaturation = (hex: string) => {
+                hex = hex.replace('#', '');
+                const r = parseInt(hex.substring(0, 2), 16) / 255;
+                const g = parseInt(hex.substring(2, 4), 16) / 255;
+                const b = parseInt(hex.substring(4, 6), 16) / 255;
+                const max = Math.max(r, g, b);
+                const min = Math.min(r, g, b);
+                const d = max - min;
+                const l = (max + min) / 2;
+                if (max === min) return 0;
+                return l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            };
+
             const hueA = getHue(a.primary);
             const hueB = getHue(b.primary);
-            return hueA - hueB;
+
+            const satA = getSaturation(a.primary);
+            const satB = getSaturation(b.primary);
+
+            // Create a specialized bucket for Neutrals (Greyscale Primaries)
+            // If saturation is very low (< 0.1), move to beginning (Bucket -1)
+            const isNeutralA = satA < 0.1;
+            const isNeutralB = satB < 0.1;
+
+            if (isNeutralA && !isNeutralB) return -1;
+            if (!isNeutralA && isNeutralB) return 1;
+
+            // Group into 12 hue buckets (30 degrees each)
+            const bucketA = Math.floor(hueA / 30);
+            const bucketB = Math.floor(hueB / 30);
+
+            if (bucketA !== bucketB) {
+                return bucketA - bucketB;
+            }
+
+            // If in same hue range, sort by background lightness (Light -> Dark)
+            const lightA = getLightness(a.bg);
+            const lightB = getLightness(b.bg);
+
+            // Descending lightness = Lightest first (1.0) -> Darkest last (0.0)
+            return lightB - lightA;
         });
 
     return (

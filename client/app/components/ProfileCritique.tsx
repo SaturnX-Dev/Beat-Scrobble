@@ -27,23 +27,22 @@ export default function ProfileCritique({ period }: Props) {
             return;
         }
 
+        const cacheKey = `comet_ai_profile_${period}`;
         const lockKey = `profile_${period}`;
+
+        // Try to load from cache immediately to prevent flickering/disappearing
+        const cached = getPreference(cacheKey, null);
+        if (cached && !critique) {
+            setCritique(cached);
+        }
 
         // STRONG GUARD: Check Circuit Breaker
         if (!aiCircuitBreaker.canFetch(lockKey)) {
-            // Check if we have a cached value to show even if blocked
-            const cacheKey = `comet_ai_profile_${period}`;
-            const cached = getPreference(cacheKey, null);
-            if (cached) setCritique(cached);
             return;
         }
 
-        // Check server-side cache (Preference)
-        const cacheKey = `comet_ai_profile_${period}`;
-        const cached = getPreference(cacheKey, null);
         if (cached) {
-            setCritique(cached);
-            aiCircuitBreaker.markFetched(lockKey); // Mark as complete
+            aiCircuitBreaker.markFetched(lockKey); // Mark as complete since we have data
             return;
         }
 

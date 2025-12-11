@@ -129,7 +129,7 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 		// 4. Fetch Stats & Top Artists
 		listens, _ := store.CountListens(ctx, int32(user.ID), period)
 		artistCount, _ := store.CountArtists(ctx, int32(user.ID), period)
-		albumCount, _ := store.CountAlbums(ctx, int32(user.ID), period)
+		// albumCount unused
 		trackCount, _ := store.CountTracks(ctx, int32(user.ID), period)
 
 		topArtistsResp, err := store.GetTopArtistsPaginated(ctx, db.GetItemsOpts{
@@ -146,16 +146,97 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 			}
 		}
 
-		// 5. Call OpenRouter
-		statsSummary := fmt.Sprintf("Listens: %d, Unique Artists: %d, Unique Albums: %d, Unique Tracks: %d", listens, artistCount, albumCount, trackCount)
-		topArtistsStr := strings.Join(topArtistsNames, ", ")
+		// 5. Fetch Top Tracks with Metadata
+		topTracksResp, err := store.GetTopTracksPaginated(ctx, db.GetItemsOpts{
+			UserID: int(user.ID),
+			Limit:  20, // Get top 20 tracks for analysis
+			Page:   1,
+			Period: period,
+		})
 
+		var scrobbles []map[string]interface{}
+		if err == nil && topTracksResp != nil {
+			for _, t := range topTracksResp.Items {
+				// Get genres from artist if possible (we might need a separate map or just use what we have)
+				// For now, we'll leave genre empty on track level or try to match with top artists
+
+				scrobble := map[string]interface{}{
+					"track_name":   t.Title,
+					"artist":       t.Artists[0].Name,
+					"album":        "Unknown", // Track model might not always have album string populated depending on query
+					"bpm":          t.Tempo,
+					"energy":       t.Energy,
+					"valence":      t.Valence,
+					"duration_sec": t.Duration,
+				}
+				if t.Album != nil {
+					scrobble["album"] = *t.Album
+				}
+				// Add other potentially interesting features
+				if t.Danceability > 0 {
+					scrobble["danceability"] = t.Danceability
+				}
+
+				scrobbles = append(scrobbles, scrobble)
+			}
+		}
+
+		// 6. Collect Top Genres (from Top Artists)
+		var topGenres []string
+		// We already fetched topArtistsResp
+		// Note: The simple artist response might not have genres, we rely on what's available
+		// If we need genres, we might need to query them. For now let's hope the prompt infers from artist names
+		// or if we have them in the Artist struct (which we saw does have them).
+		// However, GetTopArtistsPaginated returns *models.ArtistWithFullAliases or similar?
+		// Let's check topArtistsResp type. It returns ArtistWithFullAliases.
+
+		if topArtistsResp != nil {
+			genreMap := make(map[string]int)
+			for _, a := range topArtistsResp.Items {
+				for _, g := range a.Genres {
+					genreMap[g]++
+				}
+			}
+			// Just take all unique genres for now, maybe sort by freq later
+			for g := range genreMap {
+				topGenres = append(topGenres, g)
+			}
+		}
+
+		// 7. Construct JSON Input for AI
+		statsSummary := fmt.Sprintf("Listens: %d, Unique Artists: %d, Unique Tracks: %d", listens, artistCount, trackCount)
+
+		// Privacy Check
+		shareStats, _ := prefs["profile_share_stats"].(bool)
+		// Default to true if not set (nil check handled by type assertion default, but let's be safe if undefined logic is needed)
+		if val, ok := prefs["profile_share_stats"]; ok {
+			shareStats = val.(bool)
+		} else {
+			shareStats = true // Default ON for openness
+		}
+
+		if !shareStats {
+			statsSummary = "Stats hidden by user privacy settings."
+		}
+
+		aiInput := map[string]interface{}{
+			"time_range": periodStr,
+			"scrobbles":  scrobbles,
+			"top_genres": topGenres,
+			"stats":      statsSummary,
+		}
+
+		inputJson, _ := json.MarshalIndent(aiInput, "", "  ")
+
+		// 8. Call OpenRouter
 		aiModel = strings.TrimSpace(aiModel)
 		systemPrompt, ok := prefs["profile_critique_prompt"].(string)
 		if !ok || systemPrompt == "" {
-			systemPrompt = "You are a music critic. Give a short, witty, and slightly judgmental assessment of this user's listening habits based on their stats and top artists. Keep it under 60 words."
+			systemPrompt = "You are a music critic. Analyze the following user data and provide a critique."
 		}
-		userMessage := fmt.Sprintf("Stats for %s: %s. Top Artists: %s.", periodStr, statsSummary, topArtistsStr)
+
+		// The user message is now the JSON payload
+		userMessage := string(inputJson)
 
 		openRouterReq := OpenRouterRequest{
 			Model: aiModel,

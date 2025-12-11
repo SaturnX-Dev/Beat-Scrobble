@@ -13,7 +13,7 @@ export default function NowPlayingCard() {
     const { data: npData, isLoading } = useQuery({
         queryKey: ["now-playing"],
         queryFn: () => getNowPlaying(),
-        refetchInterval: 10000, // Refresh every 10s
+        refetchInterval: 3000, // Refresh every 3s for snappier updates
     });
 
     const { getPreference, savePreference } = usePreferences();
@@ -63,6 +63,7 @@ export default function NowPlayingCard() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                track_id: npData.track.id,
                 track_name: npData.track.title,
                 artist_name: npData.track.artists?.[0]?.name || "Unknown Artist",
                 album_name: (npData.track.album as any)?.title || npData.track.album || "Unknown Album"

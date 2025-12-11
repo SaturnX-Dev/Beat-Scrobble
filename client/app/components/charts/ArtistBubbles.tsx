@@ -34,14 +34,7 @@ const ArtistBubbles = memo(function ArtistBubbles({ items, maxItems = 15 }: Arti
         if (!container || !displayItems.length) return;
 
         // Cleanup previous instance
-        if (sceneRef.current) {
-            Matter.Runner.stop(sceneRef.current.runner);
-            Matter.Render.stop(sceneRef.current.render); // if any
-            Matter.World.clear(sceneRef.current.engine.world, false);
-            Matter.Engine.clear(sceneRef.current.engine);
-            cancelAnimationFrame(sceneRef.current.renderLoop);
-            sceneRef.current = null;
-        }
+
 
         const width = container.clientWidth;
         const height = container.clientHeight;
@@ -101,7 +94,7 @@ const ArtistBubbles = memo(function ArtistBubbles({ items, maxItems = 15 }: Arti
 
         // --- Interaction ---
         const mouse = Mouse.create(container);
-        mouse.pixelRatio = window.devicePixelRatio || 1;
+        mouse.pixelRatio = 1; // Always 1 because we map physics 1:1 to CSS pixels (SVG), not Canvas pixels
 
         mouse.element.removeEventListener("mousewheel", (mouse as any).mousewheel);
         mouse.element.removeEventListener("DOMMouseScroll", (mouse as any).mousewheel);
@@ -183,10 +176,17 @@ const ArtistBubbles = memo(function ArtistBubbles({ items, maxItems = 15 }: Arti
 
         return () => {
             if (sceneRef.current) {
-                Matter.Runner.stop(sceneRef.current.runner);
-                Matter.World.clear(sceneRef.current.engine.world, false);
-                Matter.Engine.clear(sceneRef.current.engine);
-                cancelAnimationFrame(sceneRef.current.renderLoop);
+                if (sceneRef.current) {
+                    if (sceneRef.current.runner) Matter.Runner.stop(sceneRef.current.runner);
+                    if (sceneRef.current.render) Matter.Render.stop(sceneRef.current.render);
+                    if (sceneRef.current.engine) {
+                        Matter.World.clear(sceneRef.current.engine.world, false);
+                        Matter.Engine.clear(sceneRef.current.engine);
+                    }
+                    if (sceneRef.current.renderLoop) cancelAnimationFrame(sceneRef.current.renderLoop);
+
+                    sceneRef.current = null;
+                }
             }
         };
 

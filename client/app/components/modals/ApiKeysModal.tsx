@@ -359,16 +359,45 @@ export default function ApiKeysModal() {
                         </div>
 
                         {aiEnabled && (
-                            <PromptEditor
-                                label="Now Playing Prompt"
-                                value={aiPrompt}
-                                onChange={setAiPrompt}
-                                onSave={(newVal) => {
-                                    savePreference('ai_critique_prompt', newVal);
-                                }}
-                                placeholder="Enter instructions for the AI critic..."
-                                description="Instructions for the AI when critiquing your currently playing track."
-                            />
+                            <div className="pl-4 border-l-2 border-[var(--color-bg-tertiary)] flex flex-col gap-3">
+                                <PromptEditor
+                                    label="Now Playing Prompt"
+                                    value={aiPrompt}
+                                    onChange={setAiPrompt}
+                                    onSave={(newVal) => {
+                                        savePreference('ai_critique_prompt', newVal);
+                                    }}
+                                    placeholder="Enter instructions for the AI critic..."
+                                    description="Instructions for the AI when critiquing your currently playing track."
+                                />
+
+                                {/* Privacy Fences - Now Playing */}
+                                <div className="bg-[var(--color-bg-secondary)]/30 p-3 rounded-md border border-[var(--color-bg-tertiary)]">
+                                    <h4 className="text-xs font-bold uppercase text-[var(--color-fg-secondary)] mb-2 flex items-center gap-2">
+                                        Data Privacy Fences
+                                    </h4>
+                                    <div className="flex flex-col gap-2">
+                                        <PrivacyToggle
+                                            label="Share Technical Metadata"
+                                            desc="BPM, Key, Energy, Valence, etc."
+                                            value={getPreference('ai_share_meta', true)}
+                                            onChange={(val) => savePreference('ai_share_meta', val)}
+                                        />
+                                        <PrivacyToggle
+                                            label="Share User Context"
+                                            desc="Time of day, Day of week"
+                                            value={getPreference('ai_share_context', true)}
+                                            onChange={(val) => savePreference('ai_share_context', val)}
+                                        />
+                                        <PrivacyToggle
+                                            label="Share Play Stats"
+                                            desc="Your total plays & weekly frequency for this track"
+                                            value={getPreference('ai_share_stats', true)}
+                                            onChange={(val) => savePreference('ai_share_stats', val)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         )}
 
                         <hr className="border-[var(--color-bg-tertiary)] my-2" />
@@ -396,16 +425,33 @@ export default function ApiKeysModal() {
                         </div>
 
                         {profileCritiqueEnabled && (
-                            <PromptEditor
-                                label="Profile Prompt"
-                                value={profilePrompt}
-                                onChange={setProfilePrompt}
-                                onSave={(newVal) => {
-                                    savePreference('profile_critique_prompt', newVal);
-                                }}
-                                placeholder="Enter instructions for the AI critic..."
-                                description="Instructions for the AI when critiquing your overall profile."
-                            />
+                            <div className="pl-4 border-l-2 border-[var(--color-bg-tertiary)] flex flex-col gap-3">
+                                <PromptEditor
+                                    label="Profile Prompt"
+                                    value={profilePrompt}
+                                    onChange={setProfilePrompt}
+                                    onSave={(newVal) => {
+                                        savePreference('profile_critique_prompt', newVal);
+                                    }}
+                                    placeholder="Enter instructions for the AI critic..."
+                                    description="Instructions for the AI when critiquing your overall profile."
+                                />
+
+                                {/* Privacy Fences - Profile */}
+                                <div className="bg-[var(--color-bg-secondary)]/30 p-3 rounded-md border border-[var(--color-bg-tertiary)]">
+                                    <h4 className="text-xs font-bold uppercase text-[var(--color-fg-secondary)] mb-2 flex items-center gap-2">
+                                        Data Privacy Fences
+                                    </h4>
+                                    <div className="flex flex-col gap-2">
+                                        <PrivacyToggle
+                                            label="Share Detailed Stats"
+                                            desc="Exact counts of artists, tracks, etc."
+                                            value={getPreference('profile_share_stats', true)}
+                                            onChange={(val) => savePreference('profile_share_stats', val)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         )}
 
                         <hr className="border-[var(--color-bg-tertiary)] my-2" />
@@ -433,16 +479,33 @@ export default function ApiKeysModal() {
                         </div>
 
                         {getPreference('ai_playlists_enabled', false) && (
-                            <PromptEditor
-                                label="Playlist Generation Prompt"
-                                value={getPreference('ai_playlists_prompt', '')}
-                                onChange={(val) => savePreference('ai_playlists_prompt', val)} // Direct save for now or manage state if needed
-                                onSave={(newVal) => {
-                                    savePreference('ai_playlists_prompt', newVal);
-                                }}
-                                placeholder="Instructions for AI playlist generation..."
-                                description="Playlists are regenerated every 7 days automatically."
-                            />
+                            <div className="pl-4 border-l-2 border-[var(--color-bg-tertiary)] flex flex-col gap-3">
+                                <PromptEditor
+                                    label="Playlist Generation Prompt"
+                                    value={getPreference('ai_playlists_prompt', '')}
+                                    onChange={(val) => savePreference('ai_playlists_prompt', val)} // Direct save for now or manage state if needed
+                                    onSave={(newVal) => {
+                                        savePreference('ai_playlists_prompt', newVal);
+                                    }}
+                                    placeholder="Instructions for AI playlist generation..."
+                                    description="Playlists are regenerated every 7 days automatically."
+                                />
+
+                                {/* Privacy Fences - Playlists */}
+                                <div className="bg-[var(--color-bg-secondary)]/30 p-3 rounded-md border border-[var(--color-bg-tertiary)]">
+                                    <h4 className="text-xs font-bold uppercase text-[var(--color-fg-secondary)] mb-2 flex items-center gap-2">
+                                        Data Privacy Fences
+                                    </h4>
+                                    <div className="flex flex-col gap-2">
+                                        <PrivacyToggle
+                                            label="Share Listening History"
+                                            desc="Your top artists & tracks for personalization"
+                                            value={getPreference('ai_playlists_share_history', true)}
+                                            onChange={(val) => savePreference('ai_playlists_share_history', val)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         )}
 
                         <hr className="border-[var(--color-bg-tertiary)] my-2" />
@@ -593,6 +656,27 @@ function PromptEditor({ label, value, onChange, onSave, placeholder, description
                     </div>
                 </div>
             )}
+        </div>
+    );
+}
+
+function PrivacyToggle({ label, desc, value, onChange }: { label: string, desc: string, value: boolean, onChange: (val: boolean) => void }) {
+    return (
+        <div className="flex items-center justify-between">
+            <div>
+                <span className="text-xs font-medium text-[var(--color-fg)]">{label}</span>
+                <p className="text-[10px] text-[var(--color-fg-secondary)]">{desc}</p>
+            </div>
+            <button
+                onClick={() => onChange(!value)}
+                className={`w-8 h-4 flex items-center rounded-full p-0.5 transition-colors duration-300 ${value ? 'bg-[var(--color-primary)]' : 'bg-[var(--color-bg-tertiary)]'
+                    }`}
+            >
+                <div
+                    className={`bg-white w-3 h-3 rounded-full shadow-md transform transition-transform duration-300 ${value ? 'translate-x-4' : 'translate-x-0'
+                        }`}
+                />
+            </button>
         </div>
     );
 }

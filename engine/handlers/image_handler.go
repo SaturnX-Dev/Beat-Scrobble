@@ -50,10 +50,17 @@ func ImageHandler(store db.DB) http.HandlerFunc {
 			fullSizePath := filepath.Join(cfg.ConfigDir(), catalog.ImageCacheDir, string(catalog.ImageSizeFull), filepath.Clean(filename))
 			largeSizePath := filepath.Join(cfg.ConfigDir(), catalog.ImageCacheDir, string(catalog.ImageSizeLarge), filepath.Clean(filename))
 
-			// this if statement flow is terrible but whatever
 			var sourcePath string
-			if _, err = os.Stat(fullSizePath); os.IsNotExist(err) {
-				if _, err = os.Stat(largeSizePath); os.IsNotExist(err) {
+
+			// Try full size first
+			if _, err := os.Stat(fullSizePath); err == nil {
+				sourcePath = fullSizePath
+			} else {
+				// Try large size next
+				if _, err := os.Stat(largeSizePath); err == nil {
+					sourcePath = largeSizePath
+				} else {
+					// Neither exists, try to download
 					l.Warn().Msgf("ImageHandler: Could not find requested image %s. Attempting to download from source", imgid.String())
 					sourcePath, err = downloadMissingImage(r.Context(), store, imgid)
 					if err != nil {
@@ -61,19 +68,7 @@ func ImageHandler(store db.DB) http.HandlerFunc {
 						serveDefaultImage(w, r, imageSize)
 						return
 					}
-				} else if err != nil {
-					l.Err(err).Msg("ImageHandler: Failed to access source image file at large size")
-					w.WriteHeader(http.StatusInternalServerError)
-					return
-				} else {
-					sourcePath = largeSizePath
 				}
-			} else if err != nil {
-				l.Err(err).Msg("ImageHandler: Failed to access source image file at full size")
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			} else {
-				sourcePath = fullSizePath
 			}
 
 			l.Debug().Msgf("ImageHandler: Found source image file at path '%s'", sourcePath)

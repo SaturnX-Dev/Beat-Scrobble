@@ -50,12 +50,20 @@
 ### 🤖 AI-Powered Features
 
 <details open>
-<summary><b>🧠 AI Music Critique & Analysis</b></summary>
-
-Get witty, personalized AI reviews of your tracks and listening habits.
+<summary><b>🧠 AI Music Intelligence (Critique & Analysis)</b></summary>
+<br>
+Get witty, personalized AI reviews of your tracks and listening habits. Beat Scrobble now provides the AI with rich context, enabling "roasts" or critiques that feel genuinely insightful.
 
 - **Track Critiques**: AI commentary on individual songs derived from metadata and audio features.
 - **Profile Critique**: Deep analysis of your listening personality based on your history.
+- **Deep Context Awareness (New!)**:
+  - **Technical Metadata**: The AI knows the BPM, Key, Mode, Energy, Valence, and Danceability.
+  - **User Obsessions**: It knows how many times you've played a track (Total vs This Week).
+  - **Temporal Context**: It knows the Time of Day and Day of Week (e.g., critiquing you for listening to Sadcore at 8 AM).
+- **Privacy Fences (🛡️ New!)**:
+  - **Granular Control**: You decide exactly what data leaves your server via Toggle Fences in Settings.
+  - **Toggles**: Individually enable/disable sharing of `Metadata`, `Play Stats`, `Context`, or `Listening History`.
+  - **Safe by Design**: If a fence is up, that data is stripped from the payload *before* it ever touches the API.
 - **Smart Caching**: Critiques are cached indefinitely. Zero wasted tokens on repeat generation.
 - **OpenRouter Integration**: Use GPT-4, Claude, Gemini, or any LLM of your choice.
 </details>
@@ -140,9 +148,14 @@ Beat Scrobble puts your data safety first with enterprise-grade security practic
 | **🔒 Secret Masking** | API keys and secrets are automatically redacted before being sent to the client, preventing leakage via XSS or browser inspection. |
 | **🍪 Secure Sessions** | Authentication uses `HttpOnly`, `Secure`, and `SameSite=Lax` cookies to prevent session hijacking and CSRF attacks. |
 | **🛡️ Brute Force Shield** | Intelligent Rate Limiting on Login and Signup endpoints prevents credential stuffing attacks. |
-| **🛑 Resource Protection** | Strict Timeouts and Size Limits on all external requests and uploads prevent DoS attacks and resource exhaustion. |
+| **🛑 Resource Protection** | **Global Rate Limiting (300 req/min)** and **Request Size Limits (10MB)** on all API routes prevent DoS attacks and resource exhaustion. |
+| **🧱 File Upload Hardening** | Magic-byte verification ensures only valid image files are processed, preventing Polyglot/XSS payload uploads. |
 | **🕵️ User Isolation** | Strict Row-Level Security ensures users can never access each other's data in multi-user instances. |
 | **👮 Role-Based Access** | Granular RBAC ensures only verified Admins can modify global settings or manage users. |
+| **🐳 Container Security** | Runs as a non-root user (`beatscrobble`) inside Docker for minimized attack surface. |
+| **👻 Zero Telemetry** | No tracking, no analytics, no "phone home". Your browsing habits and listening data never leave your server. |
+| **🚧 AI Privacy Fences** | Granular control over what context sends to AI. Strip metadata, timestamps, or play counts with a toggle before analysis. |
+| **🏠 Local First** | 100% Self-hosted. Your database, your rules. No third-party data mining. |
 
 ---
 

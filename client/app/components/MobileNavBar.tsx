@@ -59,6 +59,8 @@ export default function MobileNavBar() {
                     left: '16px',
                     right: '16px',
                     zIndex: 9999,
+                    transform: (settingsOpen || searchOpen) ? 'translateY(180%)' : 'translateY(0)',
+                    transition: 'transform 0.5s cubic-bezier(0.32, 0.72, 0, 1)',
                 }}
                 className="md:hidden"
             >

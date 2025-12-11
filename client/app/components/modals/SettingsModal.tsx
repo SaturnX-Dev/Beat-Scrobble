@@ -17,7 +17,7 @@ export default function SettingsModal({ open, setOpen }: Props) {
 
     const { user } = useAppContext()
 
-    const triggerClasses = "px-4 py-2 w-full hover-bg-secondary rounded-md text-start data-[state=active]:bg-[var(--color-bg-secondary)]"
+    const triggerClasses = "px-4 py-2 w-full hover-bg-secondary rounded-md text-start data-[state=active]:bg-[var(--color-bg-secondary)] snap-center whitespace-nowrap flex-shrink-0"
     const contentClasses = "w-full px-2 mt-8 sm:mt-0 sm:px-10 overflow-y-auto"
 
     return (
@@ -27,7 +27,7 @@ export default function SettingsModal({ open, setOpen }: Props) {
                 orientation="vertical" // still vertical, but layout is responsive via Tailwind
                 className="flex flex-col sm:flex-row h-full gap-4"
             >
-                <TabsList className="flex flex-row sm:flex-col gap-1 w-full sm:w-48 sm:min-w-[12rem] rounded-md bg-[var(--color-bg-secondary)] p-2 flex-shrink-0">
+                <TabsList className="flex flex-row sm:flex-col gap-1 w-full sm:w-48 sm:min-w-[12rem] rounded-md bg-[var(--color-bg-secondary)] p-2 flex-shrink-0 overflow-x-auto sm:overflow-visible no-scrollbar snap-x mandatory">
                     <TabsTrigger className={triggerClasses} value="Appearance">Appearance</TabsTrigger>
                     <TabsTrigger className={triggerClasses} value="Account">Account</TabsTrigger>
                     {user && (
