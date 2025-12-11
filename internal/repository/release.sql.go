@@ -198,7 +198,7 @@ func (q *Queries) GetReleaseByArtistAndTitles(ctx context.Context, arg GetReleas
 }
 
 const getReleaseByImageID = `-- name: GetReleaseByImageID :one
-SELECT id, musicbrainz_id, image, various_artists, image_source, genres, release_date, popularity, spotify_id, label, release_date_precision, search_vector FROM releases
+SELECT id, musicbrainz_id, image, various_artists, image_source, genres, release_date, popularity, spotify_id, label, release_date_precision FROM releases
 WHERE image = $1 LIMIT 1
 `
 
@@ -217,7 +217,6 @@ func (q *Queries) GetReleaseByImageID(ctx context.Context, image *uuid.UUID) (Re
 		&i.SpotifyID,
 		&i.Label,
 		&i.ReleaseDatePrecision,
-		&i.SearchVector,
 	)
 	return i, err
 }

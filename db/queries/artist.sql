@@ -22,7 +22,7 @@ WHERE at.track_id = $1
 GROUP BY a.id, a.musicbrainz_id, a.image, a.image_source, a.name, a.genres, a.bio, a.popularity, a.spotify_id, at.is_primary, a.followers;
 
 -- name: GetArtistByImage :one
-SELECT * FROM artists WHERE image = $1 LIMIT 1;
+SELECT id, musicbrainz_id, image, image_source, genres, bio, popularity, spotify_id, followers FROM artists WHERE image = $1 LIMIT 1;
 
 -- name: GetReleaseArtists :many
 SELECT 

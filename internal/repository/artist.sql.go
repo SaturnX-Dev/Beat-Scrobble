@@ -122,7 +122,7 @@ func (q *Queries) GetArtist(ctx context.Context, id int32) (GetArtistRow, error)
 }
 
 const getArtistByImage = `-- name: GetArtistByImage :one
-SELECT id, musicbrainz_id, image, image_source, genres, bio, popularity, spotify_id, followers, search_vector FROM artists WHERE image = $1 LIMIT 1
+SELECT id, musicbrainz_id, image, image_source, genres, bio, popularity, spotify_id, followers FROM artists WHERE image = $1 LIMIT 1
 `
 
 func (q *Queries) GetArtistByImage(ctx context.Context, image *uuid.UUID) (Artist, error) {
@@ -138,7 +138,6 @@ func (q *Queries) GetArtistByImage(ctx context.Context, image *uuid.UUID) (Artis
 		&i.Popularity,
 		&i.SpotifyID,
 		&i.Followers,
-		&i.SearchVector,
 	)
 	return i, err
 }

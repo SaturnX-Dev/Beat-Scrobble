@@ -15,7 +15,7 @@ SELECT * FROM releases_with_title
 WHERE musicbrainz_id = $1 LIMIT 1;
 
 -- name: GetReleaseByImageID :one
-SELECT * FROM releases
+SELECT id, musicbrainz_id, image, various_artists, image_source, genres, release_date, popularity, spotify_id, label, release_date_precision FROM releases
 WHERE image = $1 LIMIT 1;
 
 -- name: GetReleaseByArtistAndTitle :one
