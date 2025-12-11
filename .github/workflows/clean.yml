@@ -1,0 +1,51 @@
+name: Clean Cache
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_deletion:
+        description: 'WARNING: This will delete ALL caches. Type "yes" to confirm.'
+        required: true
+        default: 'no'
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  clear-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validation
+        if: ${{ github.event.inputs.confirm_deletion != 'yes' }}
+        run: |
+          echo "❌ Operation cancelled. You must type 'yes' in the input field to confirm deletion."
+          exit 1
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Clear all caches
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "Starting cache cleanup..."
+          echo "Repository: $REPO"
+          
+          while : ; do
+            # Fetch caches (up to 100 at a time)
+            echo "Fetching list of caches..."
+            cacheIds=$(gh cache list --repo $REPO --limit 100 --json id --jq '.[].id')
+            
+            if [ -z "$cacheIds" ]; then
+              echo "✅ All caches have been successfully deleted."
+              break
+            fi
+
+            echo "Found $(echo "$cacheIds" | wc -w) caches in this batch. Deleting..."
+
+            for cacheId in $cacheIds; do
+              gh cache delete "$cacheId" --repo $REPO && echo "Deleted cache archive ID: $cacheId" || echo "Failed to delete cache ID: $cacheId"
+            done
+          done
