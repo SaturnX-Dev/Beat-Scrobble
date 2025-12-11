@@ -1,78 +1,71 @@
 # Project Credits & Architecture
 
-**Beat Scrobble** is a hard fork of Koito, significantly evolving the platform with AI capabilities, smart caching, and modern UI. This document outlines the architectural distinction between the legacy core and Beat Scrobble exclusive features.
+**Beat Scrobble** is a comprehensive music platform born from the integration of **SaturnX-Dev's** advanced AI/UI vision with the robust low-level core of **Koito**.
 
-## 🌟 Beat Scrobble Exclusive Features (New)
+Much like the **GNU/Linux** synergy, this project combines a distinct, high-level user ecosystem (Beat Scrobble) with a proven backend engine (Koito). This approach allowed the development to focus immediately on innovation—intelligence, real-time interactivity, and design—while leveraging a battle-tested foundation for standard scrobbling protocols to **"avoid reinventing the wheel."**
 
-Developed exclusively for Beat Scrobble by **SaturnX-Dev**.
+## 🌟 Architecture & Innovations (SaturnX-Dev Native)
 
-### 🤖 AI Engine
-- `engine/handlers/ai_playlists.go` - AI Playlist Generation (Mood, Genre, Time Capsule)
-- `engine/handlers/ai_critique.go` - AI Music Critique (Now Playing)
-- `engine/handlers/ai_profile.go` - AI Profile Analysis
-- `engine/handlers/ai_cache.go` - AI Cache Management
-- `internal/ai/cache.go` - Smart Token-Saving Cache System
-- `internal/ai/presence.go` - User Presence Detection
-- `engine/handlers/presence.go` - Presence Ping Endpoint
-- `client/app/hooks/usePresenceHeartbeat.ts` - Client Heartbeat
+The core value of Beat Scrobble lies in its proprietary features, designed and built from the ground up to fulfill the original project vision.
 
-### 📊 AI Caching (Smart Token Saver)
-- Server-side caching with change detection
-- Per-period refresh intervals (Day: 4h, Week: 3d, Month+: 7d)
-- Presence-aware Now Playing (only generates when user is online)
-- Prompt isolation (changing one prompt doesn't clear all caches)
+### 🤖 Proprietary AI Engine
+- **AI Playlist Generator**: `engine/handlers/ai_playlists.go` - Mood, Genre, and Time Capsule generation.
+- **Music Critique Engine**: `engine/handlers/ai_critique.go` - Real-time "Now Playing" analysis.
+- **Smart Profile Analysis**: `engine/handlers/ai_profile.go` - Deep listening habit insights.
+- **AI Cache System**: `internal/ai/cache.go` - Custom multi-tier caching strategy (Server + Database) with "Smart Token Saving".
+- **Prompt Isolation**: Custom logic to ensure changing one AI prompt doesn't invalidate the entire cache.
 
-### 🎨 UI & Experience
-- `client/app/routes/Playlists.tsx` - AI Playlist UI
-- `client/app/routes/PublicProfile.tsx` - Public Profile
-- `client/app/components/modals/YearlyRecapModal.tsx` - Spotify Wrapped-style Recap
-- `client/app/components/sidebar/MobileBottomNav.tsx` - Mobile-First Navigation
-- `client/app/providers/ThemeProvider.tsx` - Advanced Theme System
+### ⚡ Real-Time Presence
+- **Presence Engine**: `internal/ai/presence.go` - Detects active user sessions.
+- **Heartbeat System**: `engine/handlers/presence.go`, `client/app/hooks/usePresenceHeartbeat.ts` - Smart polling to optimize background jobs.
 
-### 🐳 Infrastructure
-- `docker-compose.yml` - User Deployment
-- `docker-compose.dev.yml` - Development Stack
-- `docker-compose.prod.yml` - Production with Nginx
-- `run.sh` - Beat Scrobble Manager v2.0.0 (Smart Docker Tool)
-- `nginx.conf` - Edge Caching & Reverse Proxy
-- `Dockerfile` - Multi-stage Alpine Build
+### 🎨 Modern UI/UX (Rewrite)
+- **Control Room Dashboard**: `client/app/routes/_index.tsx` - Complete redesign of the home experience.
+- **Timeline View**: `client/app/routes/Timeline.tsx` - Visual history of listening habits.
+- **Spotify Wrapped-style Recap**: `client/app/components/modals/YearlyRecapModal.tsx` - Interactive yearly statistics.
+- **Advanced Theme Engine**: `client/app/providers/ThemeProvider.tsx` - Robust theming system.
+- **Mobile-First Navigation**: `client/app/components/sidebar/MobileBottomNav.tsx`.
 
-### 📦 Database Enhancements
-- `db/migrations/000010_materialized_views.sql` - Daily/Monthly/Yearly Stats
-- `db/migrations/000011_fulltext_search.sql` - Full-text Search
-- `db/migrations/000012_pgvector_embeddings.sql` - Semantic Search
-- `db/migrations/000013_ai_cache.sql` - AI Cache Tables
+### 📦 Database & Infrastructure
+- **Materialized Views**: `db/migrations/000010_materialized_views.sql` - Optimized aggregation for stats.
+- **Search Engine**: `db/migrations/000011_fulltext_search.sql` - Full-text search implementation.
+- **Vector Embeddings**: `db/migrations/000012_pgvector_embeddings.sql` - Semantic search capabilities.
+- **Smart Docker Manager**: `run.sh` - Custom management script with advanced deployment options.
 
 ---
 
-## 🏛️ Legacy Core (Inherited from Koito)
+## 🏗️ Core Foundation (Koito Derivative)
 
-These components form the foundation, originally developed by **Gabe Farrell**.
+Beat Scrobble relies on the stable and efficient core developed by **Gabe Farrell (Koito)** for its fundamental operations. These components have been adapted and refactored to integrate seamlessly with the new AI and UI layers.
 
-### Database & Storage
-- `internal/db/*` - PostgreSQL Schema & Queries
-- `internal/repository/*` - Data Access Layer
+### Data & Storage
+- `internal/db/*`: The database schema for artists, releases, and tracks serves as the reliable backbone of the application, now extended with vector and AI-related fields.
+- `internal/repository/*`: Standard data access patterns.
 
 ### Scrobbling Logic
-- `engine/handlers/lbz_submit_listen.go` - ListenBrainz Submission
-- `engine/handlers/manual_scrobble.go` - Manual Entry
-- `internal/importer/*` - Import Logic (Spotify, Last.fm, etc.)
+- `engine/handlers/lbz_submit_listen.go`: The robust ListenBrainz submission protocol implementation.
+- `internal/importer/*`: Logic for importing history from Spotify/Last.fm.
 
-### External APIs
-- `internal/mbz/*` - MusicBrainz Integration
-- `internal/images/*` - Cover Art Archive / Deezer Integration
+### Connectors
+- `internal/mbz/*` & `internal/images/*`: Essential clients for reducing development time on external API integrations.
 
 ---
 
-## 📄 License
+## 📄 License & Attribution
 
-This project operates under the **MIT License**, preserving the original copyright notice while adding SaturnX-Dev as the author of new modifications.
+This project is licensed under the **MIT License**.
+
+- **Original Project (Koito)**: Gabe Farrell
+- **Beat Scrobble Evolution**: SaturnX-Dev
+
+We gratefully acknowledge the work done on Koito, which enabled Beat Scrobble to focus on higher-level innovations from day one.
 
 ---
 
-## 🙏 Special Thanks
+## 🙏 Technologies & Dependencies
 
-- **Koito** - Original project foundation
-- **OpenRouter** - AI API provider
-- **MusicBrainz** - Music metadata
-- **ListenBrainz** - Scrobble protocol
+- **Koito**: The original project foundation.
+- **OpenRouter**: Powering the AI intelligence.
+- **MusicBrainz**: The source of truth for metadata.
+- **ListenBrainz**: The open scrobbling standard.
+- **PostgreSQL**: The database engine (with `pgvector`).
