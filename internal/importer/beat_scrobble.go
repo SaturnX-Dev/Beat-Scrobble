@@ -45,6 +45,10 @@ func importBeatScrobbleData(ctx context.Context, store db.DB, r io.Reader, userI
 	}
 
 	// Support both v1 (legacy Koito) and v2 (Beat Scrobble with prefs/theme)
+	// If version is missing (empty), assume v1 legacy
+	if data.Version == "" {
+		data.Version = "1"
+	}
 	if data.Version != "1" && data.Version != "2" {
 		return fmt.Errorf("importBeatScrobbleData: unsupported version: %s", data.Version)
 	}
