@@ -291,7 +291,10 @@ services:
 go build -o beat-scrobble ./cmd/api
 
 # Frontend
-cd client && npm install && npm run build
+cd client
+corepack enable # Enables pnpm
+pnpm install
+pnpm run build
 ```
 
 ---
