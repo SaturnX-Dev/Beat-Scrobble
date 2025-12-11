@@ -12,6 +12,10 @@ SELECT * FROM users WHERE username = $1;
 -- name: CountUsers :one
 SELECT COUNT(*) FROM users;
 
+-- name: GetUser :one
+SELECT * FROM users WHERE id = $1;
+
+
 -- name: InsertApiKey :one
 INSERT INTO api_keys (user_id, key, label)
 VALUES ($1, $2, $3)

@@ -251,14 +251,21 @@ function deleteItem(itemType: string, id: number): Promise<Response> {
     method: "DELETE",
   });
 }
-function updateUser(username: string, password: string) {
-  const form = new URLSearchParams();
-  form.append("username", username);
-  form.append("password", password);
-  return request(`/apis/web/v1/user`, {
-    method: "PATCH",
-    body: form,
-  });
+function updateUser(username: string, password: string, currentPassword?: string) {
+  let body = new URLSearchParams()
+  if (username !== "") {
+    body.append('username', username)
+  }
+  if (password !== "") {
+    body.append('password', password)
+    if (currentPassword) {
+      body.append('current_password', currentPassword)
+    }
+  }
+  return fetch("/apis/web/v1/update/user", {
+    method: "PUT",
+    body: body,
+  })
 }
 function getAliases(type: string, id: number): Promise<Alias[]> {
   return request(`/apis/web/v1/aliases?${type}_id=${id}`).then(

@@ -8,6 +8,7 @@ import (
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/db"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/logger"
+	"github.com/SaturnX-Dev/Beat-Scrobble/internal/models"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/utils"
 )
 
@@ -17,6 +18,13 @@ func DeleteTrackHandler(store db.DB) http.HandlerFunc {
 		l := logger.FromContext(ctx)
 
 		l.Debug().Msg("DeleteTrackHandler: Received request to delete track")
+
+		user := middleware.GetUserFromContext(ctx)
+		if user == nil || user.Role != models.UserRoleAdmin {
+			l.Warn().Msg("DeleteTrackHandler: Unauthorized attempt to delete track")
+			utils.WriteError(w, "forbidden", http.StatusForbidden)
+			return
+		}
 
 		trackIDStr := r.URL.Query().Get("id")
 		if trackIDStr == "" {
@@ -108,6 +116,13 @@ func DeleteArtistHandler(store db.DB) http.HandlerFunc {
 
 		l.Debug().Msg("DeleteArtistHandler: Received request to delete artist")
 
+		user := middleware.GetUserFromContext(ctx)
+		if user == nil || user.Role != models.UserRoleAdmin {
+			l.Warn().Msg("DeleteArtistHandler: Unauthorized attempt to delete artist")
+			utils.WriteError(w, "forbidden", http.StatusForbidden)
+			return
+		}
+
 		artistIDStr := r.URL.Query().Get("id")
 		if artistIDStr == "" {
 			l.Debug().Msg("DeleteArtistHandler: Missing artist ID in request")
@@ -142,6 +157,13 @@ func DeleteAlbumHandler(store db.DB) http.HandlerFunc {
 		l := logger.FromContext(ctx)
 
 		l.Debug().Msg("DeleteAlbumHandler: Received request to delete album")
+
+		user := middleware.GetUserFromContext(ctx)
+		if user == nil || user.Role != models.UserRoleAdmin {
+			l.Warn().Msg("DeleteAlbumHandler: Unauthorized attempt to delete album")
+			utils.WriteError(w, "forbidden", http.StatusForbidden)
+			return
+		}
 
 		albumIDStr := r.URL.Query().Get("id")
 		if albumIDStr == "" {

@@ -135,6 +135,22 @@ func (q *Queries) GetUserByApiKey(ctx context.Context, key string) (User, error)
 	return i, err
 }
 
+const getUser = `-- name: GetUser :one
+SELECT id, username, role, password FROM users WHERE id = $1
+`
+
+func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
+	row := q.db.QueryRow(ctx, getUser, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Role,
+		&i.Password,
+	)
+	return i, err
+}
+
 const getUserByUsername = `-- name: GetUserByUsername :one
 SELECT id, username, role, password FROM users WHERE username = $1
 `

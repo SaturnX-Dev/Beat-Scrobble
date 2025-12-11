@@ -8,6 +8,7 @@ import { User, Lock, Globe, Share2, Palette, Sparkles, ChevronDown, Upload, Imag
 export default function Account() {
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
+    const [currentPw, setCurrentPw] = useState('')
     const [confirmPw, setConfirmPw] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
@@ -187,10 +188,18 @@ export default function Account() {
             setError("confirm your new password before submitting")
             return
         }
+        if (password != "" && password !== confirmPw) {
+            setError("passwords do not match")
+            return
+        }
+        if (password != "" && currentPw === "") {
+            setError("current password is required to set a new password")
+            return
+        }
         setError('')
         setSuccess('')
         setLoading(true)
-        updateUser(username, password)
+        updateUser(username, password, currentPw)
             .then(r => {
                 if (r.ok) {
                     setSuccess("sucessfully updated user")
@@ -200,6 +209,7 @@ export default function Account() {
                     setUsername('')
                     setPassword('')
                     setConfirmPw('')
+                    setCurrentPw('')
                 } else {
                     r.json().then((r) => setError(r.error))
                 }
@@ -286,26 +296,42 @@ export default function Account() {
                             </div>
                         </div>
 
+
                         <div className="space-y-3">
                             <h4 className="text-sm font-bold text-[var(--color-fg-secondary)]">Update Password</h4>
-                            <div className="flex flex-col sm:flex-row gap-2">
-                                <input
-                                    name="beat-scrobble-update-password"
-                                    type="password"
-                                    placeholder="New password"
-                                    className="flex-1 bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-lg px-3 py-2 text-sm"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                                <input
-                                    name="beat-scrobble-confirm-password"
-                                    type="password"
-                                    placeholder="Confirm password"
-                                    className="flex-1 bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-lg px-3 py-2 text-sm"
-                                    value={confirmPw}
-                                    onChange={(e) => setConfirmPw(e.target.value)}
-                                />
-                                <AsyncButton loading={loading} onClick={updateHandler}>Update</AsyncButton>
+                            <div className="flex flex-col gap-2">
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <input
+                                        name="beat-scrobble-current-password"
+                                        type="password"
+                                        placeholder="Current password (required)"
+                                        className="flex-1 bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-lg px-3 py-2 text-sm"
+                                        value={currentPw}
+                                        onChange={(e) => setCurrentPw(e.target.value)}
+                                        autoComplete="current-password"
+                                    />
+                                </div>
+                                <div className="flex flex-col sm:flex-row gap-2">
+                                    <input
+                                        name="beat-scrobble-update-password"
+                                        type="password"
+                                        placeholder="New password"
+                                        className="flex-1 bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-lg px-3 py-2 text-sm"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        autoComplete="new-password"
+                                    />
+                                    <input
+                                        name="beat-scrobble-confirm-password"
+                                        type="password"
+                                        placeholder="Confirm new password"
+                                        className="flex-1 bg-[var(--color-bg)] border border-[var(--color-bg-tertiary)] rounded-lg px-3 py-2 text-sm"
+                                        value={confirmPw}
+                                        onChange={(e) => setConfirmPw(e.target.value)}
+                                        autoComplete="new-password"
+                                    />
+                                    <AsyncButton loading={loading} onClick={updateHandler}>Update</AsyncButton>
+                                </div>
                             </div>
                         </div>
 

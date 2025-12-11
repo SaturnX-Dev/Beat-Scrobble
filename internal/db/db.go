@@ -29,6 +29,7 @@ type DB interface {
 	GetUserBySession(ctx context.Context, sessionId uuid.UUID) (*models.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*models.User, error)
 	GetUserByApiKey(ctx context.Context, key string) (*models.User, error)
+	GetUser(ctx context.Context, id int32) (*models.User, error)
 	// Save
 	SaveArtist(ctx context.Context, opts SaveArtistOpts) (*models.Artist, error)
 	SaveArtistAliases(ctx context.Context, id int32, aliases []string, source string) error

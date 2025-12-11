@@ -18,17 +18,32 @@ import (
 
 // Returns nil, nil when no database entries are found
 func (d *Psql) GetUserByUsername(ctx context.Context, username string) (*models.User, error) {
-	row, err := d.q.GetUserByUsername(ctx, strings.ToLower(username))
+	u, err := d.q.GetUserByUsername(ctx, strings.ToLower(username))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
 	} else if err != nil {
 		return nil, fmt.Errorf("GetUserByUsername: %w", err)
 	}
 	return &models.User{
-		ID:       row.ID,
-		Username: row.Username,
-		Password: row.Password,
-		Role:     models.UserRole(row.Role),
+		ID:       u.ID,
+		Username: u.Username,
+		Password: u.Password,
+		Role:     models.UserRole(u.Role),
+	}, nil
+}
+
+func (d *Psql) GetUser(ctx context.Context, id int32) (*models.User, error) {
+	u, err := d.q.GetUser(ctx, id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil // Return nil if not found
+	} else if err != nil {
+		return nil, fmt.Errorf("GetUser: %w", err)
+	}
+	return &models.User{
+		ID:       u.ID,
+		Username: u.Username,
+		Role:     models.UserRole(u.Role),
+		Password: u.Password,
 	}, nil
 }
 

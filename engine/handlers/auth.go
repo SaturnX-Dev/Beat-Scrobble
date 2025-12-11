@@ -235,14 +235,39 @@ func UpdateUserHandler(store db.DB) http.HandlerFunc {
 		}
 
 		opts := db.UpdateUserOpts{ID: user.ID}
+		changed := false
+
 		if username := r.FormValue("username"); username != "" {
 			opts.Username = username
-		}
-		if password := r.FormValue("password"); password != "" {
-			opts.Password = password
+			changed = true
 		}
 
-		if opts.Username == "" && opts.Password == "" {
+		if password := r.FormValue("password"); password != "" {
+			// Require current password for security
+			currentPassword := r.FormValue("current_password")
+			if currentPassword == "" {
+				utils.WriteError(w, "current password required to change password", http.StatusForbidden)
+				return
+			}
+
+			// Verify current password
+			dbUser, err := store.GetUser(ctx, user.ID)
+			if err != nil {
+				l.Error().Err(err).Msg("UpdateUserHandler: Error fetching user for verification")
+				utils.WriteError(w, "internal server error", http.StatusInternalServerError)
+				return
+			}
+
+			if err := bcrypt.CompareHashAndPassword(dbUser.Password, []byte(currentPassword)); err != nil {
+				utils.WriteError(w, "incorrect current password", http.StatusForbidden)
+				return
+			}
+
+			opts.Password = password
+			changed = true
+		}
+
+		if !changed {
 			l.Debug().Msg("UpdateUserHandler: No update parameters provided")
 			utils.WriteError(w, "no changes specified", http.StatusBadRequest)
 			return

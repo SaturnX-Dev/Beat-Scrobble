@@ -44,7 +44,7 @@ func UploadProfileImageHandler(store db.DB) http.HandlerFunc {
 			return
 		}
 
-		file, header, err := r.FormFile("image")
+		file, _, err := r.FormFile("image")
 		if err != nil {
 			l.Warn().Err(err).Msg("UploadProfileImageHandler: No file provided")
 			utils.WriteError(w, "no file provided", http.StatusBadRequest)
@@ -52,9 +52,25 @@ func UploadProfileImageHandler(store db.DB) http.HandlerFunc {
 		}
 		defer file.Close()
 
-		// Validate file type
-		contentType := header.Header.Get("Content-Type")
+		// Read first 512 bytes for content type detection
+		buf := make([]byte, 512)
+		if _, err := file.Read(buf); err != nil {
+			l.Warn().Err(err).Msg("UploadProfileImageHandler: Failed to read file header")
+			utils.WriteError(w, "failed to read file", http.StatusInternalServerError)
+			return
+		}
+
+		// Reset file pointer
+		if _, err := file.Seek(0, 0); err != nil {
+			l.Error().Err(err).Msg("UploadProfileImageHandler: Failed to seek file")
+			utils.WriteError(w, "internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		// Validate file type using magic bytes
+		contentType := http.DetectContentType(buf)
 		if !strings.HasPrefix(contentType, "image/") {
+			l.Warn().Str("type", contentType).Msg("UploadProfileImageHandler: Invalid file type")
 			utils.WriteError(w, "file must be an image", http.StatusBadRequest)
 			return
 		}
