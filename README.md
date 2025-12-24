@@ -1,4 +1,4 @@
-<p align="center"> Beat Scrobble</p>
+# <p align="center"> Beat Scrobble</p>
 
 <p align="center">
   <img src="assets/logo.jpg" alt="Beat Scrobble Logo" width="200" style="border-radius: 20px;"/>
