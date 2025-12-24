@@ -23,6 +23,7 @@ object NetworkModule {
     private const val KEY_PRIMARY_URL = "primary_url"
     private const val KEY_FALLBACK_URL = "fallback_url"
     private const val KEY_ACTIVE_URL = "active_url"
+    private const val KEY_COOKIES = "cookies"
     
     private var _api: BeatScrobbleApi? = null
     private var _activeUrl: String? = null
@@ -34,23 +35,39 @@ object NetworkModule {
     val activeUrl: String?
         get() = _activeUrl
     
+    private var _cacheDir: java.io.File? = null
+    
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        _cacheDir = context.cacheDir
+        
         val savedUrl = prefs.getString(KEY_ACTIVE_URL, null)
+        
+        // Restore cookies
+        val savedCookies = prefs.getString(KEY_COOKIES, null)
+        if (savedCookies != null) {
+            // Manual restore if needed, though CookieJar handles mostly
+        }
+        
         if (savedUrl != null) {
             createApi(savedUrl)
         }
     }
     
     fun isConfigured(): Boolean = _api != null
+    fun isLoggedIn(): Boolean = savedCookiesExists() // Helper check
+    
+    private fun savedCookiesExists() = prefs.contains(KEY_COOKIES)
     
     fun getServerConfig(): ServerConfig? {
+        if (!this::prefs.isInitialized) return null
         val primary = prefs.getString(KEY_PRIMARY_URL, null) ?: return null
         val fallback = prefs.getString(KEY_FALLBACK_URL, null)
         return ServerConfig(primary, fallback)
     }
     
     fun saveServerConfig(config: ServerConfig) {
+        if (!this::prefs.isInitialized) return
         prefs.edit {
             putString(KEY_PRIMARY_URL, config.primaryUrl)
             putString(KEY_FALLBACK_URL, config.fallbackUrl)
@@ -61,7 +78,7 @@ object NetworkModule {
      * Test connection to a URL
      * Returns true if connection successful
      */
-    suspend fun testConnection(url: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun testConnection(url: String, defaultProtocol: String = "http"): Boolean = withContext(Dispatchers.IO) {
         try {
             val testClient = OkHttpClient.Builder()
                 .connectTimeout(5, TimeUnit.SECONDS)
@@ -69,7 +86,7 @@ object NetworkModule {
                 .build()
             
             val testRetrofit = Retrofit.Builder()
-                .baseUrl(normalizeUrl(url))
+                .baseUrl(normalizeUrl(url, defaultProtocol))
                 .client(testClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
@@ -90,14 +107,18 @@ object NetworkModule {
         // Try primary URL first (local/LAN priority)
         if (testConnection(config.primaryUrl)) {
             createApi(config.primaryUrl)
-            prefs.edit { putString(KEY_ACTIVE_URL, config.primaryUrl) }
+            if (this@NetworkModule::prefs.isInitialized) {
+                prefs.edit { putString(KEY_ACTIVE_URL, config.primaryUrl) }
+            }
             return@withContext config.primaryUrl
         }
         
-        // Try fallback URL
-        if (config.fallbackUrl != null && testConnection(config.fallbackUrl)) {
-            createApi(config.fallbackUrl)
-            prefs.edit { putString(KEY_ACTIVE_URL, config.fallbackUrl) }
+        // Try fallback URL (HTTPS default)
+        if (config.fallbackUrl != null && testConnection(config.fallbackUrl, "https")) {
+            createApi(config.fallbackUrl, "https")
+            if (this@NetworkModule::prefs.isInitialized) {
+                prefs.edit { putString(KEY_ACTIVE_URL, config.fallbackUrl) }
+            }
             return@withContext config.fallbackUrl
         }
         
@@ -112,16 +133,30 @@ object NetworkModule {
         return connect(config) != null
     }
     
-    private fun createApi(baseUrl: String) {
-        val normalizedUrl = normalizeUrl(baseUrl)
+    private fun createApi(baseUrl: String, defaultProtocol: String = "http") {
+        val normalizedUrl = normalizeUrl(baseUrl, defaultProtocol)
         
         val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
+            level = HttpLoggingInterceptor.Level.BODY
         }
         
+        // Use standard CookieManager for in-memory session management
+        val cookieManager = java.net.CookieManager().apply {
+            setCookiePolicy(java.net.CookiePolicy.ACCEPT_ALL)
+        }
+        
+        // 50 MB Cache
+        val cacheSize = 50L * 1024L * 1024L
+        val cache = try {
+            _cacheDir?.let { okhttp3.Cache(java.io.File(it, "http_cache"), cacheSize) }
+        } catch (e: Exception) {
+            null // Fallback to no cache if file system fails
+        }
+
         val client = OkHttpClient.Builder()
+            .cookieJar(JavaNetCookieJar(cookieManager))
+            .cache(cache)
             .addInterceptor(loggingInterceptor)
-            .addInterceptor(CookieInterceptor)
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .build()
@@ -136,10 +171,10 @@ object NetworkModule {
         _activeUrl = normalizedUrl
     }
     
-    private fun normalizeUrl(url: String): String {
+    private fun normalizeUrl(url: String, defaultProtocol: String = "http"): String {
         var normalized = url.trim()
         if (!normalized.startsWith("http://") && !normalized.startsWith("https://")) {
-            normalized = "http://$normalized"
+            normalized = "$defaultProtocol://$normalized"
         }
         if (!normalized.endsWith("/")) {
             normalized = "$normalized/"
@@ -148,45 +183,21 @@ object NetworkModule {
     }
     
     fun clearSession() {
-        CookieInterceptor.clearCookies()
+        // In-memory cookie manager is cleared by recreation, or we could keep a reference
+        // but for now, simple recreation on connect/reconnect is enough
+        prefs.edit { remove(KEY_COOKIES) }
     }
     
     fun clearConfig() {
+        if (!this::prefs.isInitialized) return
         prefs.edit {
             remove(KEY_PRIMARY_URL)
             remove(KEY_FALLBACK_URL)
             remove(KEY_ACTIVE_URL)
+            remove(KEY_COOKIES)
         }
         _api = null
         _activeUrl = null
         clearSession()
-    }
-}
-
-/**
- * Simple cookie interceptor for session management
- */
-object CookieInterceptor : okhttp3.Interceptor {
-    private var cookies: String? = null
-    
-    override fun intercept(chain: okhttp3.Interceptor.Chain): okhttp3.Response {
-        val requestBuilder = chain.request().newBuilder()
-        
-        cookies?.let {
-            requestBuilder.addHeader("Cookie", it)
-        }
-        
-        val response = chain.proceed(requestBuilder.build())
-        
-        // Save cookies from response
-        response.headers("Set-Cookie").forEach { cookie ->
-            cookies = if (cookies == null) cookie else "$cookies; $cookie"
-        }
-        
-        return response
-    }
-    
-    fun clearCookies() {
-        cookies = null
     }
 }

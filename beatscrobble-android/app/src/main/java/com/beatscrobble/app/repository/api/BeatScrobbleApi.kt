@@ -3,6 +3,7 @@ package com.beatscrobble.app.repository.api
 import com.beatscrobble.app.repository.models.*
 import retrofit2.Response
 import retrofit2.http.*
+import okhttp3.ResponseBody
 
 interface BeatScrobbleApi {
 
@@ -14,7 +15,14 @@ interface BeatScrobbleApi {
         @Field("username") username: String,
         @Field("password") password: String,
         @Field("remember_me") rememberMe: Boolean = true
-    ): Response<User>
+    ): Response<Unit>
+
+    @FormUrlEncoded
+    @POST("/apis/web/v1/signup")
+    suspend fun signup(
+        @Field("username") username: String,
+        @Field("password") password: String
+    ): Response<Unit>
 
     @POST("/apis/web/v1/logout")
     suspend fun logout(): Response<Unit>
@@ -114,6 +122,8 @@ interface BeatScrobbleApi {
 
     // === Health Check ===
     
+
+    
     @GET("/apis/web/v1/health")
-    suspend fun healthCheck(): Response<Unit>
+    suspend fun healthCheck(): Response<ResponseBody>
 }

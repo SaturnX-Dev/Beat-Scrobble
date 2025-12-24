@@ -2,15 +2,29 @@
     "categories": [
         {
             "title": "Enhancements",
-            "labels": ["feature", "feat", "enhancement"]
+            "labels": [
+                "feature",
+                "feat",
+                "enhancement"
+            ]
         },
         {
             "title": "Updates",
-            "labels": ["fix", "bug", "chore", "update", "refactor"]
+            "labels": [
+                "fix",
+                "bug",
+                "chore",
+                "update",
+                "refactor"
+            ]
         },
         {
             "title": "Documentation",
-            "labels": ["doc", "docs", "documentation"]
+            "labels": [
+                "doc",
+                "docs",
+                "documentation"
+            ]
         }
     ],
     "ignore_labels": [
@@ -22,5 +36,11 @@
     },
     "template": "# {{RELEASE_TAG}}\n\nWhat's Changed\n\n{{CHANGELOG}}\n\nFull Changelog: {{RELEASE_DIFF}}\n",
     "pr_template": "- {{TITLE}} (#{{NUMBER}})",
-    "empty_template": "- No changes found"
+    "empty_template": "- No changes found",
+    "transformers": [
+        {
+            "pattern": "[\\-\\*] \\[([A-Z]+-[0-9]+)\\]",
+            "target": "[$1](https://your-jira-url/$1)"
+        }
+    ]
 }

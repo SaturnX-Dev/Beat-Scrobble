@@ -86,16 +86,22 @@ fun LoginScreen(navController: NavController) {
             
             scope.launch {
                 try {
-                    val response = NetworkModule.api.login(username, password)
-                    if (response.isSuccessful && response.body() != null) {
+                    val response = if (isLogin) {
+                        NetworkModule.api.login(username, password)
+                    } else {
+                        NetworkModule.api.signup(username, password)
+                    }
+                    
+                    if (response.isSuccessful) {
                         navController.navigate(Screen.Home.route) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
                     } else {
-                        error = "Invalid credentials"
+                        error = if (isLogin) "Invalid credentials" else "Registration failed"
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     error = e.message ?: "Connection error"
+                    e.printStackTrace()
                 }
                 isLoading = false
             }
@@ -112,11 +118,10 @@ fun LoginScreen(navController: NavController) {
         Box(
             modifier = Modifier
                 .offset(x = (-50).dp, y = (-100).dp)
-                .size(300.dp)
+                .size(200.dp) // Reduced size
                 .scale(blob1Scale)
-                .blur(120.dp)
                 .clip(CircleShape)
-                .background(Primary.copy(alpha = 0.2f))
+                .background(Primary.copy(alpha = 0.15f)) // Reduced alpha
         )
         
         // Blob 2 - Bottom right, accent color
@@ -124,11 +129,10 @@ fun LoginScreen(navController: NavController) {
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .offset(x = 50.dp, y = 50.dp)
-                .size(250.dp)
+                .size(150.dp) // Reduced size
                 .scale(blob2Scale)
-                .blur(100.dp)
                 .clip(CircleShape)
-                .background(Secondary.copy(alpha = 0.2f))
+                .background(Secondary.copy(alpha = 0.15f)) // Reduced alpha
         )
         
         // === MAIN CONTENT ===

@@ -126,7 +126,7 @@ fun ServerSetupScreen(
                 )
                 
                 Text(
-                    text = "Priority: Local network first",
+                    text = "Use 10.0.2.2 for Emulator, or LAN IP for device",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextTertiary,
                     modifier = Modifier.padding(top = 4.dp, start = 4.dp)
@@ -227,25 +227,30 @@ fun ServerSetupScreen(
                         error = null
                         connectedUrl = null
                         
-                        val config = ServerConfig(
-                            primaryUrl = primaryUrl.trim(),
-                            fallbackUrl = fallbackUrl.trim().ifBlank { null }
-                        )
-                        
-                        NetworkModule.saveServerConfig(config)
-                        
-                        val connected = NetworkModule.connect(config)
-                        
-                        if (connected != null) {
-                            connectedUrl = connected
-                            // Short delay to show success message
-                            kotlinx.coroutines.delay(1000)
-                            onConfigured()
-                        } else {
-                            error = "Could not connect to any server. Check URLs and try again."
+                        try {
+                            val config = ServerConfig(
+                                primaryUrl = primaryUrl.trim(),
+                                fallbackUrl = fallbackUrl.trim().ifBlank { null }
+                            )
+                            
+                            NetworkModule.saveServerConfig(config)
+                            
+                            val connected = NetworkModule.connect(config)
+                            
+                            if (connected != null) {
+                                connectedUrl = connected
+                                // Short delay to show success message
+                                kotlinx.coroutines.delay(1000)
+                                onConfigured()
+                            } else {
+                                error = "Could not connect to any server. Check URLs and try again."
+                            }
+                        } catch (e: Throwable) {
+                            error = "Error: ${e.message}"
+                            e.printStackTrace()
+                        } finally {
+                            isLoading = false
                         }
-                        
-                        isLoading = false
                     }
                 },
                 modifier = Modifier

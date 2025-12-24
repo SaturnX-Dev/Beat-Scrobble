@@ -34,6 +34,7 @@ fun AppNavigation(navController: NavHostController) {
     val startDestination = remember {
         when {
             !NetworkModule.isConfigured() -> Screen.ServerSetup.route
+            !NetworkModule.isLoggedIn() -> Screen.Login.route
             else -> Screen.Home.route
         }
     }

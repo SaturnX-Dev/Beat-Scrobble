@@ -63,6 +63,10 @@ object PreferencesRepository {
         _isLoading.value = true
         
         try {
+            if (!NetworkModule.isConfigured()) {
+                loadFromLocalStorage()
+                return
+            }
             val serverPrefs = NetworkModule.api.getPreferences()
             _preferences.value = serverPrefs
             

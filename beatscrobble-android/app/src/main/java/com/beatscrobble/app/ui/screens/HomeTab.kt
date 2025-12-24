@@ -327,7 +327,7 @@ fun NowPlayingCardFull(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(450.dp)
-                        .blur(30.dp)
+
                         .graphicsLayer { scaleX = 1.1f; scaleY = 1.1f },
                     contentScale = ContentScale.Crop,
                     alpha = 0.3f

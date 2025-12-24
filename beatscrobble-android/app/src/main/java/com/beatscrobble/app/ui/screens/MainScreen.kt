@@ -3,8 +3,10 @@ package com.beatscrobble.app.ui.screens
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -47,72 +49,67 @@ fun MainScreen(
     var selectedTab by remember { mutableIntStateOf(startTab) }
     var view by remember { mutableStateOf<NavView>(NavView.MAIN) }
 
-    
-    // Animación del slider track (como translateX en web)
-    val sliderOffset by animateFloatAsState(
-        targetValue = if (view == NavView.MAIN) 0f else -1f,
-        animationSpec = tween(
-            durationMillis = 300,
-            easing = CubicBezierEasing(0.2f, 0.8f, 0.2f, 1f) // cubic-bezier(0.2, 0.8, 0.2, 1)
-        ),
-        label = "slider"
-    )
-    
     Box(modifier = Modifier.fillMaxSize()) {
         // Content based on selected tab
         when (selectedTab) {
             0 -> HomeTab(navController = navController)
             1 -> TimelineTab(navController = navController)
+            // Profile is tab 2 when navigated to via Bottom Bar
             2 -> ProfileTab(navController = navController)
         }
         
-        // Floating Navigation Bar - Replica exacta del web
+        // Floating Navigation Bar - Floating Blur Pill
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(horizontal = 16.dp, vertical = 24.dp)
+                .padding(horizontal = 48.dp, vertical = 24.dp) // Narrower pill
         ) {
-            // background: color-mix(in srgb, var(--color-bg-secondary) 60%, transparent)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    // Shadow for floating effect
+                    .graphicsLayer {
+                        shadowElevation = 8.dp.toPx()
+                        shape = CircleShape // Fully rounded pill
+                        clip = true
+                    }
                     .background(
-                        color = DarkSurface.copy(alpha = 0.95f), // Higher alpha since we don't have blur
-                        shape = RoundedCornerShape(16.dp)
+                        color = DarkSurface.copy(alpha = 0.7f), // Higher transparency
+                        shape = CircleShape
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = GlassBorder,
+                        shape = CircleShape
                     )
             ) {
-                // Slider Track - width: 200%, transform: translateX
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(IntrinsicSize.Max)
-                ) {
+                AnimatedContent(
+                    targetState = view,
+                    transitionSpec = {
+                        if (targetState == NavView.MORE) {
+                            slideInHorizontally { width -> width } + fadeIn() togetherWith
+                                    slideOutHorizontally { width -> -width } + fadeOut()
+                        } else {
+                            slideInHorizontally { width -> -width } + fadeIn() togetherWith
+                                    slideOutHorizontally { width -> width } + fadeOut()
+                        }
+                    },
+                    label = "nav_transition",
+                    modifier = Modifier.fillMaxSize()
+                ) { targetView ->
                     Row(
-                        modifier = Modifier
-                            .fillMaxHeight()
-                            .graphicsLayer {
-                                // Simulamos el translateX moviendo el offset
-                                translationX = sliderOffset * size.width / 2
-                            }
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // MAIN VIEW (50% del ancho)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .weight(1f),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        if (targetView == NavView.MAIN) {
                             // Home
                             NavBarItemPill(
                                 label = "Home",
                                 icon = Icons.Filled.Home,
                                 isActive = selectedTab == 0,
-                                onClick = { 
-                                    selectedTab = 0 
-                                }
+                                onClick = { selectedTab = 0 }
                             )
                             
                             // Timeline
@@ -120,39 +117,27 @@ fun MainScreen(
                                 label = "Timeline",
                                 icon = Icons.Filled.List,
                                 isActive = selectedTab == 1,
-                                onClick = { 
-                                    selectedTab = 1 
-                                }
+                                onClick = { selectedTab = 1 }
                             )
-
                             
                             // Search (Navigate to Native Screen)
                             NavBarItemPill(
                                 label = "Search",
                                 icon = Icons.Filled.Search,
-                                isActive = false, // Always false as it leaves this screen
+                                isActive = false, 
                                 onClick = { 
                                     navController.navigate(Screen.Search.route)
                                 }
                             )
                             
-                            // More (cambia a view more)
+                            // More
                             NavBarItemPill(
                                 label = "More",
                                 icon = Icons.Filled.MoreHoriz,
                                 isActive = false,
                                 onClick = { view = NavView.MORE }
                             )
-                        }
-                        
-                        // MORE VIEW (50% del ancho)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .weight(1f),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
+                        } else {
                             // Back
                             NavBarItemPill(
                                 label = "Back",
@@ -161,7 +146,7 @@ fun MainScreen(
                                 onClick = { view = NavView.MAIN }
                             )
                             
-                            // Playlists (placeholder - podría navegar a una pantalla)
+                            // Playlists
                             NavBarItemPill(
                                 label = "Playlists",
                                 icon = Icons.Filled.QueueMusic,
@@ -183,7 +168,7 @@ fun MainScreen(
                                 }
                             )
                             
-                            // Config (Settings)
+                            // Config
                             NavBarItemPill(
                                 label = "Config",
                                 icon = Icons.Filled.Settings,

@@ -103,11 +103,15 @@ jobs:
         # Building Debug APK for now since we don't have signing keys configured
         run: ./gradlew assembleDebug
 
+      - name: Rename APK
+        run: |
+          mv beatscrobble-android/app/build/outputs/apk/debug/app-debug.apk beatscrobble-android/app/build/outputs/apk/debug/BeatScrobble-${{ github.ref_name }}.apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
-          path: beatscrobble-android/app/build/outputs/apk/debug/app-debug.apk
+          name: BeatScrobble-${{ github.ref_name }}.apk
+          path: beatscrobble-android/app/build/outputs/apk/debug/BeatScrobble-${{ github.ref_name }}.apk
 
   # 4. Create Release
   create-release:
@@ -122,7 +126,7 @@ jobs:
       - name: Download APK Artifact
         uses: actions/download-artifact@v4
         with:
-          name: app-debug
+          name: BeatScrobble-${{ github.ref_name }}.apk
           path: ./assets
 
       - name: Create Release
@@ -140,9 +144,10 @@ jobs:
             docker pull ghcr.io/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
             ```
           files: |
-            ./assets/app-debug.apk
+            ./assets/BeatScrobble-${{ github.ref_name }}.apk
           draft: false
           # Mark as Pre-release if it starts with v0. OR contains a hyphen (v1.0.0-beta)
           prerelease: ${{ startsWith(github.ref, 'refs/tags/v0.') || contains(github.ref, '-') }}
+          fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
