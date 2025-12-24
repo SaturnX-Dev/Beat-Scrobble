@@ -13,7 +13,12 @@ import (
 )
 
 func (d *Psql) SaveSession(ctx context.Context, userID int32, expiresAt time.Time, persistent bool) (*models.Session, error) {
-	session, err := d.q.InsertSession(ctx, repository.InsertSessionParams{
+	// Use a detached context with timeout to ensure session is saved even if request is canceled
+	// This prevents "context canceled" errors when the client disconnects immediately after login
+	dct, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	session, err := d.q.InsertSession(dct, repository.InsertSessionParams{
 		ID:         uuid.New(),
 		UserID:     userID,
 		ExpiresAt:  expiresAt,
