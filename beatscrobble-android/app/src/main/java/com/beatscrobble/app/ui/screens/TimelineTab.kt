@@ -108,6 +108,7 @@ fun TimelineTab(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
+            .statusBarsPadding() // Fix overlap with system status bar
     ) {
         // === HEADER & CONTROLS ===
         Card(

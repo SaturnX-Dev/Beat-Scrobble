@@ -138,6 +138,7 @@ fun SettingsScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(padding)
         ) {
             // Tab Row - Horizontal scrollable like web

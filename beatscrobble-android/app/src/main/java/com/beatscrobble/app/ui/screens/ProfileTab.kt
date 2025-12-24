@@ -83,6 +83,7 @@ fun ProfileTab(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
+            .statusBarsPadding() // Fix overlap with system status bar
             .padding(bottom = 100.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {

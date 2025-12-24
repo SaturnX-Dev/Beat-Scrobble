@@ -76,6 +76,7 @@ fun HomeTab(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
+            .statusBarsPadding() // Fix overlap with system status bar
             .padding(bottom = 100.dp), // Space for nav bar
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -512,7 +513,7 @@ fun DashboardMetricsCard(
                 // Main number (scrobbles)
                 Text(
                     text = formatNumber(stats.listenCount),
-                    style = MaterialTheme.typography.displayMedium,
+                    style = MaterialTheme.typography.headlineLarge, // Reduced from displayMedium to fit screen
                     fontWeight = FontWeight.Black,
                     color = TextPrimary
                 )

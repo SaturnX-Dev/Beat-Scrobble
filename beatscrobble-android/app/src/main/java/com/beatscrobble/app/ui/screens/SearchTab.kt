@@ -67,6 +67,7 @@ fun SearchTab(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
+            .statusBarsPadding()
             .padding(bottom = 100.dp)
     ) {
         // Header

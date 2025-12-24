@@ -46,7 +46,7 @@ fun MainScreen(
 ) {
     var selectedTab by remember { mutableIntStateOf(startTab) }
     var view by remember { mutableStateOf<NavView>(NavView.MAIN) }
-    var searchOpen by remember { mutableStateOf(false) }
+
     
     // Animación del slider track (como translateX en web)
     val sliderOffset by animateFloatAsState(
@@ -58,23 +58,12 @@ fun MainScreen(
         label = "slider"
     )
     
-    // Animación de hide navbar (como translateY en web)
-    val navbarOffset by animateFloatAsState(
-        targetValue = if (searchOpen) 180f else 0f,
-        animationSpec = tween(
-            durationMillis = 500,
-            easing = CubicBezierEasing(0.32f, 0.72f, 0f, 1f) // cubic-bezier(0.32, 0.72, 0, 1)
-        ),
-        label = "navbarHide"
-    )
-    
     Box(modifier = Modifier.fillMaxSize()) {
         // Content based on selected tab
-        when {
-            searchOpen -> SearchTab(navController = navController)
-            selectedTab == 0 -> HomeTab(navController = navController)
-            selectedTab == 1 -> TimelineTab(navController = navController)
-            selectedTab == 2 -> ProfileTab(navController = navController)
+        when (selectedTab) {
+            0 -> HomeTab(navController = navController)
+            1 -> TimelineTab(navController = navController)
+            2 -> ProfileTab(navController = navController)
         }
         
         // Floating Navigation Bar - Replica exacta del web
@@ -82,31 +71,17 @@ fun MainScreen(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 16.dp, vertical = 24.dp)
-                .graphicsLayer {
-                    translationY = navbarOffset * 3 // Convertir % a dp aproximado
-                }
         ) {
-            // Blur background for API 31+ (como backdrop-filter: blur(20px))
-            val blurModifier = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                Modifier.graphicsLayer {
-                    renderEffect = android.graphics.RenderEffect
-                        .createBlurEffect(20f, 20f, android.graphics.Shader.TileMode.CLAMP)
-                        .asComposeRenderEffect()
-                }
-            } else {
-                Modifier
-            }
-            
-            Surface(
+            // background: color-mix(in srgb, var(--color-bg-secondary) 60%, transparent)
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp)
-                    .then(blurModifier),
-                shape = RoundedCornerShape(16.dp),
-                // background: color-mix(in srgb, var(--color-bg-secondary) 60%, transparent)
-                color = DarkSurface.copy(alpha = 0.6f),
-                tonalElevation = 0.dp,
-                shadowElevation = 32.dp // boxShadow: 0 8px 32px rgba(0, 0, 0, 0.4)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        color = DarkSurface.copy(alpha = 0.95f), // Higher alpha since we don't have blur
+                        shape = RoundedCornerShape(16.dp)
+                    )
             ) {
                 // Slider Track - width: 200%, transform: translateX
                 Box(
@@ -134,10 +109,9 @@ fun MainScreen(
                             NavBarItemPill(
                                 label = "Home",
                                 icon = Icons.Filled.Home,
-                                isActive = selectedTab == 0 && !searchOpen,
+                                isActive = selectedTab == 0,
                                 onClick = { 
                                     selectedTab = 0 
-                                    searchOpen = false
                                 }
                             )
                             
@@ -145,20 +119,20 @@ fun MainScreen(
                             NavBarItemPill(
                                 label = "Timeline",
                                 icon = Icons.Filled.List,
-                                isActive = selectedTab == 1 && !searchOpen,
+                                isActive = selectedTab == 1,
                                 onClick = { 
                                     selectedTab = 1 
-                                    searchOpen = false
                                 }
                             )
+
                             
-                            // Search (abre SearchTab, no navega)
+                            // Search (Navigate to Native Screen)
                             NavBarItemPill(
                                 label = "Search",
                                 icon = Icons.Filled.Search,
-                                isActive = searchOpen,
+                                isActive = false, // Always false as it leaves this screen
                                 onClick = { 
-                                    searchOpen = true 
+                                    navController.navigate(Screen.Search.route)
                                 }
                             )
                             
@@ -202,10 +176,9 @@ fun MainScreen(
                             NavBarItemPill(
                                 label = "Profile",
                                 icon = Icons.Filled.Person,
-                                isActive = selectedTab == 2 && !searchOpen,
+                                isActive = selectedTab == 2,
                                 onClick = { 
                                     selectedTab = 2
-                                    searchOpen = false
                                     view = NavView.MAIN
                                 }
                             )

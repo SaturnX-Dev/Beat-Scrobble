@@ -135,3 +135,18 @@ bin/
 *.test
 coverage.out
 run.sh
+
+# ============================================================================
+# Android (beatscrobble-android)
+# ============================================================================
+beatscrobble-android/.gradle/
+beatscrobble-android/build/
+beatscrobble-android/app/build/
+beatscrobble-android/local.properties
+beatscrobble-android/.idea/
+beatscrobble-android/*.iml
+beatscrobble-android/captures/
+beatscrobble-android/.externalNativeBuild/
+beatscrobble-android/.cxx/
+beatscrobble-android/**/*.lock
+beatscrobble-android/**/bin/
