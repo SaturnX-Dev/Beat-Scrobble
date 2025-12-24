@@ -1,0 +1,26 @@
+{
+    "categories": [
+        {
+            "title": "Enhancements",
+            "labels": ["feature", "feat", "enhancement"]
+        },
+        {
+            "title": "Updates",
+            "labels": ["fix", "bug", "chore", "update", "refactor"]
+        },
+        {
+            "title": "Documentation",
+            "labels": ["doc", "docs", "documentation"]
+        }
+    ],
+    "ignore_labels": [
+        "ignore"
+    ],
+    "sort": {
+        "order": "ASC",
+        "on_property": "mergedAt"
+    },
+    "template": "# {{RELEASE_TAG}}\n\nWhat's Changed\n\n{{CHANGELOG}}\n\nFull Changelog: {{RELEASE_DIFF}}\n",
+    "pr_template": "- {{TITLE}} (#{{NUMBER}})",
+    "empty_template": "- No changes found"
+}

@@ -673,6 +673,7 @@ fun ThemeCard(theme: ThemeOption) {
             color = if (theme.bg == Color(0xFFF8F8FC)) Color.Black else Color.White
         )
     }
+}
 // === CARD AURA SELECTOR SECTION - como CardAuraSelector.tsx ===
 @Composable
 fun CardAuraSelectorSection() {
@@ -923,8 +924,8 @@ fun ThemeEditorSection() {
                     Button(
                         onClick = {
                             // Export current theme as JSON
-                            val preferences = com.beatscrobble.app.repository.preferences.PreferencesRepository.preferencesCache
-                            jsonText = org.json.JSONObject(preferences).toString(2)
+                            val preferences = com.beatscrobble.app.repository.preferences.PreferencesRepository.preferences.value
+                            jsonText = org.json.JSONObject(preferences as Map<*, *>).toString(2)
                             
                             // Copy to clipboard
                             val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager

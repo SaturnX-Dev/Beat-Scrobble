@@ -186,7 +186,7 @@ fun ArtistScreen(artistId: Int, navController: NavController) {
                         RecentPlaysCard(
                             title = "Recent Plays",
                             listens = recentListens,
-                            onTrackClick = { navController.navigate(Screen.Track.createRoute(it.id)) }
+                            onTrackClick = { navController.navigate(Screen.Track.createRoute(it)) }
                         )
                     }
                 }
@@ -331,13 +331,14 @@ fun BioSection(bio: String) {
 
 @Composable
 fun ArtistStatsCard(artist: Artist) {
-    val firstListenDate = if (artist.firstListen > 0) {
+    val firstListenVal = artist.firstListen ?: 0L
+    val firstListenDate = if (firstListenVal > 0) {
         java.text.SimpleDateFormat("MMM d, yyyy", java.util.Locale.getDefault())
-            .format(java.util.Date(artist.firstListen * 1000))
+            .format(java.util.Date(firstListenVal * 1000))
     } else null
     
-    val daysListening = if (artist.firstListen > 0) {
-        ((System.currentTimeMillis() / 1000 - artist.firstListen) / 86400).toInt()
+    val daysListening = if (firstListenVal > 0) {
+        ((System.currentTimeMillis() / 1000 - firstListenVal) / 86400).toInt()
     } else 0
     
     Card(
@@ -384,7 +385,7 @@ fun AlbumsSection(albums: List<Album>, onAlbumClick: (Album) -> Unit) {
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = TextPrimary,
-            modifier = Modifier.padding(horizontal = 16.dp, bottom = 12.dp)
+            modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 12.dp)
         )
         
         LazyRow(

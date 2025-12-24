@@ -53,18 +53,7 @@ fun AppNavigation(navController: NavHostController) {
         }
         
         composable(Screen.Login.route) {
-            LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
-                },
-                onBackToSetup = {
-                    navController.navigate(Screen.ServerSetup.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
-                }
-            )
+            LoginScreen(navController = navController)
         }
         
         composable(Screen.Home.route) {

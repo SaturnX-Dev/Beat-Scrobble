@@ -87,8 +87,8 @@ fun LoginScreen(navController: NavController) {
             scope.launch {
                 try {
                     val response = NetworkModule.api.login(username, password)
-                    if (response.user != null) {
-                        navController.navigate(Screen.Main.route) {
+                    if (response.isSuccessful && response.body() != null) {
+                        navController.navigate(Screen.Home.route) {
                             popUpTo(Screen.Login.route) { inclusive = true }
                         }
                     } else {

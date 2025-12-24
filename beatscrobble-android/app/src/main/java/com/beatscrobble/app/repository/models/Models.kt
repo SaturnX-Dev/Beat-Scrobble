@@ -13,7 +13,9 @@ data class Artist(
     val popularity: Int? = null,
     @SerializedName("spotify_id") val spotifyId: String? = null,
     @SerializedName("time_listened") val timeListened: Int = 0,
-    @SerializedName("first_listen") val firstListen: Long? = null
+    @SerializedName("first_listen") val firstListen: Long? = null,
+    val followers: Int? = null,
+    val bio: String? = null
 )
 
 data class Album(
@@ -26,7 +28,9 @@ data class Album(
     @SerializedName("release_date") val releaseDate: String? = null,
     val popularity: Int? = null,
     val label: String? = null,
-    @SerializedName("time_listened") val timeListened: Int = 0
+    @SerializedName("time_listened") val timeListened: Int = 0,
+    @SerializedName("spotify_id") val spotifyId: String? = null,
+    @SerializedName("first_listen") val firstListen: Long? = null
 )
 
 data class Track(
@@ -38,7 +42,9 @@ data class Track(
     @SerializedName("album_id") val albumId: Int? = null,
     val album: String? = null,
     val popularity: Int? = null,
-    @SerializedName("time_listened") val timeListened: Int = 0
+    @SerializedName("time_listened") val timeListened: Int = 0,
+    @SerializedName("spotify_id") val spotifyId: String? = null,
+    @SerializedName("first_listen") val firstListen: Long? = null
 )
 
 data class SimpleArtist(

@@ -237,11 +237,15 @@ fun TrackHeroHeader(track: Track, album: Album?, navController: NavController) {
 
 @Composable
 fun TrackStatsCard(track: Track, album: Album?) {
-    val firstListenDate = if (track.firstListen > 0) {
+    val firstListenVal = track.firstListen ?: 0L
+    val firstListenDate = if (firstListenVal > 0) {
         java.text.SimpleDateFormat("MMM d, yyyy", java.util.Locale.getDefault())
-            .format(java.util.Date(track.firstListen * 1000))
+            .format(java.util.Date(firstListenVal * 1000))
     } else null
     
+    val daysListening = if (firstListenVal > 0) {
+        ((System.currentTimeMillis() / 1000 - firstListenVal) / 86400).toInt()
+    } else 0
     Card(
         modifier = Modifier
             .fillMaxWidth()

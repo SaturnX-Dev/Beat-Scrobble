@@ -555,9 +555,9 @@ fun SwipeableListenRow(
     onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val dismissState = rememberSwipeToDismissBoxState(
+    val dismissState = rememberDismissState(
         confirmValueChange = { dismissValue ->
-            if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
+            if (dismissValue == DismissValue.DismissedToStart) {
                 onDelete()
                 true
             } else {
@@ -566,9 +566,9 @@ fun SwipeableListenRow(
         }
     )
     
-    SwipeToDismissBox(
+    SwipeToDismiss(
         state = dismissState,
-        backgroundContent = {
+        background = {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -584,12 +584,13 @@ fun SwipeableListenRow(
                 )
             }
         },
-        content = {
+        dismissContent = {
             ListenRowWithTimeDot(
                 listen = listen,
                 onClick = onClick
             )
-        }
+        },
+        directions = setOf(DismissDirection.EndToStart)
     )
 }
 

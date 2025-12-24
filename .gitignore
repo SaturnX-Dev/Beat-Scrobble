@@ -1,82 +1,137 @@
-# === General ===
-.DS_Store
-.Thumbnails
-.Trash
-*.log
-*.tmp
-*.bak
+# ============================================================================
+# Beat Scrobble - Project .gitignore
+# ============================================================================
+
+# ============================================================================
+# IDE & Editors
+# ============================================================================
 .idea/
 .vscode/
 *.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
 
-# === Environment & Secrets ===
+# ============================================================================
+# Environment & Secrets
+# ============================================================================
 .env
 .env.local
 .env.*.local
-*.secret
-secrets.yaml
+*.env
+secrets/
+*.pem
+*.key
 
-# === Client (Web/React) ===
+# ============================================================================
+# Docker - Local Overrides
+# ============================================================================
+docker-compose.dev.yml
+docker-compose.prod.yml
+docker-compose.local.yml
+docker-compose.override.yml
+
+# ============================================================================
+# Scripts - Local Modifications
+# ============================================================================
+run.sh
+
+
+# ============================================================================
+# Go Backend
+# ============================================================================
+server/tmp/
+server/build/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+__debug_bin*
+
+# ============================================================================
+# Node.js / Frontend
+# ============================================================================
+node_modules/
 client/node_modules/
-client/dist/
-client/build/
-client/.npm/
-client/.cache/
-client/coverage/
-client/.next/
-
-# === Server (Go) ===
-server/bin/
-server/beat-scrobble
-beat-scrobble
-go.work
-go.work.sum
-
-# === Android Project ===
-# Gradle
-.gradle/
-**/build/
-
-# Local configuration file (sdk.dir, etc.)
-local.properties
-
-# Android Studio / IntelliJ
-*.iml
-*.ipr
-*.iws
-.idea/libraries/
-.idea/modules.xml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/assetWizardSettings.xml
-.idea/dictionaries
-.idea/vcs.xml
-
-# CMake / Native
-.cxx/
-.externalNativeBuild/
-
-# Signing / Keystores
-*.jks
-*.keystore
-*.p12
-
-# Mobile specific
-beatscrobble-android/.gradle/
-beatscrobble-android/app/build/
-beatscrobble-android/local.properties
-beatscrobble-android/captures/
-
-# === Docker / Deployment ===
-data/
-pgdata/
-config/import/
-config/logs/
-!config/.gitkeep
-
-# === Misc ===
-logo_original.jpg
-*.zip
-*.tar.gz
 client/.pnpm-store/
+client/build/
+client/dist/
+client/.react-router/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# ============================================================================
+# Android / Mobile
+# ============================================================================
+mobile/.gradle/
+mobile/build/
+mobile/app/build/
+mobile/local.properties
+mobile/*.apk
+mobile/*.aab
+mobile/.idea/
+android/
+android-native/
+
+# ============================================================================
+# Data & Volumes (Local Development)
+# ============================================================================
+data/
+music/
+config/
+*.sqlite
+*.sqlite3
+*.db
+*.tar
+*.tar.gz
+
+# ============================================================================
+# Logs & Debugging
+# ============================================================================
+*.log
+logs/
+*.log.*
+debug/
+
+# ============================================================================
+# Build Artifacts
+# ============================================================================
+dist/
+build/
+out/
+*.o
+*.a
+
+# ============================================================================
+# Testing
+# ============================================================================
+coverage/
+.nyc_output/
+*.test.js.map
+__snapshots__/
+
+# ============================================================================
+# Misc
+# ============================================================================
+*.bak
+*.tmp
+*.temp
+.cache/
+.parcel-cache/
+
+# ============================================================================
+# Binaries & Temporary Scripts
+# ============================================================================
+beat-scrobble
+beat_scrobble
+newrun.sh
+bin/
+*.test
+coverage.out
+run.sh
