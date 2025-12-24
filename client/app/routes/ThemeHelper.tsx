@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useAppContext } from "~/providers/AppProvider"
+import { useAppContext } from "~/providers/AppContext"
 import { AsyncButton } from "../components/AsyncButton"
 import AllTimeStats from "~/components/AllTimeStats"
 import ActivityGrid from "~/components/ActivityGrid"
@@ -85,47 +85,7 @@ export default function ThemeHelper() {
         }
     }
 
-    const applyAppleDark = () => {
-        const appleDark: Theme = {
-            bg: "#000000",
-            bgSecondary: "#1c1c1e",
-            bgTertiary: "#2c2c2e",
-            fg: "#ffffff",
-            fgSecondary: "#8e8e93",
-            fgTertiary: "#48484a",
-            primary: "#0a84ff",
-            primaryDim: "#007aff",
-            accent: "#5e5ce6",
-            accentDim: "#5e5ce6",
-            error: "#ff453a",
-            warning: "#ff9f0a",
-            success: "#32d74b",
-            info: "#64d2ff"
-        };
-        setCustomTheme(appleDark);
-        setCustom(JSON.stringify(appleDark, null, "  "));
-    }
 
-    const applyAppleLight = () => {
-        const appleLight: Theme = {
-            bg: "#f2f2f7",
-            bgSecondary: "#ffffff",
-            bgTertiary: "#e5e5ea",
-            fg: "#000000",
-            fgSecondary: "#8e8e93",
-            fgTertiary: "#c7c7cc",
-            primary: "#007aff",
-            primaryDim: "#007aff",
-            accent: "#5856d6",
-            accentDim: "#5856d6",
-            error: "#ff3b30",
-            warning: "#ff9500",
-            success: "#34c759",
-            info: "#5ac8fa"
-        };
-        setCustomTheme(appleLight);
-        setCustom(JSON.stringify(appleLight, null, "  "));
-    }
 
     return (
         <div className="w-full h-full flex flex-col gap-6">
@@ -174,20 +134,7 @@ export default function ThemeHelper() {
                             </div>
                         </div>
 
-                        {/* Apple Presets */}
-                        <div className="col-span-full">
-                            <h3 className="text-lg font-bold text-[var(--color-fg)] mb-4">Apple Style</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                <button onClick={applyAppleDark} className="group relative overflow-hidden rounded-2xl aspect-video border-2 border-transparent hover:border-[var(--color-primary)] transition-all shadow-lg">
-                                    <div className="absolute inset-0 bg-[#1c1c1e]"></div>
-                                    <div className="absolute inset-0 flex items-center justify-center"><span className="text-white font-bold text-lg">Apple Dark</span></div>
-                                </button>
-                                <button onClick={applyAppleLight} className="group relative overflow-hidden rounded-2xl aspect-video border-2 border-transparent hover:border-[var(--color-primary)] transition-all shadow-lg">
-                                    <div className="absolute inset-0 bg-[#f2f2f7]"></div>
-                                    <div className="absolute inset-0 flex items-center justify-center"><span className="text-black font-bold text-lg">Apple Light</span></div>
-                                </button>
-                            </div>
-                        </div>
+
 
                         {/* Classic Themes */}
                         <div className="col-span-full">

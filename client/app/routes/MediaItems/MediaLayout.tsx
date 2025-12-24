@@ -4,7 +4,7 @@ import { average } from "color.js";
 import { imageUrl, type SearchResponse } from "api/api";
 import ImageDropHandler from "~/components/ImageDropHandler";
 import { Edit, ImageIcon, Merge, Plus, Trash, RefreshCw } from "lucide-react";
-import { useAppContext } from "~/providers/AppProvider";
+import { useAppContext } from "~/providers/AppContext";
 import MergeModal from "~/components/modals/MergeModal";
 import ImageReplaceModal from "~/components/modals/ImageReplaceModal";
 import DeleteModal from "~/components/modals/DeleteModal";

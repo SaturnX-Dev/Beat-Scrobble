@@ -6,6 +6,7 @@ import PeriodSelector from "~/components/PeriodSelector";
 import MediaLayout from "./MediaLayout";
 import ActivityGrid from "~/components/ActivityGrid";
 import { timeListenedString } from "~/utils/utils";
+import { useDocumentTitle } from "~/hooks/useDocumentTitle";
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
   let res = await fetch(`/apis/web/v1/track?id=${params.id}`);
@@ -25,6 +26,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 
 export default function Track() {
   const { track, album } = useLoaderData();
+  useDocumentTitle(track.title);
   const [period, setPeriod] = useState("week");
   const [refreshing, setRefreshing] = useState(false);
 
@@ -69,65 +71,6 @@ export default function Track() {
             </p>
           }
 
-          {/* Spotify Audio Features */}
-          {(track.tempo > 0 || track.spotify_id) && (
-            <div className="w-full mt-4 p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
-              <h4 className="text-xs font-bold text-[var(--color-fg-secondary)] uppercase tracking-wider mb-3 flex items-center gap-2">
-                <span className="text-green-500">♫</span> Audio Features
-                {track.popularity !== undefined && track.popularity > 0 && (
-                  <span className="text-[var(--color-fg-tertiary)] font-normal ml-auto">{track.popularity}% popularity</span>
-                )}
-              </h4>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                  <div className="text-lg font-bold text-[var(--color-primary)]">{track.tempo ? Math.round(track.tempo) : "-"}</div>
-                  <div className="text-[10px] text-[var(--color-fg-secondary)]">BPM</div>
-                </div>
-                <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                  <div className="text-lg font-bold text-[var(--color-accent)]">
-                    {typeof track.key === 'number' ? (["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"][track.key] || "?") : "-"}
-                    {track.mode === 1 ? "" : track.mode === 0 ? "m" : ""}
-                  </div>
-                  <div className="text-[10px] text-[var(--color-fg-secondary)]">Key</div>
-                </div>
-                <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                  <div className="text-lg font-bold text-yellow-500">{track.energy ? Math.round(track.energy * 100) : "0"}%</div>
-                  <div className="text-[10px] text-[var(--color-fg-secondary)]">Energy</div>
-                </div>
-                <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                  <div className="text-lg font-bold text-pink-500">{track.danceability ? Math.round(track.danceability * 100) : "0"}%</div>
-                  <div className="text-[10px] text-[var(--color-fg-secondary)]">Dance</div>
-                </div>
-                <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                  <div className="text-lg font-bold text-blue-500">{track.valence ? Math.round(track.valence * 100) : "0"}%</div>
-                  <div className="text-[10px] text-[var(--color-fg-secondary)]">Mood</div>
-                </div>
-                <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                  <div className="text-lg font-bold text-orange-500">{track.acousticness ? Math.round(track.acousticness * 100) : "0"}%</div>
-                  <div className="text-[10px] text-[var(--color-fg-secondary)]">Acoustic</div>
-                </div>
-                {track.instrumentalness > 0.1 && (
-                  <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                    <div className="text-lg font-bold text-purple-500">{Math.round(track.instrumentalness * 100)}%</div>
-                    <div className="text-[10px] text-[var(--color-fg-secondary)]">Instrumental</div>
-                  </div>
-                )}
-                {track.speechiness > 0.1 && (
-                  <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                    <div className="text-lg font-bold text-teal-500">{Math.round(track.speechiness * 100)}%</div>
-                    <div className="text-[10px] text-[var(--color-fg-secondary)]">Speech</div>
-                  </div>
-                )}
-                {track.liveness > 0.3 && (
-                  <div className="text-center p-2 rounded-lg bg-[var(--color-bg)]/50">
-                    <div className="text-lg font-bold text-red-500">{Math.round(track.liveness * 100)}%</div>
-                    <div className="text-[10px] text-[var(--color-fg-secondary)]">Live</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
           <div className="flex gap-2 mt-2">
             {track.artists && track.artists.length > 0 && (
               <Link
@@ -156,7 +99,6 @@ export default function Track() {
           alert("Failed to refresh: " + (e instanceof Error ? e.message : String(e)));
         }
       }}
-
     >
       <div className="mt-10">
         <PeriodSelector setter={setPeriod} current={period} />
@@ -169,6 +111,6 @@ export default function Track() {
           <LastPlays limit={20} trackId={track.id} />
         </div>
       </div>
-    </MediaLayout>
+    </MediaLayout >
   );
 }

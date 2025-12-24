@@ -164,17 +164,10 @@ func GetAIProfileCritiqueHandler(store db.DB) http.HandlerFunc {
 					"track_name":   t.Title,
 					"artist":       t.Artists[0].Name,
 					"album":        "Unknown", // Track model might not always have album string populated depending on query
-					"bpm":          t.Tempo,
-					"energy":       t.Energy,
-					"valence":      t.Valence,
 					"duration_sec": t.Duration,
 				}
 				if t.Album != nil {
 					scrobble["album"] = *t.Album
-				}
-				// Add other potentially interesting features
-				if t.Danceability > 0 {
-					scrobble["danceability"] = t.Danceability
 				}
 
 				scrobbles = append(scrobbles, scrobble)

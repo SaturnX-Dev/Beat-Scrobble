@@ -11,7 +11,7 @@ import {
   type Track,
 } from "api/api";
 import { Link } from "react-router";
-import { useAppContext } from "~/providers/AppProvider";
+import { useAppContext } from "~/providers/AppContext";
 import TrackRow from "./TrackRow";
 import TrackRowSkeleton from "./skeletons/TrackRowSkeleton";
 import EmptyState from "./EmptyState";

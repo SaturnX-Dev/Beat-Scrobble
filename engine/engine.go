@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/SaturnX-Dev/Beat-Scrobble/engine/handlers"
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/middleware"
 	"github.com/SaturnX-Dev/Beat-Scrobble/engine/worker"
 	"github.com/SaturnX-Dev/Beat-Scrobble/internal/cfg"
@@ -209,6 +211,43 @@ func Run(
 	// go catalog.PruneOrphanedImages(logger.NewContext(l), store)
 
 	l.Info().Msg("Engine: Initialization finished")
+
+	// Start Metadata Fetch for all users (if configured)
+	go func() {
+		// Give server a moment to settle
+		time.Sleep(5 * time.Second)
+		l.Debug().Msg("Engine: Checking for automatic metadata updates...")
+
+		startupCtx := context.Background()
+		users, err := store.GetAllUsers(startupCtx)
+		if err != nil {
+			l.Error().Err(err).Msg("Engine: Failed to get users for metadata auto-fetch")
+			return
+		}
+
+		for _, user := range users {
+			// Check if user has Spotify configured
+			prefsJSON, err := store.GetUserPreferences(startupCtx, user.ID)
+			if err != nil {
+				continue
+			}
+
+			var prefs map[string]interface{}
+			if json.Unmarshal(prefsJSON, &prefs) != nil {
+				continue
+			}
+
+			clientID, _ := prefs["spotify_client_id"].(string)
+			clientSecret, _ := prefs["spotify_client_secret"].(string)
+
+			if clientID != "" && clientSecret != "" {
+				l.Info().Msgf("Engine: Triggering auto-fetch for user %s", user.Username)
+				// Run independent of loop
+				go handlers.StartFullLibraryFetch(startupCtx, store, user)
+			}
+		}
+	}()
+
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-quit

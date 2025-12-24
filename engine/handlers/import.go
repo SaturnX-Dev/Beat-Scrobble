@@ -39,8 +39,8 @@ func ImportHandler(store db.DB, wWorker *worker.Worker) http.HandlerFunc {
 			return
 		}
 
-		// Limit file size to 100MB for large listen histories
-		r.Body = http.MaxBytesReader(w, r.Body, 100<<20)
+		// Limit file size to 500MB for large listen histories
+		r.Body = http.MaxBytesReader(w, r.Body, 500<<20)
 
 		body, err := io.ReadAll(r.Body)
 		if err != nil {

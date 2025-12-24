@@ -57,7 +57,7 @@ Get witty, personalized AI reviews of your tracks and listening habits. Beat Scr
 - **Track Critiques**: AI commentary on individual songs derived from metadata and audio features.
 - **Profile Critique**: Deep analysis of your listening personality based on your history.
 - **Deep Context Awareness (New!)**:
-  - **Technical Metadata**: The AI knows the BPM, Key, Mode, Energy, Valence, and Danceability.
+
   - **User Obsessions**: It knows how many times you've played a track (Total vs This Week).
   - **Temporal Context**: It knows the Time of Day and Day of Week (e.g., critiquing you for listening to Sadcore at 8 AM).
 - **Privacy Fences (🛡️ New!)**:
@@ -322,7 +322,7 @@ Enrich your library with comprehensive Spotify metadata.
 | :--- | :--- |
 | **🎤 Artist Metadata** | Genres, popularity scores, follower counts, and bio |
 | **💿 Album Metadata** | Genres, popularity, release details, and record labels |
-| **🎼 Track Metadata** | BPM, Key, Energy, Danceability, Mood, Acousticness, etc. |
+| **🎼 Track Metadata** | Duration, Popularity, Release Date, Label. |
 | **🎚️ Audio Grid** | Visual breakdown of track features on every track page |
 | **📡 Fetch Terminal** | Real-time SSE-powered bulk metadata fetching terminal |
 | **💾 Import** | Independent backup/restore for your Spotify metadata mapping |
@@ -330,7 +330,7 @@ Enrich your library with comprehensive Spotify metadata.
 **Data Display:**
 - **Artist Page**: Genres badges, popularity %, followers count, bio
 - **Album Page**: Genres badges, popularity %, release date, label
-- **Track Page**: Audio features grid showing BPM, Key, Energy, Danceability, Mood, Acoustic, Instrumental, Speech, Live
+- **Track Page**: Detailed listening history and context for each song.
 
 **Bulk Fetch Optimization (Hybrid Architecture):**
 - **Foreground (Fast):** Immediately fetches Top 100 Artists, Albums, and Tracks for instant dashboard population.

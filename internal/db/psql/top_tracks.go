@@ -60,6 +60,7 @@ func (d *Psql) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts) 
 				Image:       row.Image,
 				AlbumID:     row.ReleaseID,
 				Artists:     artists,
+				SpotifyID:   row.SpotifyID.String,
 			}
 			tracks[i] = t
 		}
@@ -102,6 +103,7 @@ func (d *Psql) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts) 
 				ListenCount: row.ListenCount,
 				AlbumID:     row.ReleaseID,
 				Artists:     artists,
+				SpotifyID:   row.SpotifyID.String,
 			}
 			tracks[i] = t
 		}
@@ -143,6 +145,7 @@ func (d *Psql) GetTopTracksPaginated(ctx context.Context, opts db.GetItemsOpts) 
 				ListenCount: row.ListenCount,
 				AlbumID:     row.ReleaseID,
 				Artists:     artists,
+				SpotifyID:   row.SpotifyID.String,
 			}
 			tracks[i] = t
 		}

@@ -6,7 +6,7 @@ import OptimizedImage from "./OptimizedImage";
 import SwipeableListItem from "./SwipeableListItem";
 import { useState } from "react";
 import { Layers, List, Filter } from "lucide-react";
-import { useAppContext } from "~/providers/AppProvider";
+import { useAppContext } from "~/providers/AppContext";
 
 interface TimelineViewProps {
     listens: Listen[];

@@ -252,6 +252,16 @@ func LbzSubmitListenHandler(store db.DB, mbzc mbz.MusicBrainzCaller) func(w http
 			}(u.ID, sourceName, token)
 		}
 
+		// [NEW] Attempt Auto-Fetch for new listens if configured
+		// We use the first payload item for data
+		if len(req.Payload) > 0 {
+			meta := req.Payload[0].TrackMeta
+			go SpotifyFetchMetadataHandler(store) // Wait, this is the HTTP handler logic? No.
+			// We need to call the helper we just created in handlers/spotify.go
+			// Since we are in the same package 'handlers', we can call it directly.
+			go AttemptAutoFetchForListen(context.Background(), store, u, meta.TrackName, meta.ArtistName, meta.ReleaseName)
+		}
+
 		if relayEnabled {
 			go doLbzRelay(requestBytes, l, relayUrl, relayToken)
 		}

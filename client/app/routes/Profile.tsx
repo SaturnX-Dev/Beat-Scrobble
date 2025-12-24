@@ -9,8 +9,9 @@ import ActivityGrid from "~/components/ActivityGrid";
 import TimelineView from "~/components/TimelineView";
 import YearlyRecapModal from "~/components/modals/YearlyRecapModal";
 import { usePreferences } from "~/hooks/usePreferences";
-import { useAppContext } from "~/providers/AppProvider";
+import { useAppContext } from "~/providers/AppContext";
 import { TopListChart, ListeningTrends, ArtistBubbles, ScatterPlot, WordCloud, StreamGraph, MusicRatio, ListeningFingerprint, MusicDecades } from "~/components/charts";
+import { useDocumentTitle } from "~/hooks/useDocumentTitle";
 
 interface Artist {
     id: number;
@@ -47,6 +48,7 @@ export default function Profile() {
     const { user } = useAppContext();
     const backgroundImage = getPreference('background_image', null);
     const profileImage = getPreference('profile_image', null);
+    useDocumentTitle(user?.username || 'Profile');
 
     // Check if recap should be visible (entire December)
     const isRecapPeriod = () => {

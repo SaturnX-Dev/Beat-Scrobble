@@ -128,6 +128,17 @@ func (d *Psql) GetAlbum(ctx context.Context, opts db.GetAlbumOpts) (*models.Albu
 	ret.TimeListened = seconds
 	ret.FirstListen = firstListen.ListenedAt.Unix()
 
+	// Fallback: if album has no genres, try to inherit from primary artist
+	// This is needed because Spotify's album.genres field is deprecated and always returns []
+	if len(ret.Genres) == 0 && len(ret.Artists) > 0 {
+		// Get the primary artist's genres
+		primaryArtistID := ret.Artists[0].ID
+		artist, err := d.q.GetArtist(ctx, primaryArtistID)
+		if err == nil && len(artist.Genres) > 0 {
+			ret.Genres = artist.Genres
+		}
+	}
+
 	return ret, nil
 }
 

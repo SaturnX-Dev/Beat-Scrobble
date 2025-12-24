@@ -3,6 +3,7 @@ import { deleteListen, getLastListens, type Listen, type PaginatedResponse } fro
 import { useState } from "react";
 import { Layers, List, Filter, ChevronDown } from "lucide-react";
 import TimelineView from "~/components/TimelineView";
+import { useDocumentTitle } from "~/hooks/useDocumentTitle";
 
 export async function clientLoader({ request }: LoaderFunctionArgs) {
     const url = new URL(request.url);
@@ -37,6 +38,7 @@ export default function Timeline() {
     const [items, setItems] = useState<Listen[] | null>(null);
     const [viewMode, setViewMode] = useState<'list' | 'session'>('list');
     const [showFilters, setShowFilters] = useState(false);
+    useDocumentTitle('Timeline');
 
     const periodLabels: Record<string, string> = {
         'all_time': 'All Time',

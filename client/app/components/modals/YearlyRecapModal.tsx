@@ -3,7 +3,7 @@ import { Modal } from "./Modal";
 import { useQuery } from "@tanstack/react-query";
 import { Sparkles, Music, User, Disc, Clock, X, Share2, Download, TrendingUp, Calendar, Headphones, Check, Loader2 } from "lucide-react";
 import { usePreferences } from "~/hooks/usePreferences";
-import { useAppContext } from "~/providers/AppProvider";
+import { useAppContext } from "~/providers/AppContext";
 import { imageUrl } from "api/api";
 
 interface YearlyRecapData {

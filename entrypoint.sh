@@ -24,5 +24,14 @@ chown -R beatscrobble:beatscrobble /app
 # Verify permissions (debug)
 ls -ld /etc/beat_scrobble
 
+echo "Running database migrations..."
+if [ -z "$BEAT_SCROBBLE_DATABASE_URL" ]; then
+    echo "Error: BEAT_SCROBBLE_DATABASE_URL is not set"
+    exit 1
+fi
+
+# Run goose migrations
+/app/goose -dir /app/db/migrations postgres "$BEAT_SCROBBLE_DATABASE_URL" up
+
 echo "Starting Beat Scrobble as user beatscrobble..."
 exec su-exec beatscrobble /app/app

@@ -50,6 +50,9 @@ RUN go build \
 	-o app \
 	./cmd/api
 
+# Install goose
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
 # ============================================
 # Stage 3: Final Production Image
 # ============================================
@@ -75,6 +78,9 @@ COPY --from=frontend /client/build ./client/build
 COPY ./client/public ./client/public
 COPY ./assets ./assets
 COPY ./db ./db
+
+# Install goose for migrations
+COPY --from=backend /go/bin/goose /app/goose
 
 # Create config directory
 RUN mkdir -p /etc/beat_scrobble && chown beatscrobble:beatscrobble /etc/beat_scrobble

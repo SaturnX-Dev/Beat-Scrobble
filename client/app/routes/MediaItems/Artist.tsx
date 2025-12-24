@@ -10,12 +10,13 @@ import { timeListenedString } from "~/utils/utils";
 import ListeningSessions from "~/components/ListeningSessions";
 import MiniDiscography from "~/components/MiniDiscography";
 import { Edit, ImageIcon, Merge, Trash, ArrowLeft, RefreshCw, Music } from "lucide-react";
-import { useAppContext } from "~/providers/AppProvider";
+import { useAppContext } from "~/providers/AppContext";
 import MergeModal from "~/components/modals/MergeModal";
 import ImageReplaceModal from "~/components/modals/ImageReplaceModal";
 import DeleteModal from "~/components/modals/DeleteModal";
 import EditModal from "~/components/modals/EditModal/EditModal";
 import { usePreferences } from "~/hooks/usePreferences";
+import { useDocumentTitle } from "~/hooks/useDocumentTitle";
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
   const res = await fetch(`/apis/web/v1/artist?id=${params.id}`);
@@ -28,6 +29,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 
 export default function Artist() {
   const artist = useLoaderData() as Artist;
+  useDocumentTitle(artist.name);
   const [period, setPeriod] = useState("week");
   const [mergeModalOpen, setMergeModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);

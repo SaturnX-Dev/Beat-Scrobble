@@ -3,6 +3,7 @@ package cfg
 import (
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -188,7 +189,12 @@ func loadConfig(getenv func(string) string, version string) (*config, error) {
 
 	cfg.configDir = getenv(CONFIG_DIR_ENV)
 	if cfg.configDir == "" {
-		cfg.configDir = "/etc/beat_scrobble"
+		// Smart default: prefer /etc/beat_scrobble if it exists (container/prod), otherwise ./config (local)
+		if _, err := os.Stat("/etc/beat_scrobble"); err == nil {
+			cfg.configDir = "/etc/beat_scrobble"
+		} else {
+			cfg.configDir = "./config"
+		}
 	}
 
 	rawHosts := getenv(ALLOWED_HOSTS_ENV)

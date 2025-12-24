@@ -156,13 +156,6 @@ func GetAICritiqueHandler(store db.DB) http.HandlerFunc {
 				}
 
 				if shareMeta {
-					trackDetails["bpm"] = track.Tempo
-					trackDetails["key"] = track.Key
-					trackDetails["mode"] = track.Mode
-					trackDetails["energy"] = track.Energy
-					trackDetails["valence"] = track.Valence
-					trackDetails["danceability"] = track.Danceability
-					trackDetails["loudness"] = track.Loudness
 					trackDetails["duration"] = track.Duration
 					trackDetails["popularity"] = track.Popularity
 				}

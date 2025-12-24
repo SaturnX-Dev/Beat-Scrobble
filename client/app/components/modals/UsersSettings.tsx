@@ -3,7 +3,7 @@ import { getAllUsers, createUser, adminUpdateUser, adminDeleteUser, type User } 
 import { useState } from "react";
 import { AsyncButton } from "../AsyncButton";
 import { Trash, Edit, Check, X, Shield, Plus, Key } from "lucide-react";
-import { useAppContext } from "~/providers/AppProvider";
+import { useAppContext } from "~/providers/AppContext";
 
 export default function UsersSettings() {
     const { user: currentUser } = useAppContext();

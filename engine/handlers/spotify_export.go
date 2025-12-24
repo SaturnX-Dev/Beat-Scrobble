@@ -42,21 +42,10 @@ type SpotifyAlbumExport struct {
 }
 
 type SpotifyTrackExport struct {
-	Title            string  `json:"title"`
-	Artist           string  `json:"artist,omitempty"`
-	SpotifyID        string  `json:"spotify_id,omitempty"`
-	Popularity       int     `json:"popularity,omitempty"`
-	Danceability     float64 `json:"danceability,omitempty"`
-	Energy           float64 `json:"energy,omitempty"`
-	Key              int     `json:"key,omitempty"`
-	Loudness         float64 `json:"loudness,omitempty"`
-	Mode             int     `json:"mode,omitempty"`
-	Speechiness      float64 `json:"speechiness,omitempty"`
-	Acousticness     float64 `json:"acousticness,omitempty"`
-	Instrumentalness float64 `json:"instrumentalness,omitempty"`
-	Liveness         float64 `json:"liveness,omitempty"`
-	Valence          float64 `json:"valence,omitempty"`
-	Tempo            float64 `json:"tempo,omitempty"`
+	Title      string `json:"title"`
+	Artist     string `json:"artist,omitempty"`
+	SpotifyID  string `json:"spotify_id,omitempty"`
+	Popularity int    `json:"popularity,omitempty"`
 }
 
 // ExportSpotifyMetadataHandler exports all Spotify metadata to JSON
@@ -147,27 +136,16 @@ func ExportSpotifyMetadataHandler(store db.DB) http.HandlerFunc {
 
 		var exportTracks []SpotifyTrackExport
 		for _, t := range tracksResp.Items {
-			if t.SpotifyID != "" || t.Popularity > 0 || t.Tempo > 0 {
+			if t.SpotifyID != "" || t.Popularity > 0 {
 				artistName := ""
 				if len(t.Artists) > 0 {
 					artistName = t.Artists[0].Name
 				}
 				et := SpotifyTrackExport{
-					Title:            t.Title,
-					Artist:           artistName,
-					SpotifyID:        t.SpotifyID,
-					Popularity:       int(t.Popularity),
-					Danceability:     t.Danceability,
-					Energy:           t.Energy,
-					Key:              int(t.Key),
-					Loudness:         t.Loudness,
-					Mode:             int(t.Mode),
-					Speechiness:      t.Speechiness,
-					Acousticness:     t.Acousticness,
-					Instrumentalness: t.Instrumentalness,
-					Liveness:         t.Liveness,
-					Valence:          t.Valence,
-					Tempo:            t.Tempo,
+					Title:      t.Title,
+					Artist:     artistName,
+					SpotifyID:  t.SpotifyID,
+					Popularity: int(t.Popularity),
 				}
 				exportTracks = append(exportTracks, et)
 			}
@@ -282,17 +260,17 @@ func ImportSpotifyMetadataHandler(store db.DB) http.HandlerFunc {
 				ID:               track.ID,
 				SpotifyID:        pgtype.Text{String: t.SpotifyID, Valid: t.SpotifyID != ""},
 				Popularity:       pgtype.Int4{Int32: int32(t.Popularity), Valid: t.Popularity > 0},
-				Danceability:     pgtype.Float8{Float64: t.Danceability, Valid: t.Danceability > 0},
-				Energy:           pgtype.Float8{Float64: t.Energy, Valid: t.Energy > 0},
-				Key:              pgtype.Int4{Int32: int32(t.Key), Valid: true},
-				Loudness:         pgtype.Float8{Float64: t.Loudness, Valid: true},
-				Mode:             pgtype.Int4{Int32: int32(t.Mode), Valid: true},
-				Speechiness:      pgtype.Float8{Float64: t.Speechiness, Valid: t.Speechiness > 0},
-				Acousticness:     pgtype.Float8{Float64: t.Acousticness, Valid: t.Acousticness > 0},
-				Instrumentalness: pgtype.Float8{Float64: t.Instrumentalness, Valid: t.Instrumentalness > 0},
-				Liveness:         pgtype.Float8{Float64: t.Liveness, Valid: t.Liveness > 0},
-				Valence:          pgtype.Float8{Float64: t.Valence, Valid: t.Valence > 0},
-				Tempo:            pgtype.Float8{Float64: t.Tempo, Valid: t.Tempo > 0},
+				Danceability:     pgtype.Float8{Valid: false},
+				Energy:           pgtype.Float8{Valid: false},
+				Key:              pgtype.Int4{Valid: false},
+				Loudness:         pgtype.Float8{Valid: false},
+				Mode:             pgtype.Int4{Valid: false},
+				Speechiness:      pgtype.Float8{Valid: false},
+				Acousticness:     pgtype.Float8{Valid: false},
+				Instrumentalness: pgtype.Float8{Valid: false},
+				Liveness:         pgtype.Float8{Valid: false},
+				Valence:          pgtype.Float8{Valid: false},
+				Tempo:            pgtype.Float8{Valid: false},
 			})
 			if err == nil {
 				tracksUpdated++

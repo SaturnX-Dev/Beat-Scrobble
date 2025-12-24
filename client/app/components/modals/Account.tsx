@@ -1,7 +1,7 @@
 import { logout, updateUser } from "api/api"
 import { useState, useEffect, useRef } from "react"
 import { AsyncButton } from "../AsyncButton"
-import { useAppContext } from "~/providers/AppProvider"
+import { useAppContext } from "~/providers/AppContext"
 import { usePreferences } from "~/hooks/usePreferences"
 import { User, Lock, Globe, Share2, Palette, Sparkles, ChevronDown, Upload, Image, X } from "lucide-react"
 

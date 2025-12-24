@@ -7,7 +7,7 @@ import {
 } from "react";
 import { type Theme, themes } from "~/styles/themes.css";
 import { themeVars } from "~/styles/vars.css";
-import { useAppContext } from "./AppProvider";
+import { useAppContext } from "./AppContext";
 
 interface ThemeContextValue {
   themeName: string;
@@ -20,15 +20,18 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
-function toKebabCase(str: string) {
-  return str.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
-}
+
 
 function applyCustomThemeVars(theme: Theme) {
   const root = document.documentElement;
   for (const [key, value] of Object.entries(theme)) {
     if (key === "name") continue;
-    root.style.setProperty(`--color-${toKebabCase(key)}`, value);
+    // Use the mapping from vars.css.ts to ensure correct variable names
+    // (e.g., --radius-md instead of --color-radius-md)
+    const cssVar = themeVars[key as keyof typeof themeVars];
+    if (cssVar) {
+      root.style.setProperty(cssVar, value);
+    }
   }
 }
 

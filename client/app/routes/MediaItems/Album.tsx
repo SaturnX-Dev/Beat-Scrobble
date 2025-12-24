@@ -8,6 +8,7 @@ import MediaLayout from "./MediaLayout";
 import ActivityGrid from "~/components/ActivityGrid";
 import { timeListenedString } from "~/utils/utils";
 import { usePreferences } from "~/hooks/usePreferences";
+import { useDocumentTitle } from "~/hooks/useDocumentTitle";
 
 export async function clientLoader({ params }: LoaderFunctionArgs) {
   const res = await fetch(`/apis/web/v1/album?id=${params.id}`);
@@ -20,6 +21,7 @@ export async function clientLoader({ params }: LoaderFunctionArgs) {
 
 export default function Album() {
   const album = useLoaderData() as Album;
+  useDocumentTitle(album.title);
   const [period, setPeriod] = useState("week");
   const [refreshing, setRefreshing] = useState(false);
   const { preferences } = usePreferences();

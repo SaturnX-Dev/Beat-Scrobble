@@ -28,25 +28,14 @@ func (d *Psql) GetTrack(ctx context.Context, opts db.GetTrackOpts) (*models.Trac
 			return nil, fmt.Errorf("GetTrack: GetTrack By ID: %w", err)
 		}
 		track = models.Track{
-			ID:               t.ID,
-			MbzID:            t.MusicBrainzID,
-			Title:            t.Title,
-			AlbumID:          t.ReleaseID,
-			Image:            t.Image,
-			Duration:         t.Duration,
-			SpotifyID:        t.SpotifyID.String,
-			Popularity:       int(t.Popularity.Int32),
-			Tempo:            t.Tempo.Float64,
-			Key:              int(t.Key.Int32),
-			Mode:             int(t.Mode.Int32),
-			Danceability:     t.Danceability.Float64,
-			Energy:           t.Energy.Float64,
-			Loudness:         t.Loudness.Float64,
-			Speechiness:      t.Speechiness.Float64,
-			Acousticness:     t.Acousticness.Float64,
-			Instrumentalness: t.Instrumentalness.Float64,
-			Liveness:         t.Liveness.Float64,
-			Valence:          t.Valence.Float64,
+			ID:         t.ID,
+			MbzID:      t.MusicBrainzID,
+			Title:      t.Title,
+			AlbumID:    t.ReleaseID,
+			Image:      t.Image,
+			Duration:   t.Duration,
+			SpotifyID:  t.SpotifyID.String,
+			Popularity: int(t.Popularity.Int32),
 		}
 		err = json.Unmarshal(t.Artists, &track.Artists)
 		if err != nil {

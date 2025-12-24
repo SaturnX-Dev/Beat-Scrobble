@@ -222,7 +222,7 @@ export default function SpotifySettings() {
             <div className="p-4 rounded-xl bg-[var(--color-bg-secondary)] border border-[var(--color-bg-tertiary)]">
                 <h3 className="font-semibold text-[var(--color-fg)] mb-2">Auto-Fetch All Metadata</h3>
                 <p className="text-xs text-[var(--color-fg-tertiary)] mb-4">
-                    Automatically fetch metadata from Spotify for your top 100 artists, albums, and tracks. This process runs in blocks to respect rate limits.
+                    Automatically scans your library for your <strong>Top 100</strong> Artists, Albums, and Tracks. It updates them in batches to respect API limits. Perfect for enriching your most-played content properly.
                 </p>
 
                 <button
@@ -317,9 +317,9 @@ export default function SpotifySettings() {
                 <ul className="text-sm text-[var(--color-fg-secondary)] list-disc list-inside space-y-1">
                     <li>Fetch artist genres and popularity</li>
                     <li>Fetch album release dates and genres</li>
-                    <li>Fetch track audio features (BPM, Key, etc.)</li>
+                    <li>Fetch track popularity and Spotify IDs</li>
                     <li>Search for Spotify images for covers</li>
-                    <li>Enrich your library with Spotify metadata</li>
+                    <li>Enrich your library with verified metadata</li>
                 </ul>
             </div>
         </div>

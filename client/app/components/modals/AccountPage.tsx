@@ -1,4 +1,4 @@
-import { useAppContext } from "~/providers/AppProvider"
+import { useAppContext } from "~/providers/AppContext"
 import LoginForm from "./LoginForm"
 import Account from "./Account"
 
@@ -7,10 +7,10 @@ export default function AuthForm() {
 
     return (
         <>
-            { user ? 
-            <Account />
-            :
-            <LoginForm />
+            {user ?
+                <Account />
+                :
+                <LoginForm />
             }
         </>
     )

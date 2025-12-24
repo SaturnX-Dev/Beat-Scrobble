@@ -2,7 +2,7 @@ import { Modal } from "./Modal"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import AccountPage from "./AccountPage";
 import { ThemeSwitcher } from "../themeSwitcher/ThemeSwitcher";
-import { useAppContext } from "~/providers/AppProvider";
+import { useAppContext } from "~/providers/AppContext";
 import ApiKeysModal from "./ApiKeysModal";
 import BackupModal from "./BackupModal";
 import RelaySettings from "./RelaySettings";
@@ -80,7 +80,23 @@ export default function SettingsModal({ open, setOpen }: Props) {
                             <h3 className="font-semibold text-[var(--color-fg)] mb-2">Version Info</h3>
                             <div className="grid grid-cols-2 gap-2 text-sm">
                                 <span className="text-[var(--color-fg-secondary)]">Client:</span>
-                                <span className="text-[var(--color-fg)] font-mono">{import.meta.env.VITE_BEAT_SCROBBLE_VERSION || "Dev"}</span>
+                                <span className="text-[var(--color-fg)] font-mono">
+                                    {(() => {
+                                        // 1. Dev Check
+                                        if (import.meta.env.DEV) return "Dev Environment";
+
+                                        // 2. Android Check (User Agent or Injected Object)
+                                        // We cast window to any to avoid TS errors with custom Android object
+                                        const isAndroid = (window as any).Android || navigator.userAgent.includes("BeatScrobble");
+                                        if (isAndroid) {
+                                            const v = (window as any).Android?.getVersion ? (window as any).Android.getVersion() : (import.meta.env.VITE_BEAT_SCROBBLE_VERSION || "Native");
+                                            return `Android Native (v${v})`;
+                                        }
+
+                                        // 3. Web Production
+                                        return `Web Production (v${import.meta.env.VITE_BEAT_SCROBBLE_VERSION || "0.0.0"})`;
+                                    })()}
+                                </span>
                                 <span className="text-[var(--color-fg-secondary)]">Server:</span>
                                 <span className="text-[var(--color-fg)] font-mono">{useAppContext().serverVersion}</span>
                             </div>

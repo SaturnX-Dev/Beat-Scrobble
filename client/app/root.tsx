@@ -1,22 +1,24 @@
 import {
   isRouteErrorResponse,
-  Links,
-  Meta,
   Outlet,
-  Scripts,
-  ScrollRestoration,
   useRouteError,
   useLocation,
+  Scripts,
+  Links,
+  Meta,
+  ScrollRestoration,
 } from "react-router";
-import { type ReactNode } from "react";
+import { type ReactNode, useMemo, useState, useEffect } from "react";
+
 
 import type { Route } from "./+types/root";
 import './themes.css'
 import "~/styles/themes.css.ts";
 import "./app.css";
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { get, set, del } from "idb-keyval";
 import { ThemeProvider } from './providers/ThemeProvider';
 import Sidebar from "./components/sidebar/Sidebar";
 import MobileNavBar from "./components/MobileNavBar";
@@ -24,8 +26,9 @@ import { AppProvider } from "./providers/AppProvider";
 import GlobalBackground from "./components/GlobalBackground";
 import { SpotifyProvider } from "./providers/SpotifyProvider";
 import { usePresenceHeartbeat } from "./hooks/usePresenceHeartbeat";
+import { useScrollRestoration } from "./hooks/useScrollRestoration";
 
-// Create a client with GC time
+// Create stable QueryClient instance outside component
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -33,11 +36,6 @@ const queryClient = new QueryClient({
       staleTime: 1000 * 60 * 5, // 5 minutes (data remains fresh)
     },
   },
-});
-
-// Create localStorage persister
-const persister = createSyncStoragePersister({
-  storage: typeof window !== 'undefined' ? window.localStorage : undefined,
 });
 
 export const links: Route.LinksFunction = () => [
@@ -53,12 +51,16 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+// Layout sin componentes de React Router que requieren contexto
+// (Links, Scripts, ScrollRestoration, Meta no funcionan con ssr: false)
 export function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning={true}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
 
         {/* PWA Meta Tags */}
         <meta name="theme-color" content="#1e1816" />
@@ -73,8 +75,15 @@ export function Layout({ children }: { children: ReactNode }) {
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-title" content="Beat Scrobble" />
         <link rel="manifest" href="/site.webmanifest" />
-        <Meta />
-        <Links />
+
+        {/* SEO */}
+        <title>Beat Scrobble</title>
+        <meta name="description" content="Self-Hosted Music Scrobbling" />
+
+        {/* Google Fonts - Inline since Links component doesn't work with ssr:false */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" />
       </head>
       <body className="min-h-screen">
         {children}
@@ -85,17 +94,43 @@ export function Layout({ children }: { children: ReactNode }) {
   );
 }
 
+
+
 export default function App() {
   // Presence heartbeat for AI Now Playing optimization
   usePresenceHeartbeat();
+  // Scroll restoration (reemplazo de ScrollRestoration de react-router)
+  useScrollRestoration();
   const location = useLocation();
 
   // Hide sidebar on auth pages and public profiles
   const isAuthPage = location.pathname === '/login' || location.pathname === '/onboarding' || location.pathname.startsWith('/u/');
 
+  // Persister using IndexedDB (async)
+  const [persister, setPersister] = useState<any>(undefined);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setPersister(
+        createAsyncStoragePersister({
+          storage: {
+            getItem: get,
+            setItem: set,
+            removeItem: del,
+          },
+        })
+      );
+    }
+  }, []);
+
+  // Track if persister is ready (avoid hydration mismatch)
+  // With async persister, we don't strictly need to wait for IS_READY in the same way,
+  // but it's good practice to render PersistQueryClientProvider only when persister is available.
+  const isReady = !!persister;
+
   // Register service worker for PWA
-  if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/service-worker.js')
         .then((registration) => {
@@ -104,28 +139,40 @@ export default function App() {
         .catch((error) => {
           console.log('Service Worker registration failed:', error);
         });
-    });
-  }
+    }
+  }, []);
+
+  // Content to render inside providers
+  const content = (
+    <SpotifyProvider>
+      <GlobalBackground />
+      {!isAuthPage && <MobileNavBar />}
+      <div className="flex-col flex sm:flex-row min-h-screen relative z-10">
+        {!isAuthPage && <Sidebar />}
+        <div className={`flex flex-col items-center mx-auto w-full transition-all duration-300 ${isAuthPage ? 'ml-0 pb-0' : 'ml-0 pb-20 sm:pb-0 sm:ml-20'}`}>
+          <Outlet />
+        </div>
+      </div>
+    </SpotifyProvider>
+  );
 
   return (
     <>
       <AppProvider>
         <ThemeProvider>
-          <PersistQueryClientProvider
-            client={queryClient}
-            persistOptions={{ persister }}
-          >
-            <SpotifyProvider>
-              <GlobalBackground />
-              {!isAuthPage && <MobileNavBar />}
-              <div className="flex-col flex sm:flex-row min-h-screen relative z-10">
-                {!isAuthPage && <Sidebar />}
-                <div className={`flex flex-col items-center mx-auto w-full transition-all duration-300 ${isAuthPage ? 'ml-0 pb-0' : 'ml-0 pb-20 sm:pb-0 sm:ml-20'}`}>
-                  <Outlet />
-                </div>
-              </div>
-            </SpotifyProvider>
-          </PersistQueryClientProvider>
+          {isReady && persister ? (
+            <PersistQueryClientProvider
+              client={queryClient}
+              persistOptions={{ persister }}
+            >
+              {content}
+            </PersistQueryClientProvider>
+          ) : (
+            /* Use regular QueryClientProvider during initial hydration to avoid #310 error */
+            <QueryClientProvider client={queryClient}>
+              {content}
+            </QueryClientProvider>
+          )}
         </ThemeProvider>
       </AppProvider>
     </>

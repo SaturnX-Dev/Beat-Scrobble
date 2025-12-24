@@ -9,18 +9,14 @@ import DashboardMetrics from "~/components/DashboardMetrics";
 import RecentActivity from "~/components/RecentActivity";
 import { useState } from "react";
 import PeriodSelector from "~/components/PeriodSelector";
-import { useAppContext } from "~/providers/AppProvider";
+import { useAppContext } from "~/providers/AppContext";
 import { Link } from "react-router";
-
-export function meta({ }: Route.MetaArgs) {
-  return [
-    { title: "Beat Scrobble" },
-    { name: "description", content: "Beat Scrobble" },
-  ];
-}
+import { useDocumentTitle } from "~/hooks/useDocumentTitle";
 
 export default function Home() {
+  useDocumentTitle(); // Sin título = solo "Beat Scrobble"
   const [period, setPeriod] = useState('week')
+
 
   const { homeItems } = useAppContext();
 

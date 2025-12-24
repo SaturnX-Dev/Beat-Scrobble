@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -116,6 +117,9 @@ func SaveUserPreferencesHandler(store db.DB) http.HandlerFunc {
 			}
 		}
 
+		oldID, _ := finalPrefs["spotify_client_id"].(string)
+		oldSecret, _ := finalPrefs["spotify_client_secret"].(string)
+
 		// Helper to check if a key is a protected cache key
 		isCacheKey := func(k string) bool {
 			if k == "profile_critiques" || k == "ai_playlists_cache" {
@@ -161,6 +165,27 @@ func SaveUserPreferencesHandler(store db.DB) http.HandlerFunc {
 			}
 
 			finalPrefs[k] = v
+		}
+
+		// Check if Spotify credentials were updated
+		spotifyID, _ := finalPrefs["spotify_client_id"].(string)
+		spotifySecret, _ := finalPrefs["spotify_client_secret"].(string)
+		spotifyChanged := false
+
+		// Simple check: if valid credentials exist and they are new or changed
+		if spotifyID != "" && spotifySecret != "" {
+			if spotifyID != oldID || spotifySecret != oldSecret {
+				spotifyChanged = true
+			}
+		}
+
+		if spotifyChanged {
+			l.Info().Msg("Spotify credentials updated, triggering full library metadata fetch")
+			// Run in background
+			go func() {
+				bgCtx := context.Background()
+				StartFullLibraryFetch(bgCtx, store, user)
+			}()
 		}
 
 		// 2. Invalidate cache if prompts changed

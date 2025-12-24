@@ -131,6 +131,11 @@ export default function ApiKeysModal() {
         },
     });
 
+    const { data: clientSources } = useQuery({
+        queryKey: ['client-sources'],
+        queryFn: getClientSources,
+    });
+
     useEffect(() => {
         if (data) {
             setDisplayData(data)
@@ -212,10 +217,7 @@ export default function ApiKeysModal() {
 
     }
 
-    const { data: clientSources } = useQuery({
-        queryKey: ['client-sources'],
-        queryFn: getClientSources,
-    });
+
 
     return (
         <div className="flex flex-col gap-8 pb-8">
