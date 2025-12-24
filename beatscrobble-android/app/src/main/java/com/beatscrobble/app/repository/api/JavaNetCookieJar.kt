@@ -18,7 +18,7 @@ class JavaNetCookieJar(private val cookieHandler: CookieHandler) : CookieJar {
         }
         val multimap = mapOf("Set-Cookie" to cookieStrings)
         try {
-            cookieHandler.put(url.uri(), multimap)
+            cookieHandler.put(url.toUri(), multimap)
         } catch (e: Exception) {
             // Ignore format errors
         }
@@ -26,7 +26,7 @@ class JavaNetCookieJar(private val cookieHandler: CookieHandler) : CookieJar {
 
     override fun loadForRequest(url: HttpUrl): List<Cookie> {
         val headers = try {
-            cookieHandler.get(url.uri(), emptyMap<String, List<String>>())
+            cookieHandler.get(url.toUri(), emptyMap<String, List<String>>())
         } catch (e: Exception) {
             return emptyList()
         }
@@ -49,7 +49,7 @@ class JavaNetCookieJar(private val cookieHandler: CookieHandler) : CookieJar {
         var pairEnd: Int
         while (pos < limit) {
             pairEnd = delimiterOffset(header, pos, limit, ";,")
-            val equalsSign = delimiterOffset(header, pos, pairEnd, '=')
+            val equalsSign = delimiterOffset(header, pos, pairEnd, "=")
             val name = header.substring(pos, equalsSign).trim()
             if (name.startsWith("$")) {
                 pos = pairEnd + 1
