@@ -1,10 +1,10 @@
-# 🎵 Beat Scrobble
+<p align="center"> Beat Scrobble</p>
 
 <p align="center">
   <img src="assets/logo.jpg" alt="Beat Scrobble Logo" width="200" style="border-radius: 20px;"/>
   <br>
   <br>
-  <img src="assets/Mod1.png" alt="Beat Scrobble Dashboard" width="800"/>
+  <img src="assets/Screenshot01.png" alt="Beat Scrobble Dashboard" width="800" style="border-radius: 12px;"/>
 </p>
 
 <p align="center">
@@ -43,7 +43,7 @@
 | :--- | :--- |
 | **🔗 ListenBrainz Compatible** | Seamless integration with any LB-compatible scrobbler. Just point your client to your server URL. |
 | **📥 Multi-Source Import** | One-click import from Spotify, Last.fm, ListenBrainz, and Maloja. **Smart Deduplication** handles cross-service syncing intelligently. |
-| **📡 Relay Mode** | Automatically forward your scrobbles to other services like ListenBrainz or Maloja (Proxy Mode). |
+| **📡 Relay Mode** | Automatically forward your *live* scrobbles to other services like ListenBrainz or Maloja (Proxy Mode). *Note: Manual imports/ad-hoc backups are not forwarded.* |
 | **🔐 Full Data Ownership** | Self-hosted architecture. Your data stays 100% yours, stored locally in PostgreSQL. |
 | **👥 Multi-User Support** | Complete user isolation. Admins can manage users, roles, and quotas via a dedicated UI. |
 
@@ -316,28 +316,27 @@ Midnight, Snow, Ocean, Forest, Sunset, Neon, Retro, Minimal, and more...
 
 ## 🎵 Spotify Integration
 
-Enrich your library with comprehensive Spotify metadata.
+Enrich your library with Spotify metadata.
 
 | Feature | Description |
 | :--- | :--- |
-| **🎤 Artist Metadata** | Genres, popularity scores, follower counts, and bio |
-| **💿 Album Metadata** | Genres, popularity, release details, and record labels |
-| **🎼 Track Metadata** | Duration, Popularity, Release Date, Label. |
-| **🎚️ Audio Grid** | Visual breakdown of track features on every track page |
+| **🎤 Artist Metadata** | Genres, popularity score |
+| **💿 Album Metadata** | Genres, popularity, release date, record label |
+| **🎼 Track Metadata** | Spotify ID linking, popularity score |
 | **📡 Fetch Terminal** | Real-time SSE-powered bulk metadata fetching terminal |
 | **💾 Import** | Independent backup/restore for your Spotify metadata mapping |
 
 **Data Display:**
-- **Artist Page**: Genres badges, popularity %, followers count, bio
+- **Artist Page**: Genres badges, popularity %
 - **Album Page**: Genres badges, popularity %, release date, label
-- **Track Page**: Detailed listening history and context for each song.
+- **Track Page**: Popularity score, listening history
 
-**Bulk Fetch Optimization (Hybrid Architecture):**
-- **Foreground (Fast):** Immediately fetches Top 100 Artists, Albums, and Tracks for instant dashboard population.
-- **Background (Stealth):** Spawns a silent worker to process the *entire library* (pages 2+) with intelligent rate limiting (1.5s/batch) to avoid API bans.
-- **Global Notifications:** Premium UI alerts notify you when background sync completes via real-time heartbeat system.
-- **Batches:** 50 items/batch. Fallback to search for missing IDs.
-- **Auto-Search & Link:** Tracks without a Spotify ID are automatically searched and linked during metadata refresh.
+**Bulk Fetch Optimization (2-Phase Priority):**
+- **Phase 1 - Priority Fetch:** Top 100 Artists → Top 100 Albums → Top 100 Tracks (fast, 100ms rate limit)
+- **Phase 2 - Deep Scan:** Remaining library processed in background (calm, 200ms rate limit)
+- **Smart Progress:** Real-time SSE progress bar showing items processed vs total
+- **Background Sync:** New scrobbles trigger automatic metadata fetching
+- **Auto-Search & Link:** Tracks without Spotify ID are automatically searched and linked
 
 **Setup:**
 1. Create app at [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
@@ -384,10 +383,10 @@ Beat Scrobble is engineered for speed with millions of scrobbles:
 | Optimization | Impact |
 | :--- | :--- |
 | **🚄 Virtualization** | Efficient rendering of massive lists (10k+ items) |
-| **✂️ Code Splitting** | `React.lazy` implementation for fast initial load |
+| **✂️ Code Splitting** | React Router 7 file-based routing for fast initial load |
 | **⚡ Optimistic UI** | Instant feedback before server confirmation |
-| **💾 Persistent Cache** | TanStack Query syncing to localStorage |
-| **🖼️ Lazy Images** | IntersectionObserver for viewport-only loading |
+| **💾 Persistent Cache** | TanStack Query syncing to IndexedDB |
+| **🖼️ Lazy Images** | Native `loading="lazy"` for viewport-only loading |
 
 ---
 
@@ -508,13 +507,29 @@ When images are missing or have invalid URLs, Beat Scrobble automatically search
 
 ## 📸 Screenshots
 
+### 🖥️ Desktop
+
 <p align="center">
-  <img src="assets/Mod1.png" alt="Dashboard" width="400"/>
-  <img src="assets/Mod2.png" alt="Profile" width="400"/>
+  <img src="assets/Screenshot01.png" alt="Dashboard Overview" width="800" style="border-radius: 12px;"/>
 </p>
 <p align="center">
-  <img src="assets/Mod3.png" alt="Timeline" width="400"/>
-  <img src="assets/Themes.png" alt="Themes" width="400"/>
+  <img src="assets/Screenshot02.png" alt="Analytics View" width="400" style="border-radius: 12px;"/>
+  <img src="assets/Screenshot03.png" alt="Library View" width="400" style="border-radius: 12px;"/>
+</p>
+<p align="center">
+  <img src="assets/Screenshot04.png" alt="Artist Page" width="400" style="border-radius: 12px;"/>
+  <img src="assets/Screenshot05.png" alt="Timeline" width="400" style="border-radius: 12px;"/>
+</p>
+<p align="center">
+  <img src="assets/Screenshot09.png" alt="Settings" width="800" style="border-radius: 12px;"/>
+</p>
+
+### 📱 Mobile
+
+<p align="center">
+  <img src="assets/Screenshot06.png" alt="Mobile Dashboard" width="200" style="border-radius: 12px;"/>
+  <img src="assets/Screenshot07.png" alt="Mobile Player" width="200" style="border-radius: 12px;"/>
+  <img src="assets/Screenshot08.png" alt="Mobile Library" width="200" style="border-radius: 12px;"/>
 </p>
 
 ---

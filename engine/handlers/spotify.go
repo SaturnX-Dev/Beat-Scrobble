@@ -721,16 +721,11 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 				send("progress", map[string]interface{}{"percent": prog, "processed": processed, "failed": failed})
 			}
 
-			// 2. Process Artists (Loop all pages)
-			send("log", map[string]string{"message": fmt.Sprintf("Processing %d Artists...", countArtists)})
-			page := 1
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				default:
-				}
+			// === PHASE 1: PRIORITY FETCH (Top 100 of each) ===
+			send("log", map[string]string{"message": "Phase 1: Fetching Top 100 Artists..."})
 
+			// Helper to process a single page of artists
+			processArtistPage := func(page int) int {
 				artistResp, err := store.GetTopArtistsPaginated(ctx, db.GetItemsOpts{
 					UserID: int(user.ID),
 					Period: db.PeriodAllTime,
@@ -738,7 +733,7 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 					Page:   page,
 				})
 				if err != nil || len(artistResp.Items) == 0 {
-					break
+					return 0
 				}
 
 				var idsToFetch []string
@@ -749,14 +744,7 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 						idsToFetch = append(idsToFetch, artist.SpotifyID)
 						itemsToFetch = append(itemsToFetch, artist)
 					} else {
-						// Search Logic (Simplified for bulk)
-						// For speed in bulk, we might skip search or implement it efficiently?
-						// User wants logic to fetch if missing.
-						// Let's count them as processed for now to not block progress,
-						// OR implement search. Given code limit, I'll count them as skipped/failed unless I add search.
-						// Let's implement basic search since user insisted.
-						// searchItems = append(searchItems, artist)
-						processed++ // Mark non-ID artists as processed (skipped or searched)
+						processed++
 					}
 				}
 
@@ -799,26 +787,22 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 						}
 						resp.Body.Close()
 					} else {
-						// Even if failed, mark as processed to advance progress
-						processed += len(batchIDs)
+						failed += len(batchIDs)
 					}
 					updateProgress()
+					time.Sleep(100 * time.Millisecond)
 				}
-				page++
+				return len(artistResp.Items)
 			}
 
-			// 3. Albums
-			send("log", map[string]string{"message": fmt.Sprintf("Processing %d Albums...", countAlbums)})
-			page = 1
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				default:
-				}
+			// Phase 1: Only Top 100 Artists
+			processArtistPage(1)
+
+			// Helper to process a single page of albums
+			processAlbumPage := func(page int) int {
 				albumResp, err := store.GetTopAlbumsPaginated(ctx, db.GetItemsOpts{UserID: int(user.ID), Period: db.PeriodAllTime, Limit: 100, Page: page})
 				if err != nil || len(albumResp.Items) == 0 {
-					break
+					return 0
 				}
 
 				var idsToFetch []string
@@ -868,25 +852,19 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 						}
 						resp.Body.Close()
 					} else {
-						processed += len(batchIDs)
+						failed += len(batchIDs)
 					}
 					updateProgress()
+					time.Sleep(100 * time.Millisecond)
 				}
-				page++
+				return len(albumResp.Items)
 			}
 
-			// 4. Tracks
-			send("log", map[string]string{"message": fmt.Sprintf("Processing %d Tracks...", countTracks)})
-			page = 1
-			for {
-				select {
-				case <-ctx.Done():
-					return
-				default:
-				}
+			// Helper to process a single page of tracks
+			processTrackPage := func(page int) int {
 				trackResp, err := store.GetTopTracksPaginated(ctx, db.GetItemsOpts{UserID: int(user.ID), Period: db.PeriodAllTime, Limit: 100, Page: page})
 				if err != nil || len(trackResp.Items) == 0 {
-					break
+					return 0
 				}
 
 				var idsToFetch []string
@@ -932,13 +910,41 @@ func SpotifyBulkFetchSSEHandler(store db.DB) http.HandlerFunc {
 						}
 						resp.Body.Close()
 					} else {
-						processed += len(batchIDs)
+						failed += len(batchIDs)
 					}
 					updateProgress()
+					time.Sleep(100 * time.Millisecond)
 				}
-				page++
+				return len(trackResp.Items)
 			}
 
+			// Phase 1: Top 100 Albums
+			send("log", map[string]string{"message": "Phase 1: Fetching Top 100 Albums..."})
+			processAlbumPage(1)
+
+			// Phase 1: Top 100 Tracks
+			send("log", map[string]string{"message": "Phase 1: Fetching Top 100 Tracks..."})
+			processTrackPage(1)
+
+			// === PHASE 2: DEEP SCAN (Rest of library, with calm) ===
+			send("log", map[string]string{"message": "Phase 2: Deep Scan starting (background)..."})
+
+			// Deep scan: Artists page 2+
+			for page := 2; processArtistPage(page) > 0; page++ {
+				time.Sleep(200 * time.Millisecond) // Extra calm for deep scan
+			}
+
+			// Deep scan: Albums page 2+
+			for page := 2; processAlbumPage(page) > 0; page++ {
+				time.Sleep(200 * time.Millisecond)
+			}
+
+			// Deep scan: Tracks page 2+
+			for page := 2; processTrackPage(page) > 0; page++ {
+				time.Sleep(200 * time.Millisecond)
+			}
+
+			send("log", map[string]string{"message": "Metadata Sync Complete!"})
 			send("complete", map[string]interface{}{"success": true, "processed": processed, "failed": failed})
 		}()
 

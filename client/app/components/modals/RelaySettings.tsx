@@ -72,6 +72,10 @@ const RelaySettings = () => {
                     <span className="text-xs opacity-70">
                         Acts as a "Server-Side Memory" proxy: we save the scrobble here first, then send it there.
                     </span>
+                    <br />
+                    <span className="text-xs text-yellow-500/80 font-medium mt-1 block">
+                        Note: Manual imports are NOT forwarded to prevent rate-limiting/spam flags. Only "live" scrobbles are relayed.
+                    </span>
                 </p>
             </div>
 
