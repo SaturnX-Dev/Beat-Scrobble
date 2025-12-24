@@ -27,7 +27,7 @@ secrets/
 # ============================================================================
 # Docker - Local Overrides
 # ============================================================================
-#docker-compose.dev.yml
+docker-compose.dev.yml
 docker-compose.prod.yml
 docker-compose.local.yml
 docker-compose.override.yml
