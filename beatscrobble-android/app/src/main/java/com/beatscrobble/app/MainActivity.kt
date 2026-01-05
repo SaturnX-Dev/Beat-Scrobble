@@ -15,7 +15,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            BeatScrobbleTheme {
+            val themeName by BeatScrobbleApp.instance.prefsRepository.currentThemeName.collectAsState(initial = "Default Dark")
+            
+            BeatScrobbleTheme(themeName = themeName) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

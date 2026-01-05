@@ -67,6 +67,7 @@ dependencies {
     
     // Image Loading
     implementation(libs.coil.compose)
+    implementation("androidx.palette:palette-ktx:1.0.0")
     
     // Security
     implementation(libs.androidx.security.crypto)

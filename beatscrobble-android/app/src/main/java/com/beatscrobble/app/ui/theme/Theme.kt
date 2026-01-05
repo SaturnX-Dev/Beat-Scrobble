@@ -29,25 +29,35 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun BeatScrobbleTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    themeName: String = "Default Dark",
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    val themeOption = getThemeByName(themeName)
+
+    val colorScheme = if (themeOption.isDark) {
+        darkColorScheme(
+            primary = themeOption.primary,
+            background = themeOption.background,
+            surface = themeOption.surface,
+            onBackground = Color.White,
+            onSurface = Color.White
+        )
+    } else {
+        lightColorScheme(
+            primary = themeOption.primary,
+            background = themeOption.background,
+            surface = themeOption.surface,
+            onBackground = Color.Black,
+            onSurface = Color.Black
+        )
     }
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            window.statusBarColor = colorScheme.background.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !themeOption.isDark
         }
     }
 
