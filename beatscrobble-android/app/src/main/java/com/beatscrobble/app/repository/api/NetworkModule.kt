@@ -4,14 +4,17 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.beatscrobble.app.repository.models.ServerConfig
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.Cookie
+import okhttp3.CookieJar
+import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
-import okhttp3.JavaNetCookieJar
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.net.SocketTimeoutException
 import java.util.concurrent.TimeUnit
 
 /**
@@ -24,11 +27,12 @@ object NetworkModule {
     private const val KEY_PRIMARY_URL = "primary_url"
     private const val KEY_FALLBACK_URL = "fallback_url"
     private const val KEY_ACTIVE_URL = "active_url"
-    private const val KEY_COOKIES = "cookies"
+    private const val KEY_COOKIES = "cookies" // Used by PersistentCookieJar
     
     private var _api: BeatScrobbleApi? = null
     private var _activeUrl: String? = null
     private lateinit var prefs: SharedPreferences
+    private lateinit var cookieJar: PersistentCookieJar
     
     val api: BeatScrobbleApi
         get() = _api ?: throw IllegalStateException("NetworkModule not initialized. Call init() first.")
@@ -41,14 +45,9 @@ object NetworkModule {
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         _cacheDir = context.cacheDir
+        cookieJar = PersistentCookieJar(prefs)
         
         val savedUrl = prefs.getString(KEY_ACTIVE_URL, null)
-        
-        // Restore cookies
-        val savedCookies = prefs.getString(KEY_COOKIES, null)
-        if (savedCookies != null) {
-            // Manual restore if needed, though CookieJar handles mostly
-        }
         
         if (savedUrl != null) {
             createApi(savedUrl)
@@ -56,9 +55,9 @@ object NetworkModule {
     }
     
     fun isConfigured(): Boolean = _api != null
-    fun isLoggedIn(): Boolean = savedCookiesExists() // Helper check
     
-    private fun savedCookiesExists() = prefs.contains(KEY_COOKIES)
+    // Check if we have any valid session cookies
+    fun isLoggedIn(): Boolean = cookieJar.hasSessionCookies()
     
     fun getServerConfig(): ServerConfig? {
         if (!this::prefs.isInitialized) return null
@@ -94,7 +93,7 @@ object NetworkModule {
             
             val testApi = testRetrofit.create(BeatScrobbleApi::class.java)
             val response = testApi.healthCheck()
-            response.isSuccessful || response.code() == 401 // 401 means server exists but needs auth
+            response.isSuccessful || response.code() == 401
         } catch (e: Exception) {
             false
         }
@@ -141,11 +140,6 @@ object NetworkModule {
             level = HttpLoggingInterceptor.Level.BODY
         }
         
-        // Use standard CookieManager for in-memory session management
-        val cookieManager = java.net.CookieManager().apply {
-            setCookiePolicy(java.net.CookiePolicy.ACCEPT_ALL)
-        }
-        
         // 50 MB Cache
         val cacheSize = 50L * 1024L * 1024L
         val cache = try {
@@ -155,7 +149,7 @@ object NetworkModule {
         }
 
         val client = OkHttpClient.Builder()
-            .cookieJar(JavaNetCookieJar(cookieManager))
+            .cookieJar(cookieJar) // Use our persistent cookie jar
             .cache(cache)
             .addInterceptor(loggingInterceptor)
             .connectTimeout(15, TimeUnit.SECONDS)
@@ -184,9 +178,7 @@ object NetworkModule {
     }
     
     fun clearSession() {
-        // In-memory cookie manager is cleared by recreation, or we could keep a reference
-        // but for now, simple recreation on connect/reconnect is enough
-        prefs.edit { remove(KEY_COOKIES) }
+        cookieJar.clear()
     }
     
     fun clearConfig() {
@@ -195,10 +187,141 @@ object NetworkModule {
             remove(KEY_PRIMARY_URL)
             remove(KEY_FALLBACK_URL)
             remove(KEY_ACTIVE_URL)
-            remove(KEY_COOKIES)
         }
         _api = null
         _activeUrl = null
         clearSession()
+    }
+
+    /**
+     * Persistent CookieJar implementation using SharedPreferences
+     */
+    private class PersistentCookieJar(private val prefs: SharedPreferences) : CookieJar {
+        private val gson = Gson()
+        private var cookiesInMemory: MutableList<Cookie> = mutableListOf()
+        private val KEY_COOKIES = "cookies_json"
+
+        init {
+            loadCookies()
+        }
+
+        override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+            // Merge new cookies with existing ones
+            val newCookies = ArrayList<Cookie>(cookiesInMemory)
+            
+            for (cookie in cookies) {
+                // Remove existing cookie with same name/domain/path if exists
+                val iterator = newCookies.iterator()
+                while (iterator.hasNext()) {
+                    val existing = iterator.next()
+                    if (existing.name == cookie.name && 
+                        existing.domain == cookie.domain && 
+                        existing.path == cookie.path) {
+                        iterator.remove()
+                    }
+                }
+                
+                // Add new cookie if not expired
+                if (cookie.expiresAt > System.currentTimeMillis()) {
+                    newCookies.add(cookie)
+                }
+            }
+            
+            cookiesInMemory = newCookies
+            persistCookies()
+        }
+
+        override fun loadForRequest(url: HttpUrl): List<Cookie> {
+            val validCookies = ArrayList<Cookie>()
+            val now = System.currentTimeMillis()
+            var changed = false
+            
+            val iterator = cookiesInMemory.iterator()
+            while (iterator.hasNext()) {
+                val cookie = iterator.next()
+                if (cookie.expiresAt < now) {
+                    iterator.remove()
+                    changed = true
+                } else if (cookie.matches(url)) {
+                    validCookies.add(cookie)
+                }
+            }
+            
+            if (changed) {
+                persistCookies()
+            }
+            
+            return validCookies
+        }
+        
+        fun hasSessionCookies(): Boolean {
+            val now = System.currentTimeMillis()
+            return cookiesInMemory.any { 
+                (it.name == "session_id" || it.name == "beatscrobble_session") && it.expiresAt > now 
+            }
+        }
+        
+        fun clear() {
+            cookiesInMemory.clear()
+            prefs.edit { remove(KEY_COOKIES) }
+        }
+
+        private fun persistCookies() {
+            // We need a custom serializable object because OkHttp Cookie isn't directly serializable with GSON easily without type adapter
+            // A simple way is to map to a data class
+            val serializableCookies = cookiesInMemory.map { SerializableCookie(it) }
+            val json = gson.toJson(serializableCookies)
+            prefs.edit { putString(KEY_COOKIES, json) }
+        }
+
+        private fun loadCookies() {
+            val json = prefs.getString(KEY_COOKIES, null) ?: return
+            try {
+                val type = object : TypeToken<List<SerializableCookie>>() {}.type
+                val serializableCookies: List<SerializableCookie> = gson.fromJson(json, type)
+                cookiesInMemory = serializableCookies.mapNotNull { it.toCookie() }.toMutableList()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // If loading fails, clear invalid data
+                prefs.edit { remove(KEY_COOKIES) }
+            }
+        }
+    }
+    
+    // Helper DTO for JSON serialization
+    private data class SerializableCookie(
+        val name: String,
+        val value: String,
+        val expiresAt: Long,
+        val domain: String,
+        val path: String,
+        val secure: Boolean,
+        val httpOnly: Boolean,
+        val hostOnly: Boolean
+    ) {
+        constructor(cookie: Cookie) : this(
+            name = cookie.name,
+            value = cookie.value,
+            expiresAt = cookie.expiresAt,
+            domain = cookie.domain,
+            path = cookie.path,
+            secure = cookie.secure,
+            httpOnly = cookie.httpOnly,
+            hostOnly = cookie.hostOnly
+        )
+        
+        fun toCookie(): Cookie? {
+            val builder = Cookie.Builder()
+                .name(name)
+                .value(value)
+                .expiresAt(expiresAt)
+                .path(path)
+            
+            if (hostOnly) builder.hostOnlyDomain(domain) else builder.domain(domain)
+            if (secure) builder.secure()
+            if (httpOnly) builder.httpOnly()
+            
+            return builder.build()
+        }
     }
 }

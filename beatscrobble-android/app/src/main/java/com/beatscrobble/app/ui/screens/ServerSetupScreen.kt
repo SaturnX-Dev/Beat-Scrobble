@@ -243,10 +243,16 @@ fun ServerSetupScreen(
                                 kotlinx.coroutines.delay(1000)
                                 onConfigured()
                             } else {
-                                error = "Could not connect to any server. Check URLs and try again."
+                                error = "Could not connect. Ensure server is running and accessible."
                             }
+                        } catch (e: java.net.SocketTimeoutException) {
+                            error = "Connection timed out. Check IP and firewall."
+                            e.printStackTrace()
+                        } catch (e: java.net.ConnectException) {
+                            error = "Connection refused. Server might be down or IP is wrong."
+                            e.printStackTrace()
                         } catch (e: Throwable) {
-                            error = "Error: ${e.message}"
+                            error = "Error: ${e.message ?: "Unknown error"}"
                             e.printStackTrace()
                         } finally {
                             isLoading = false
