@@ -150,3 +150,5 @@ beatscrobble-android/.externalNativeBuild/
 beatscrobble-android/.cxx/
 beatscrobble-android/**/*.lock
 beatscrobble-android/**/bin/
+!beatscrobble-android/
+!beatscrobble-android/**
