@@ -32,6 +32,8 @@ import com.beatscrobble.app.repository.api.NetworkModule
 import com.beatscrobble.app.repository.models.*
 import com.beatscrobble.app.ui.navigation.Screen
 import com.beatscrobble.app.ui.theme.*
+import com.beatscrobble.app.utils.*
+import com.beatscrobble.app.ui.components.*
 import kotlinx.coroutines.launch
 
 // Chart view types - matching web exactly
@@ -737,13 +739,13 @@ fun RankingsView(
             RankingCard(
                 title = "Top Artists - $periodLabel",
                 items = topArtists.take(8),
-                onViewAll = { /* Navigate */ },
+                onViewAll = { navController.navigate(Screen.TopItems.createRoute("artist", period)) },
                 itemContent = { artist, index ->
                     RankingRow(
                         rank = index + 1,
                         imageUrl = artist.image?.let { getImageUrl(it) },
                         title = artist.name,
-                        subtitle = "${artist.listenCount} plays",
+                        subtitle = "${formatNumber(artist.listenCount)} plays",
                         progress = artist.listenCount.toFloat() / (topArtists.firstOrNull()?.listenCount?.toFloat() ?: 1f),
                         isRound = true,
                         onClick = { navController.navigate(Screen.Artist.createRoute(artist.id)) }
@@ -757,13 +759,13 @@ fun RankingsView(
             RankingCard(
                 title = "Top Albums - $periodLabel",
                 items = topAlbums.take(8),
-                onViewAll = { /* Navigate */ },
+                onViewAll = { navController.navigate(Screen.TopItems.createRoute("album", period)) },
                 itemContent = { album, index ->
                     RankingRow(
                         rank = index + 1,
                         imageUrl = album.image?.let { getImageUrl(it) },
                         title = album.title,
-                        subtitle = album.artists.joinToString(", ") { it.name } + " • ${album.listenCount} plays",
+                        subtitle = album.artists.joinToString(", ") { it.name } + " • ${formatNumber(album.listenCount)} plays",
                         progress = album.listenCount.toFloat() / (topAlbums.firstOrNull()?.listenCount?.toFloat() ?: 1f),
                         isRound = false,
                         onClick = { navController.navigate(Screen.Album.createRoute(album.id)) }
@@ -777,13 +779,13 @@ fun RankingsView(
             RankingCard(
                 title = "Top Tracks - $periodLabel",
                 items = topTracks.take(8),
-                onViewAll = { /* Navigate */ },
+                onViewAll = { navController.navigate(Screen.TopItems.createRoute("track", period)) },
                 itemContent = { track, index ->
                     RankingRow(
                         rank = index + 1,
                         imageUrl = track.image?.let { getImageUrl(it) },
                         title = track.title,
-                        subtitle = track.artists.joinToString(", ") { it.name } + " • ${track.listenCount} plays",
+                        subtitle = track.artists.joinToString(", ") { it.name } + " • ${formatNumber(track.listenCount)} plays",
                         progress = track.listenCount.toFloat() / (topTracks.firstOrNull()?.listenCount?.toFloat() ?: 1f),
                         isRound = false,
                         onClick = { navController.navigate(Screen.Track.createRoute(track.id)) }

@@ -1,5 +1,7 @@
 package com.beatscrobble.app.ui.navigation
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.*
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -26,6 +28,9 @@ sealed class Screen(val route: String) {
     object Track : Screen("track/{id}") {
         fun createRoute(id: Int) = "track/$id"
     }
+    object TopItems : Screen("top_items/{type}/{period}") {
+        fun createRoute(type: String, period: String) = "top_items/$type/$period"
+    }
 }
 
 @Composable
@@ -41,7 +46,19 @@ fun AppNavigation(navController: NavHostController) {
     
     NavHost(
         navController = navController,
-        startDestination = startDestination
+        startDestination = startDestination,
+        enterTransition = { 
+            slideIntoContainer(androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.Start, tween(300)) 
+        },
+        exitTransition = { 
+            fadeOut(tween(300))
+        },
+        popEnterTransition = { 
+            fadeIn(tween(300)) 
+        },
+        popExitTransition = { 
+            slideOutOfContainer(androidx.compose.animation.AnimatedContentTransitionScope.SlideDirection.End, tween(300)) 
+        }
     ) {
         composable(Screen.ServerSetup.route) {
             ServerSetupScreen(
@@ -106,6 +123,18 @@ fun AppNavigation(navController: NavHostController) {
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getInt("id") ?: return@composable
             TrackScreen(trackId = id, navController = navController)
+        }
+        
+        composable(
+            route = Screen.TopItems.route,
+            arguments = listOf(
+                navArgument("type") { type = NavType.StringType },
+                navArgument("period") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val type = backStackEntry.arguments?.getString("type") ?: return@composable
+            val period = backStackEntry.arguments?.getString("period") ?: return@composable
+            TopItemsListScreen(type = type, period = period, navController = navController)
         }
     }
 }

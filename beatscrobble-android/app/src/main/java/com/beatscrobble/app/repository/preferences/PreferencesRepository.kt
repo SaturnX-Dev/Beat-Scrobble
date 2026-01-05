@@ -50,6 +50,9 @@ object PreferencesRepository {
     
     private val _backgroundOpacity = MutableStateFlow(50)
     val backgroundOpacity: StateFlow<Int> = _backgroundOpacity.asStateFlow()
+
+    private val _currentTheme = MutableStateFlow("Modern Dark")
+    val currentTheme: StateFlow<String> = _currentTheme.asStateFlow()
     
     fun initialize(context: Context) {
         sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -166,6 +169,7 @@ object PreferencesRepository {
             is String -> opacity.toIntOrNull() ?: 50
             else -> 50
         }
+        _currentTheme.value = prefs["theme_name"]?.toString() ?: "Modern Dark"
     }
     
     private fun loadFromLocalStorage() {
@@ -226,6 +230,10 @@ object PreferencesRepository {
         savePreference("background_opacity", opacity)
     }
     
+    suspend fun setTheme(themeName: String) {
+        savePreference("theme_name", themeName)
+    }
+
     suspend fun clearCustomBackground() {
         setCustomBackground("none", null, 50)
     }

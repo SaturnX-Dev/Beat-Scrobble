@@ -30,6 +30,7 @@ import com.beatscrobble.app.repository.api.NetworkModule
 import com.beatscrobble.app.repository.models.*
 import com.beatscrobble.app.ui.navigation.Screen
 import com.beatscrobble.app.ui.theme.*
+import com.beatscrobble.app.utils.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
